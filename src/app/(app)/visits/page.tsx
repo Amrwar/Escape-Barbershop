@@ -62,6 +62,16 @@ export default function VisitsPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOwner]);
 
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const handleDelete = async (id: string) => {
+    if (!confirm(t("action.delete") + "?")) return;
+    setDeletingId(id);
+    await fetch(`/api/visits/${id}`, { method: "DELETE" });
+    setDeletingId(null);
+    load();
+  };
+
   const totalRevenue = visits.reduce((s, v) => s + v.total, 0);
 
   return (
@@ -129,10 +139,24 @@ export default function VisitsPage() {
                     ))}
                   </div>
                 </div>
-                <div className="shrink-0 text-end">
+                <div className="shrink-0 text-end space-y-1">
                   <div className="text-lg font-bold text-gray-900">${fmtCurrency(v.total)}</div>
                   {v.discount > 0 && (
                     <div className="text-xs text-red-500">-{v.discount}% {t("common.off")}</div>
+                  )}
+                  {isOwner && (
+                    <div className="flex gap-2 justify-end pt-1">
+                      <Link href={`/visits/${v.id}/edit`} className="text-xs text-primary-600 hover:underline">
+                        {t("action.edit")}
+                      </Link>
+                      <button
+                        onClick={() => handleDelete(v.id)}
+                        disabled={deletingId === v.id}
+                        className="text-xs text-red-500 hover:underline"
+                      >
+                        {deletingId === v.id ? "…" : t("action.delete")}
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>

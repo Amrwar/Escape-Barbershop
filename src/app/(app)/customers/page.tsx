@@ -2,10 +2,10 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Modal } from "@/components/ui/Modal";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { customerSchema } from "@/lib/validations";
 import { useTranslation } from "@/lib/i18n";
 
 interface Customer {
@@ -19,6 +19,8 @@ interface Customer {
 
 export default function CustomersPage() {
   const { t } = useTranslation();
+  const { data: session } = useSession();
+  const isOwner = session?.user?.role === "OWNER";
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -27,6 +29,7 @@ export default function CustomersPage() {
   const [form, setForm] = useState({ name: "", phone: "", notes: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const load = useCallback((q = search) => {
     setLoading(true);
@@ -40,6 +43,14 @@ export default function CustomersPage() {
     const timeout = setTimeout(() => load(search), 300);
     return () => clearTimeout(timeout);
   }, [search, load]);
+
+  const handleDelete = async (id: string) => {
+    if (!confirm(t("action.delete") + "?")) return;
+    setDeletingId(id);
+    await fetch(`/api/customers/${id}`, { method: "DELETE" });
+    setDeletingId(null);
+    load(search);
+  };
 
   const openCreate = () => { setEditing(null); setForm({ name: "", phone: "", notes: "" }); setErrors({}); setModalOpen(true); };
   const openEdit = (c: Customer) => {
@@ -129,6 +140,15 @@ export default function CustomersPage() {
                     <div className="flex items-center justify-end gap-2">
                       <Link href={`/customers/${c.id}`} className="btn-secondary text-xs px-2 py-1">{t("action.view")}</Link>
                       <button onClick={() => openEdit(c)} className="btn-ghost text-xs px-2 py-1">{t("action.edit")}</button>
+                      {isOwner && (
+                        <button
+                          onClick={() => handleDelete(c.id)}
+                          disabled={deletingId === c.id}
+                          className="text-red-500 hover:text-red-700 text-xs px-2 py-1 rounded hover:bg-red-50 transition-colors"
+                        >
+                          {deletingId === c.id ? "…" : t("action.delete")}
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

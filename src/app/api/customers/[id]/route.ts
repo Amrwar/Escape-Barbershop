@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAuth } from "@/lib/auth";
+import { requireAuth, requireOwner } from "@/lib/auth";
 import { customerSchema } from "@/lib/validations";
 
 export async function GET(
@@ -61,10 +61,13 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    await requireAuth();
+    await requireOwner();
     await prisma.customer.delete({ where: { id: params.id } });
     return NextResponse.json({ success: true });
-  } catch {
+  } catch (err: unknown) {
+    if (err instanceof Error && err.message.includes("Unauthorized")) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     return NextResponse.json({ error: "Error" }, { status: 400 });
   }
 }
