@@ -144,20 +144,25 @@ export default function VisitsPage() {
                   {v.discount > 0 && (
                     <div className="text-xs text-red-500">-{v.discount}% {t("common.off")}</div>
                   )}
-                  {isOwner && (
-                    <div className="flex gap-2 justify-end pt-1">
-                      <Link href={`/visits/${v.id}/edit`} className="text-xs text-primary-600 hover:underline">
-                        {t("action.edit")}
-                      </Link>
-                      <button
-                        onClick={() => handleDelete(v.id)}
-                        disabled={deletingId === v.id}
-                        className="text-xs text-red-500 hover:underline"
-                      >
-                        {deletingId === v.id ? "…" : t("action.delete")}
-                      </button>
-                    </div>
-                  )}
+                  <div className="flex gap-2 justify-end pt-1">
+                    <Link href={`/visits/${v.id}`} className="text-xs text-gray-500 hover:underline">
+                      {t("action.view")}
+                    </Link>
+                    {isOwner && (
+                      <>
+                        <Link href={`/visits/${v.id}/edit`} className="text-xs text-primary-600 hover:underline">
+                          {t("action.edit")}
+                        </Link>
+                        <button
+                          onClick={() => handleDelete(v.id)}
+                          disabled={deletingId === v.id}
+                          className="text-xs text-red-500 hover:underline"
+                        >
+                          {deletingId === v.id ? "…" : t("action.delete")}
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

@@ -13,6 +13,7 @@ const ar: Record<TranslationKey, string> = {
   "nav.barbers": "الحلاقون",
   "nav.salaries": "الرواتب",
   "nav.cashDrawer": "صندوق النقد",
+  "nav.settings": "الإعدادات",
 
   // Auth
   "auth.signIn": "تسجيل الدخول",
@@ -277,6 +278,27 @@ const ar: Record<TranslationKey, string> = {
   "salaries.pinTooShort": "يجب أن يتكون الرمز من 4 أرقام على الأقل",
   "salaries.pinMismatch": "الرمزان غير متطابقان",
   "salaries.commissionableRevenue": "الإيرادات الخاضعة للعمولة",
+
+  // Settings
+  "settings.receipt.title": "إعدادات الإيصال",
+  "settings.receipt.subtitle": "معلومات المحل التي تُطبع على الإيصالات",
+  "settings.shopName": "اسم المحل",
+  "settings.shopPhone": "هاتف المحل",
+  "settings.shopAddress": "العنوان",
+  "settings.receiptFooter": "ذيل الإيصال",
+  "settings.shopLogo": "شعار المحل",
+  "settings.logoHint": "يُنصح بصورة مربعة",
+  "settings.logoUploading": "جارٍ الرفع…",
+  "settings.logoUploaded": "تم حفظ الشعار",
+  "settings.saved": "تم حفظ الإعدادات",
+
+  // Visit detail
+  "visit.title": "تفاصيل الزيارة",
+  "visit.receiptNo": "رقم الإيصال",
+  "visit.printReceipt": "طباعة الإيصال",
+  "visit.printFull": "إيصال كامل",
+  "visit.printPerService": "إيصال لكل خدمة",
+  "visit.printOptions": "خيارات الطباعة",
 };
 
 export default ar;

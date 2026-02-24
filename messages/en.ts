@@ -11,6 +11,7 @@ const en = {
   "nav.barbers": "Barbers",
   "nav.salaries": "Salaries",
   "nav.cashDrawer": "Cash Drawer",
+  "nav.settings": "Settings",
 
   // Auth
   "auth.signIn": "Sign in",
@@ -275,6 +276,27 @@ const en = {
   "salaries.pinTooShort": "PIN must be at least 4 digits",
   "salaries.pinMismatch": "PINs do not match",
   "salaries.commissionableRevenue": "Commissionable Revenue",
+
+  // Settings
+  "settings.receipt.title": "Receipt Settings",
+  "settings.receipt.subtitle": "Shop info printed on receipts",
+  "settings.shopName": "Shop Name",
+  "settings.shopPhone": "Shop Phone",
+  "settings.shopAddress": "Address",
+  "settings.receiptFooter": "Receipt Footer",
+  "settings.shopLogo": "Shop Logo",
+  "settings.logoHint": "Square image recommended",
+  "settings.logoUploading": "Uploading…",
+  "settings.logoUploaded": "Logo saved",
+  "settings.saved": "Settings saved",
+
+  // Visit detail
+  "visit.title": "Visit Details",
+  "visit.receiptNo": "Receipt #",
+  "visit.printReceipt": "Print Receipt",
+  "visit.printFull": "Full Receipt",
+  "visit.printPerService": "Per-Service Receipts",
+  "visit.printOptions": "Print Options",
 } as const;
 
 export type TranslationKey = keyof typeof en;

@@ -157,7 +157,7 @@ function NewVisitInner() {
           ...(paymentMethod === "MIXED" ? { cashAmount, cardAmount } : {}),
         }),
       });
-      if (res.ok) router.push("/visits");
+      if (res.ok) { const data = await res.json(); router.push("/visits/" + data.id); }
       else { const d = await res.json(); setError(d.error ?? "Failed to save visit"); }
     } catch {
       setError("Network error — please try again");
