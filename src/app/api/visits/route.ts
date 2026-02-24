@@ -71,12 +71,16 @@ export async function POST(req: NextRequest) {
 
     // Link to open cash drawer session for CASH or MIXED visits
     let sessionId: string | null = null;
-    if (data.paymentMethod === "CASH" || data.paymentMethod === "MIXED") {
-      const openSession = await prisma.cashDrawerSession.findFirst({
-        where: { status: "OPEN" },
-        select: { id: true },
-      });
-      if (openSession) sessionId = openSession.id;
+    try {
+      if (data.paymentMethod === "CASH" || data.paymentMethod === "MIXED") {
+        const openSession = await prisma.cashDrawerSession.findFirst({
+          where: { status: "OPEN" },
+          select: { id: true },
+        });
+        if (openSession) sessionId = openSession.id;
+      }
+    } catch {
+      // Cash drawer unavailable — visit is still saved without session link
     }
 
     const visit = await prisma.visit.create({
