@@ -20,7 +20,6 @@ const NAV_ITEMS: {
   { href: "/visits",      labelKey: "nav.visits",     icon: "📋", roles: ["OWNER","BARBER"] },
   { href: "/reports",     labelKey: "nav.reports",    icon: "📈", roles: ["OWNER","BARBER"] },
   { href: "/customers",   labelKey: "nav.customers",  icon: "👥", roles: ["OWNER","BARBER"] },
-  { href: "/cash-drawer", labelKey: "nav.cashDrawer", icon: "🗃️", roles: ["OWNER","BARBER"] },
   { href: "/services",    labelKey: "nav.services",   icon: "✂️", roles: ["OWNER"] },
   { href: "/barbers",     labelKey: "nav.barbers",    icon: "💈", roles: ["OWNER"] },
   { href: "/salaries",    labelKey: "nav.salaries",   icon: "💰", roles: ["OWNER"] },

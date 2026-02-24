@@ -1,17 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { useSession } from "next-auth/react";
 import { StatCard } from "@/components/ui/StatCard";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { useTranslation } from "@/lib/i18n";
-
-interface DrawerStatus {
-  isOpen: boolean;
-  expectedCash?: number;
-  openSessionId?: string;
-  lastDifference?: number;
-}
 
 interface DashboardData {
   todayRevenue: number;
@@ -20,11 +13,12 @@ interface DashboardData {
   visitsThisMonth: number;
   topServices: { serviceId: string; name: string; arabicName: string | null; count: number }[];
   revenuePerBarber: { barberId: string; name: string; revenue: number; visits: number }[];
-  drawerStatus: DrawerStatus;
 }
 
 export default function DashboardPage() {
   const { t, fmtCurrency, lang } = useTranslation();
+  const { data: session } = useSession();
+  const isBarber = session?.user?.role === "BARBER";
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -37,12 +31,15 @@ export default function DashboardPage() {
 
   const now = new Date();
   const monthName = now.toLocaleString("default", { month: "long", year: "numeric" });
+  const subtitle = isBarber && session?.user?.name
+    ? `${session.user.name} — ${t("dashboard.overviewFor")} ${monthName}`
+    : `${t("dashboard.overviewFor")} ${monthName}`;
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
       <PageHeader
         title={t("dashboard.title")}
-        subtitle={`${t("dashboard.overviewFor")} ${monthName}`}
+        subtitle={subtitle}
       />
 
       {loading ? (
@@ -59,40 +56,6 @@ export default function DashboardPage() {
             <StatCard title={t("dashboard.visitsToday")}    value={data?.visitsToday ?? 0}                        icon="✂️" color="blue"   />
             <StatCard title={t("dashboard.visitsThisMonth")} value={data?.visitsThisMonth ?? 0}                   icon="📋" color="yellow" />
           </div>
-
-          {/* Cash Drawer Tile */}
-          {data?.drawerStatus && (
-            <div className={`card p-4 mb-8 border-2 ${data.drawerStatus.isOpen ? "border-green-300 bg-green-50" : "border-gray-200"}`}>
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">🗃️</span>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-gray-900 text-sm">
-                        {data.drawerStatus.isOpen ? t("dashboard.drawerOpen") : t("dashboard.drawerClosed")}
-                      </span>
-                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${data.drawerStatus.isOpen ? "bg-green-200 text-green-800" : "bg-gray-200 text-gray-600"}`}>
-                        {data.drawerStatus.isOpen ? "OPEN" : "CLOSED"}
-                      </span>
-                    </div>
-                    {data.drawerStatus.isOpen && data.drawerStatus.expectedCash !== undefined && (
-                      <div className="text-sm text-green-700 font-medium">
-                        {t("dashboard.expectedCash")}: ${fmtCurrency(data.drawerStatus.expectedCash)}
-                      </div>
-                    )}
-                    {!data.drawerStatus.isOpen && data.drawerStatus.lastDifference !== undefined && (
-                      <div className={`text-sm font-medium ${data.drawerStatus.lastDifference >= 0 ? "text-green-600" : "text-red-600"}`}>
-                        {t("dashboard.lastDifference")}: {data.drawerStatus.lastDifference >= 0 ? "+" : ""}${fmtCurrency(data.drawerStatus.lastDifference)}
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <Link href="/cash-drawer" className="btn-secondary text-xs whitespace-nowrap">
-                  {data.drawerStatus.isOpen ? t("dashboard.closeDay") : t("dashboard.openDrawer")}
-                </Link>
-              </div>
-            </div>
-          )}
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Top Services */}
