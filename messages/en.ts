@@ -10,6 +10,7 @@ const en = {
   "nav.services": "Services",
   "nav.barbers": "Barbers",
   "nav.salaries": "Salaries",
+  "nav.cashDrawer": "Cash Drawer",
 
   // Auth
   "auth.signIn": "Sign in",
@@ -107,6 +108,12 @@ const en = {
   "dashboard.visitsThisMonth": "Visits This Month",
   "dashboard.topServices": "Top Services This Month",
   "dashboard.revenuePerBarber": "Revenue per Barber This Month",
+  "dashboard.drawerOpen": "Cash Drawer",
+  "dashboard.drawerClosed": "Cash Drawer",
+  "dashboard.expectedCash": "Expected Cash",
+  "dashboard.lastDifference": "Last Difference",
+  "dashboard.closeDay": "Close Day →",
+  "dashboard.openDrawer": "Open Drawer →",
 
   // Services
   "services.title": "Services",
@@ -150,6 +157,9 @@ const en = {
   "newVisit.noCustomer": "Please select or create a customer",
   "newVisit.noBarber": "Please select a barber",
   "newVisit.noServices": "Please add at least one service",
+  "newVisit.cashAmount": "Cash Amount ($)",
+  "newVisit.cardAmount": "Card Amount ($)",
+  "newVisit.splitMustEqualTotal": "Cash + Card must equal total",
 
   // Barbers
   "barbers.title": "Barbers",
@@ -162,6 +172,52 @@ const en = {
   "barbers.commission": "commission",
   "barbers.perVisit": "/visit",
   "barbers.active": "Active",
+
+  // Cash Drawer
+  "cashDrawer.title": "Cash Drawer",
+  "cashDrawer.subtitle": "Track daily cash flow and reconcile end of day",
+  "cashDrawer.openDrawer": "Open Drawer",
+  "cashDrawer.noSession": "No open cash session",
+  "cashDrawer.openingCash": "Opening Cash ($)",
+  "cashDrawer.closingCash": "Closing Cash Counted ($)",
+  "cashDrawer.expectedCash": "Expected Cash",
+  "cashDrawer.cashSales": "Cash Sales",
+  "cashDrawer.cashIn": "Cash In",
+  "cashDrawer.cashOut": "Cash Out",
+  "cashDrawer.difference": "Difference",
+  "cashDrawer.openedAt": "Opened at",
+  "cashDrawer.closedAt": "Closed at",
+  "cashDrawer.openedBy": "Opened by",
+  "cashDrawer.closedBy": "Closed by",
+  "cashDrawer.addCashIn": "+ Cash In",
+  "cashDrawer.addCashOut": "− Cash Out",
+  "cashDrawer.movements": "Movements",
+  "cashDrawer.noMovements": "No movements recorded",
+  "cashDrawer.confirmClose": "Confirm Close",
+  "cashDrawer.countedCash": "Counted Cash",
+  "cashDrawer.over": "Over",
+  "cashDrawer.short": "Short",
+  "cashDrawer.viewReport": "View Report",
+  "cashDrawer.printReport": "Print Report",
+  "cashDrawer.exportCsv": "Export CSV",
+  "cashDrawer.sessionOpen": "OPEN",
+  "cashDrawer.sessionClosed": "CLOSED",
+  "cashDrawer.openingBalance": "Opening Balance",
+  "cashDrawer.noOpenSession": "Open a drawer session to start tracking cash",
+  "cashDrawer.addMovementTitle": "Add Movement",
+  "cashDrawer.closeDayTitle": "Close Day",
+  "cashDrawer.recentSession": "Most Recent Session",
+  "cashDrawer.cardSales": "Card Sales",
+  "cashDrawer.mixedSales": "Mixed Sales",
+
+  // Report
+  "report.title": "Session Report",
+  "report.revenueSummary": "Revenue Summary",
+  "report.cashReconciliation": "Cash Reconciliation",
+  "report.revenuePerBarber": "Revenue per Barber",
+  "report.topServices": "Top Services",
+  "report.visitsList": "Visits",
+  "report.movementsList": "Cash Movements",
 
   // Salaries
   "salaries.title": "Salaries & Payroll",

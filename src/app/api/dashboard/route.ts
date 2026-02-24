@@ -69,6 +69,49 @@ export async function GET() {
     });
     const barberMap = Object.fromEntries(barbers.map((b) => [b.id, b.name]));
 
+    // Cash drawer status
+    const openSession = await prisma.cashDrawerSession.findFirst({
+      where: { status: "OPEN" },
+      include: {
+        movements: { select: { type: true, amount: true } },
+        visits: { select: { cashAmount: true, paymentMethod: true, total: true } },
+      },
+    });
+
+    let drawerStatus: {
+      isOpen: boolean;
+      expectedCash?: number;
+      openSessionId?: string;
+      lastDifference?: number;
+    };
+
+    if (openSession) {
+      const cashSales = openSession.visits
+        .filter((v) => v.paymentMethod === "CASH" || v.paymentMethod === "MIXED")
+        .reduce((s, v) => s + (v.cashAmount ?? (v.paymentMethod === "CASH" ? v.total : 0)), 0);
+      const cashIn = openSession.movements.filter((m) => m.type === "IN").reduce((s, m) => s + m.amount, 0);
+      const cashOut = openSession.movements.filter((m) => m.type === "OUT").reduce((s, m) => s + m.amount, 0);
+      const expectedCash = openSession.openingCash + cashSales + cashIn - cashOut;
+      drawerStatus = { isOpen: true, expectedCash, openSessionId: openSession.id };
+    } else {
+      const lastClosed = await prisma.cashDrawerSession.findFirst({
+        where: { status: "CLOSED" },
+        orderBy: { closedAt: "desc" },
+        select: { closingCashCounted: true, openingCash: true, id: true, movements: { select: { type: true, amount: true } }, visits: { select: { cashAmount: true, paymentMethod: true, total: true } } },
+      });
+      if (lastClosed && lastClosed.closingCashCounted !== null) {
+        const cashSales = lastClosed.visits
+          .filter((v) => v.paymentMethod === "CASH" || v.paymentMethod === "MIXED")
+          .reduce((s, v) => s + (v.cashAmount ?? (v.paymentMethod === "CASH" ? v.total : 0)), 0);
+        const cashIn = lastClosed.movements.filter((m) => m.type === "IN").reduce((s, m) => s + m.amount, 0);
+        const cashOut = lastClosed.movements.filter((m) => m.type === "OUT").reduce((s, m) => s + m.amount, 0);
+        const expectedCash = lastClosed.openingCash + cashSales + cashIn - cashOut;
+        drawerStatus = { isOpen: false, lastDifference: lastClosed.closingCashCounted - expectedCash };
+      } else {
+        drawerStatus = { isOpen: false };
+      }
+    }
+
     return NextResponse.json({
       todayRevenue: todayVisits.reduce((s, v) => s + v.total, 0),
       monthRevenue: monthVisits.reduce((s, v) => s + v.total, 0),
@@ -91,6 +134,7 @@ export async function GET() {
         revenue: b._sum.total ?? 0,
         visits: b._count.id,
       })),
+      drawerStatus,
     });
   } catch {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

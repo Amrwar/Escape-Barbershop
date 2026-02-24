@@ -38,6 +38,8 @@ function NewVisitInner() {
   const [cart,           setCart]           = useState<CartItem[]>([]);
   const [submitting,     setSubmitting]     = useState(false);
   const [error,          setError]          = useState("");
+  const [cashAmount,     setCashAmount]     = useState(0);
+  const [cardAmount,     setCardAmount]     = useState(0);
 
   const preCustomerId = params.get("customerId");
 
@@ -106,6 +108,9 @@ function NewVisitInner() {
     if (!selectedCustomer) { setError(t("newVisit.noCustomer")); return; }
     if (!barberId)          { setError(t("newVisit.noBarber"));   return; }
     if (cart.length === 0)  { setError(t("newVisit.noServices")); return; }
+    if (paymentMethod === "MIXED" && Math.abs(cashAmount + cardAmount - total) > 0.01) {
+      setError(t("newVisit.splitMustEqualTotal")); return;
+    }
 
     setSubmitting(true);
     try {
@@ -120,6 +125,7 @@ function NewVisitInner() {
           discount,
           notes: notes || null,
           items: cart.map((i) => ({ serviceId: i.serviceId, quantity: i.quantity, priceAtTime: i.priceAtTime })),
+          ...(paymentMethod === "MIXED" ? { cashAmount, cardAmount } : {}),
         }),
       });
       if (res.ok) router.push("/visits");
@@ -207,12 +213,43 @@ function NewVisitInner() {
 
             <div>
               <label className="label">{t("field.paymentMethod")}</label>
-              <select className="input" value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value as "CASH"|"CARD"|"MIXED")}>
+              <select className="input" value={paymentMethod} onChange={(e) => {
+                setPaymentMethod(e.target.value as "CASH"|"CARD"|"MIXED");
+                if (e.target.value !== "MIXED") { setCashAmount(0); setCardAmount(0); }
+              }}>
                 <option value="CASH">{t("common.cash")}</option>
                 <option value="CARD">{t("common.card")}</option>
                 <option value="MIXED">{t("common.mixed")}</option>
               </select>
             </div>
+
+            {paymentMethod === "MIXED" && (
+              <>
+                <div>
+                  <label className="label">{t("newVisit.cashAmount")}</label>
+                  <input type="number" min="0" step="0.01" className="input"
+                    value={cashAmount}
+                    onChange={(e) => {
+                      const v = parseFloat(e.target.value) || 0;
+                      setCashAmount(v);
+                      setCardAmount(Math.max(0, parseFloat((total - v).toFixed(2))));
+                    }} />
+                </div>
+                <div>
+                  <label className="label">{t("newVisit.cardAmount")}</label>
+                  <input type="number" min="0" step="0.01" className="input"
+                    value={cardAmount}
+                    onChange={(e) => {
+                      const v = parseFloat(e.target.value) || 0;
+                      setCardAmount(v);
+                      setCashAmount(Math.max(0, parseFloat((total - v).toFixed(2))));
+                    }} />
+                  {Math.abs(cashAmount + cardAmount - total) > 0.01 && (
+                    <p className="text-xs text-amber-600 mt-1">{t("newVisit.splitMustEqualTotal")}</p>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         </div>
 

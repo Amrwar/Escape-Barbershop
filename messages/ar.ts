@@ -12,6 +12,7 @@ const ar: Record<TranslationKey, string> = {
   "nav.services": "الخدمات",
   "nav.barbers": "الحلاقون",
   "nav.salaries": "الرواتب",
+  "nav.cashDrawer": "صندوق النقد",
 
   // Auth
   "auth.signIn": "تسجيل الدخول",
@@ -109,6 +110,12 @@ const ar: Record<TranslationKey, string> = {
   "dashboard.visitsThisMonth": "زيارات هذا الشهر",
   "dashboard.topServices": "أكثر الخدمات طلباً هذا الشهر",
   "dashboard.revenuePerBarber": "إيرادات الحلاقين هذا الشهر",
+  "dashboard.drawerOpen": "صندوق النقد",
+  "dashboard.drawerClosed": "صندوق النقد",
+  "dashboard.expectedCash": "النقد المتوقع",
+  "dashboard.lastDifference": "آخر فرق",
+  "dashboard.closeDay": "إغلاق اليوم ←",
+  "dashboard.openDrawer": "فتح الصندوق ←",
 
   // Services
   "services.title": "الخدمات",
@@ -152,6 +159,9 @@ const ar: Record<TranslationKey, string> = {
   "newVisit.noCustomer": "الرجاء اختيار عميل أو إنشاء عميل جديد",
   "newVisit.noBarber": "الرجاء اختيار حلاق",
   "newVisit.noServices": "الرجاء إضافة خدمة واحدة على الأقل",
+  "newVisit.cashAmount": "المبلغ النقدي ($)",
+  "newVisit.cardAmount": "مبلغ البطاقة ($)",
+  "newVisit.splitMustEqualTotal": "النقد + البطاقة يجب أن يساوي الإجمالي",
 
   // Barbers
   "barbers.title": "الحلاقون",
@@ -164,6 +174,52 @@ const ar: Record<TranslationKey, string> = {
   "barbers.commission": "عمولة",
   "barbers.perVisit": "/زيارة",
   "barbers.active": "نشط",
+
+  // Cash Drawer
+  "cashDrawer.title": "صندوق النقد",
+  "cashDrawer.subtitle": "تتبع التدفق النقدي اليومي ومطابقة نهاية اليوم",
+  "cashDrawer.openDrawer": "فتح الصندوق",
+  "cashDrawer.noSession": "لا توجد جلسة نقد مفتوحة",
+  "cashDrawer.openingCash": "النقد الافتتاحي ($)",
+  "cashDrawer.closingCash": "النقد المعدود عند الإغلاق ($)",
+  "cashDrawer.expectedCash": "النقد المتوقع",
+  "cashDrawer.cashSales": "مبيعات نقدية",
+  "cashDrawer.cashIn": "نقد وارد",
+  "cashDrawer.cashOut": "نقد صادر",
+  "cashDrawer.difference": "الفرق",
+  "cashDrawer.openedAt": "تاريخ الفتح",
+  "cashDrawer.closedAt": "تاريخ الإغلاق",
+  "cashDrawer.openedBy": "فُتح بواسطة",
+  "cashDrawer.closedBy": "أُغلق بواسطة",
+  "cashDrawer.addCashIn": "+ نقد وارد",
+  "cashDrawer.addCashOut": "− نقد صادر",
+  "cashDrawer.movements": "الحركات",
+  "cashDrawer.noMovements": "لا توجد حركات مسجلة",
+  "cashDrawer.confirmClose": "تأكيد الإغلاق",
+  "cashDrawer.countedCash": "النقد المعدود",
+  "cashDrawer.over": "زيادة",
+  "cashDrawer.short": "عجز",
+  "cashDrawer.viewReport": "عرض التقرير",
+  "cashDrawer.printReport": "طباعة التقرير",
+  "cashDrawer.exportCsv": "تصدير CSV",
+  "cashDrawer.sessionOpen": "مفتوح",
+  "cashDrawer.sessionClosed": "مغلق",
+  "cashDrawer.openingBalance": "الرصيد الافتتاحي",
+  "cashDrawer.noOpenSession": "افتح جلسة صندوق لبدء تتبع النقد",
+  "cashDrawer.addMovementTitle": "إضافة حركة",
+  "cashDrawer.closeDayTitle": "إغلاق اليوم",
+  "cashDrawer.recentSession": "آخر جلسة",
+  "cashDrawer.cardSales": "مبيعات بطاقة",
+  "cashDrawer.mixedSales": "مبيعات مختلطة",
+
+  // Report
+  "report.title": "تقرير الجلسة",
+  "report.revenueSummary": "ملخص الإيرادات",
+  "report.cashReconciliation": "مطابقة النقد",
+  "report.revenuePerBarber": "الإيرادات لكل حلاق",
+  "report.topServices": "أكثر الخدمات طلباً",
+  "report.visitsList": "الزيارات",
+  "report.movementsList": "حركات النقد",
 
   // Salaries
   "salaries.title": "الرواتب والمستحقات",

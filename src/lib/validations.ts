@@ -37,6 +37,24 @@ export const visitSchema = z.object({
   discount: z.number().min(0).max(100).optional().default(0),
   notes: z.string().max(500).optional().or(z.literal("")),
   items: z.array(visitItemSchema).min(1, "At least one service is required"),
+  cashAmount: z.number().min(0).optional(),
+  cardAmount: z.number().min(0).optional(),
+});
+
+export const openDrawerSchema = z.object({
+  openingCash: z.number().min(0),
+  notes: z.string().max(500).optional().or(z.literal("")),
+});
+
+export const closeDrawerSchema = z.object({
+  closingCashCounted: z.number().min(0),
+  notes: z.string().max(500).optional().or(z.literal("")),
+});
+
+export const cashMovementSchema = z.object({
+  type: z.enum(["IN", "OUT"]),
+  amount: z.number().min(0.01),
+  reason: z.string().min(1).max(500),
 });
 
 export const penaltySchema = z.object({
@@ -59,3 +77,6 @@ export type BarberInput = z.infer<typeof barberSchema>;
 export type VisitInput = z.infer<typeof visitSchema>;
 export type PenaltyInput = z.infer<typeof penaltySchema>;
 export type SalarySettingsInput = z.infer<typeof salarySettingsSchema>;
+export type OpenDrawerInput = z.infer<typeof openDrawerSchema>;
+export type CloseDrawerInput = z.infer<typeof closeDrawerSchema>;
+export type CashMovementInput = z.infer<typeof cashMovementSchema>;

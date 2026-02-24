@@ -14,13 +14,14 @@ const NAV_ITEMS: {
   icon: string;
   roles: string[];
 }[] = [
-  { href: "/dashboard",  labelKey: "nav.dashboard", icon: "📊", roles: ["OWNER","BARBER"] },
-  { href: "/visits/new", labelKey: "nav.newVisit",  icon: "➕", roles: ["OWNER","BARBER"] },
-  { href: "/visits",     labelKey: "nav.visits",    icon: "📋", roles: ["OWNER","BARBER"] },
-  { href: "/customers",  labelKey: "nav.customers", icon: "👥", roles: ["OWNER","BARBER"] },
-  { href: "/services",   labelKey: "nav.services",  icon: "✂️", roles: ["OWNER"] },
-  { href: "/barbers",    labelKey: "nav.barbers",   icon: "💈", roles: ["OWNER"] },
-  { href: "/salaries",   labelKey: "nav.salaries",  icon: "💰", roles: ["OWNER"] },
+  { href: "/dashboard",   labelKey: "nav.dashboard",  icon: "📊", roles: ["OWNER","BARBER"] },
+  { href: "/visits/new",  labelKey: "nav.newVisit",   icon: "➕", roles: ["OWNER","BARBER"] },
+  { href: "/visits",      labelKey: "nav.visits",     icon: "📋", roles: ["OWNER","BARBER"] },
+  { href: "/customers",   labelKey: "nav.customers",  icon: "👥", roles: ["OWNER","BARBER"] },
+  { href: "/cash-drawer", labelKey: "nav.cashDrawer", icon: "🗃️", roles: ["OWNER","BARBER"] },
+  { href: "/services",    labelKey: "nav.services",   icon: "✂️", roles: ["OWNER"] },
+  { href: "/barbers",     labelKey: "nav.barbers",    icon: "💈", roles: ["OWNER"] },
+  { href: "/salaries",    labelKey: "nav.salaries",   icon: "💰", roles: ["OWNER"] },
 ];
 
 export function Sidebar({ onClose }: { onClose?: () => void }) {

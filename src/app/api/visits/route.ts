@@ -54,6 +54,31 @@ export async function POST(req: NextRequest) {
     const discountAmount = (subtotal * (data.discount ?? 0)) / 100;
     const total = subtotal - discountAmount;
 
+    // Derive cash/card amounts
+    let cashAmount: number;
+    let cardAmount: number;
+    if (data.paymentMethod === "CASH") {
+      cashAmount = total;
+      cardAmount = 0;
+    } else if (data.paymentMethod === "CARD") {
+      cashAmount = 0;
+      cardAmount = total;
+    } else {
+      // MIXED — use provided values or default split
+      cashAmount = data.cashAmount ?? 0;
+      cardAmount = data.cardAmount ?? total - cashAmount;
+    }
+
+    // Link to open cash drawer session for CASH or MIXED visits
+    let sessionId: string | null = null;
+    if (data.paymentMethod === "CASH" || data.paymentMethod === "MIXED") {
+      const openSession = await prisma.cashDrawerSession.findFirst({
+        where: { status: "OPEN" },
+        select: { id: true },
+      });
+      if (openSession) sessionId = openSession.id;
+    }
+
     const visit = await prisma.visit.create({
       data: {
         customerId: data.customerId,
@@ -62,7 +87,10 @@ export async function POST(req: NextRequest) {
         paymentMethod: data.paymentMethod,
         discount: data.discount ?? 0,
         total,
+        cashAmount,
+        cardAmount,
         notes: data.notes || null,
+        ...(sessionId ? { sessionId } : {}),
         items: {
           create: data.items.map((item) => ({
             serviceId: item.serviceId,
