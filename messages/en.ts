@@ -123,6 +123,7 @@ const en = {
   "services.activeHint": "Active (visible in new visit form)",
   "services.noServices": "No services yet",
   "services.namePlaceholder": "e.g. Hair cut",
+  "services.arabicName": "Arabic Name",
 
   // Customers
   "customers.title": "Customers",

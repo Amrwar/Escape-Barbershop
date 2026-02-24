@@ -18,13 +18,13 @@ interface DashboardData {
   monthRevenue: number;
   visitsToday: number;
   visitsThisMonth: number;
-  topServices: { serviceId: string; name: string; count: number }[];
+  topServices: { serviceId: string; name: string; arabicName: string | null; count: number }[];
   revenuePerBarber: { barberId: string; name: string; revenue: number; visits: number }[];
   drawerStatus: DrawerStatus;
 }
 
 export default function DashboardPage() {
-  const { t, fmtCurrency } = useTranslation();
+  const { t, fmtCurrency, lang } = useTranslation();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -110,7 +110,7 @@ export default function DashboardPage() {
                         {t("common.hash")}{idx + 1}
                       </span>
                       <div className="flex-1 min-w-0 truncate text-sm font-medium text-gray-900">
-                        {s.name}
+                        {lang === "ar" && s.arabicName ? s.arabicName : s.name}
                       </div>
                       <span className="text-sm font-semibold text-primary-600 shrink-0">
                         {s.count}{t("common.x")}

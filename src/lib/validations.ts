@@ -13,6 +13,7 @@ export const customerSchema = z.object({
 
 export const serviceSchema = z.object({
   name: z.string().min(1, "Name is required").max(100),
+  arabicName: z.string().max(100).optional(),
   defaultPrice: z.number().min(0, "Price must be non-negative"),
   isActive: z.boolean().optional().default(true),
 });

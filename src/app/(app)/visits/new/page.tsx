@@ -7,17 +7,17 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Modal } from "@/components/ui/Modal";
 import { useTranslation } from "@/lib/i18n";
 
-interface Service { id: string; name: string; defaultPrice: number; isActive: boolean; }
+interface Service { id: string; name: string; arabicName: string | null; defaultPrice: number; isActive: boolean; }
 interface Barber  { id: string; name: string; }
 interface Customer { id: string; name: string; phone: string | null; }
-interface CartItem { serviceId: string; serviceName: string; quantity: number; priceAtTime: number; }
+interface CartItem { serviceId: string; serviceName: string; serviceArabicName: string | null; quantity: number; priceAtTime: number; }
 
 function NewVisitInner() {
   const router = useRouter();
   const params = useSearchParams();
   const { data: session } = useSession();
   const isOwner = session?.user?.role === "OWNER";
-  const { t, fmtCurrency } = useTranslation();
+  const { t, fmtCurrency, lang } = useTranslation();
 
   const [services, setServices] = useState<Service[]>([]);
   const [barbers,  setBarbers]  = useState<Barber[]>([]);
@@ -76,7 +76,7 @@ function NewVisitInner() {
   const addToCart = (s: Service) => setCart((prev) => {
     const existing = prev.find((i) => i.serviceId === s.id);
     if (existing) return prev.map((i) => i.serviceId === s.id ? { ...i, quantity: i.quantity + 1 } : i);
-    return [...prev, { serviceId: s.id, serviceName: s.name, quantity: 1, priceAtTime: s.defaultPrice }];
+    return [...prev, { serviceId: s.id, serviceName: s.name, serviceArabicName: s.arabicName ?? null, quantity: 1, priceAtTime: s.defaultPrice }];
   });
 
   const updateItem = (serviceId: string, field: "quantity" | "priceAtTime", value: number) =>
@@ -264,7 +264,7 @@ function NewVisitInner() {
                   className={`text-start px-3 py-2 rounded-lg border text-xs font-medium transition-colors ${
                     inCart ? "border-primary-400 bg-primary-50 text-primary-700" : "border-gray-200 hover:border-primary-300 hover:bg-primary-50"
                   }`}>
-                  <div className="truncate">{s.name}</div>
+                  <div className="truncate">{lang === "ar" && s.arabicName ? s.arabicName : s.name}</div>
                   <div className="text-gray-400 font-normal">${fmtCurrency(s.defaultPrice)}</div>
                 </button>
               );
@@ -286,7 +286,7 @@ function NewVisitInner() {
                 <tbody className="divide-y divide-gray-100">
                   {cart.map((item) => (
                     <tr key={item.serviceId}>
-                      <td className="px-3 py-2 text-gray-900">{item.serviceName}</td>
+                      <td className="px-3 py-2 text-gray-900">{lang === "ar" && item.serviceArabicName ? item.serviceArabicName : item.serviceName}</td>
                       <td className="px-3 py-2 text-center">
                         <input type="number" min="1" className="w-14 text-center input py-1"
                           value={item.quantity}

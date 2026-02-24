@@ -17,7 +17,7 @@ interface Visit {
   total: number;
   customer: { name: string };
   barber: { name: string };
-  items: { service: { name: string }; quantity: number; priceAtTime: number }[];
+  items: { service: { name: string; arabicName: string | null }; quantity: number; priceAtTime: number }[];
 }
 
 interface Barber { id: string; name: string; }
@@ -29,7 +29,7 @@ const paymentBadge: Record<string, "green" | "blue" | "yellow"> = {
 export default function VisitsPage() {
   const { data: session } = useSession();
   const isOwner = session?.user?.role === "OWNER";
-  const { t, fmtCurrency, fmtDateTime } = useTranslation();
+  const { t, fmtCurrency, fmtDateTime, lang } = useTranslation();
 
   const [visits, setVisits] = useState<Visit[]>([]);
   const [barbers, setBarbers] = useState<Barber[]>([]);
@@ -133,7 +133,7 @@ export default function VisitsPage() {
                   <div className="mt-2 flex flex-wrap gap-1">
                     {v.items.map((item, idx) => (
                       <span key={idx} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-                        {item.service.name}
+                        {lang === "ar" && item.service.arabicName ? item.service.arabicName : item.service.name}
                         {item.quantity > 1 && ` ${t("common.x")}${item.quantity}`}
                       </span>
                     ))}

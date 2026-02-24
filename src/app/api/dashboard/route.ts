@@ -55,9 +55,9 @@ export async function GET() {
     const serviceIds = topServices.map((s) => s.serviceId);
     const services = await prisma.service.findMany({
       where: { id: { in: serviceIds } },
-      select: { id: true, name: true },
+      select: { id: true, name: true, arabicName: true },
     });
-    const serviceMap = Object.fromEntries(services.map((s) => [s.id, s.name]));
+    const serviceMap = Object.fromEntries(services.map((s) => [s.id, { name: s.name, arabicName: s.arabicName }]));
 
     // Enrich revenue per barber with names
     const barberIds = (revenuePerBarber as Array<{ barberId: string }>).map(
@@ -121,7 +121,8 @@ export async function GET() {
       visitsThisMonth: monthVisits.length,
       topServices: topServices.map((s) => ({
         serviceId: s.serviceId,
-        name: serviceMap[s.serviceId] ?? "Unknown",
+        name: serviceMap[s.serviceId]?.name ?? "Unknown",
+        arabicName: serviceMap[s.serviceId]?.arabicName ?? null,
         count: s._sum.quantity ?? 0,
       })),
       revenuePerBarber: (

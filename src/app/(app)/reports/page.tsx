@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { useTranslation } from "@/lib/i18n";
 import { format, startOfDay, startOfWeek, startOfMonth } from "date-fns";
 
 interface VisitItem {
-  service: { name: string };
+  service: { name: string; arabicName: string | null };
   quantity: number;
   priceAtTime: number;
 }
@@ -25,6 +25,7 @@ interface Visit {
 
 interface TopService {
   name: string;
+  arabicName: string | null;
   count: number;
   revenue: number;
 }
@@ -85,7 +86,7 @@ const paymentLabel: Record<string, string> = { CASH: "Cash", CARD: "Card", MIXED
 export default function ReportsPage() {
   const { data: session } = useSession();
   const isOwner = session?.user?.role === "OWNER";
-  const { t, fmtCurrency, fmtDateTime, fmtDate } = useTranslation();
+  const { t, fmtCurrency, fmtDateTime, fmtDate, lang } = useTranslation();
 
   const [preset, setPreset] = useState<Preset>("month");
   const initial = getPresetRange("month");
@@ -95,29 +96,36 @@ export default function ReportsPage() {
   const [loading, setLoading] = useState(false);
   const [fetched, setFetched] = useState(false);
 
+  const doFetch = useCallback(async (fromDate: string, toDate: string) => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({
+        from: startOfDay(new Date(fromDate)).toISOString(),
+        to: new Date(toDate + "T23:59:59").toISOString(),
+      });
+      const res = await fetch(`/api/reports?${params}`);
+      if (res.ok) setData(await res.json());
+    } finally {
+      setLoading(false);
+      setFetched(true);
+    }
+  }, []);
+
+  // Auto-fetch on mount with default "This Month" range
+  useEffect(() => {
+    doFetch(initial.from, initial.to);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const fetchReport = () => doFetch(from, to);
+
   const handlePreset = (p: Preset) => {
     setPreset(p);
     if (p !== "custom") {
       const range = getPresetRange(p);
       setFrom(range.from);
       setTo(range.to);
-    }
-  };
-
-  const fetchReport = async () => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams({
-        from: startOfDay(new Date(from)).toISOString(),
-        to: new Date(to + "T23:59:59").toISOString(),
-      });
-      const res = await fetch(`/api/reports?${params}`);
-      if (res.ok) {
-        setData(await res.json());
-      }
-    } finally {
-      setLoading(false);
-      setFetched(true);
+      doFetch(range.from, range.to);
     }
   };
 
@@ -287,7 +295,7 @@ export default function ReportsPage() {
                 <tbody className="divide-y divide-gray-50">
                   {data.summary.topServices.map((s, i) => (
                     <tr key={i} className="hover:bg-gray-50">
-                      <td className="px-4 py-2">{s.name}</td>
+                      <td className="px-4 py-2">{lang === "ar" && s.arabicName ? s.arabicName : s.name}</td>
                       <td className="px-4 py-2 text-end text-gray-600">{s.count}</td>
                       <td className="px-4 py-2 text-end font-medium">${fmtCurrency(s.revenue)}</td>
                     </tr>
@@ -348,7 +356,7 @@ export default function ReportsPage() {
                       <td className="px-4 py-2 font-medium">{v.customer.name}</td>
                       {isOwner && <td className="px-4 py-2 text-gray-600">{v.barber.name}</td>}
                       <td className="px-4 py-2 text-gray-600 text-xs">
-                        {v.items.map((i) => `${i.service.name}${i.quantity > 1 ? ` ×${i.quantity}` : ""}`).join(", ")}
+                        {v.items.map((i) => `${lang === "ar" && i.service.arabicName ? i.service.arabicName : i.service.name}${i.quantity > 1 ? ` ×${i.quantity}` : ""}`).join(", ")}
                       </td>
                       <td className="px-4 py-2 text-gray-600">
                         {v.paymentMethod === "CASH" ? t("common.cash")

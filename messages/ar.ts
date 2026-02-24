@@ -125,6 +125,7 @@ const ar: Record<TranslationKey, string> = {
   "services.activeHint": "نشط (يظهر في نموذج الزيارة الجديدة)",
   "services.noServices": "لا توجد خدمات بعد",
   "services.namePlaceholder": "مثال: قص شعر",
+  "services.arabicName": "الاسم بالعربي",
 
   // Customers
   "customers.title": "العملاء",

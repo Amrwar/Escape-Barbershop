@@ -3,47 +3,48 @@ import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
-const SERVICES = [
-  "Hair cut",
-  "Beard cut",
-  "curly or hair dryer",
-  "kids Hair cut",
-  "nose and ear wax",
-  "whole wax",
-  "hair dye",
-  "beard dye",
-  "rinsage",
-  "hair protein",
-  "face string",
-  "american straightening",
-  "silver dye",
-  "beard henna",
-  "dandruff removal",
-  "topic thickening",
-  "oil bath argan",
-  "oil bath loreal",
-  "hair henna",
-  "oil bath beard",
-  "external hair dryer",
-  "groom external package",
-  "groom internal package",
-  "extras",
-  "highlights",
-  "hair dryer for tall hair",
-  "douglas",
-  "hair dryer for beard",
+const SERVICES: { name: string; arabicName: string }[] = [
+  { name: "Hair cut",                arabicName: "قص شعر" },
+  { name: "Beard cut",               arabicName: "قص لحية" },
+  { name: "curly or hair dryer",     arabicName: "كيرلي أو سشوار" },
+  { name: "kids Hair cut",           arabicName: "قص شعر أطفال" },
+  { name: "nose and ear wax",        arabicName: "شمع أنف وأذن" },
+  { name: "whole wax",               arabicName: "شمع كامل" },
+  { name: "hair dye",                arabicName: "صبغة شعر" },
+  { name: "beard dye",               arabicName: "صبغة لحية" },
+  { name: "rinsage",                 arabicName: "رينساج" },
+  { name: "hair protein",            arabicName: "بروتين شعر" },
+  { name: "face string",             arabicName: "خيط وجه" },
+  { name: "american straightening",  arabicName: "فرد أمريكي" },
+  { name: "silver dye",              arabicName: "صبغة فضية" },
+  { name: "beard henna",             arabicName: "حناء لحية" },
+  { name: "dandruff removal",        arabicName: "إزالة قشرة" },
+  { name: "topic thickening",        arabicName: "تكثيف موضعي" },
+  { name: "oil bath argan",          arabicName: "حمام زيت أرغان" },
+  { name: "oil bath loreal",         arabicName: "حمام زيت لوريال" },
+  { name: "hair henna",              arabicName: "حناء شعر" },
+  { name: "oil bath beard",          arabicName: "حمام زيت لحية" },
+  { name: "external hair dryer",     arabicName: "سشوار خارجي" },
+  { name: "groom external package",  arabicName: "باقة عريس خارجية" },
+  { name: "groom internal package",  arabicName: "باقة عريس داخلية" },
+  { name: "extras",                  arabicName: "إضافات" },
+  { name: "highlights",              arabicName: "هايلايت" },
+  { name: "hair dryer for tall hair",arabicName: "سشوار للشعر الطويل" },
+  { name: "douglas",                 arabicName: "داغلاس" },
+  { name: "hair dryer for beard",    arabicName: "سشوار لحية" },
 ];
 
 async function main() {
   console.log("Seeding database...");
 
-  // Upsert services
-  for (const name of SERVICES) {
+  // Upsert services (update arabicName on each run)
+  for (const { name, arabicName } of SERVICES) {
     await prisma.service.upsert({
       where: { name },
-      update: {},
+      update: { arabicName },
       create: {
         name,
+        arabicName,
         defaultPrice: 0,
         isActive: true,
       },

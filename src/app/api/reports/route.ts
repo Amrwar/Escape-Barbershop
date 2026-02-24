@@ -55,7 +55,7 @@ export async function GET(req: NextRequest) {
     let cardTotal = 0;
     let mixedTotal = 0;
     let discountsTotal = 0;
-    const serviceCountMap = new Map<string, { name: string; count: number; revenue: number }>();
+    const serviceCountMap = new Map<string, { name: string; arabicName: string | null; count: number; revenue: number }>();
 
     for (const v of visits) {
       totalRevenue += v.total;
@@ -77,6 +77,7 @@ export async function GET(req: NextRequest) {
         } else {
           serviceCountMap.set(key, {
             name: item.service.name,
+            arabicName: item.service.arabicName ?? null,
             count: item.quantity,
             revenue: itemRevenue,
           });

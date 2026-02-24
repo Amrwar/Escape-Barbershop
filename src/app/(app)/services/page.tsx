@@ -11,17 +11,18 @@ import { useTranslation } from "@/lib/i18n";
 interface Service {
   id: string;
   name: string;
+  arabicName: string | null;
   defaultPrice: number;
   isActive: boolean;
 }
 
 export default function ServicesPage() {
-  const { t, fmtCurrency } = useTranslation();
+  const { t, fmtCurrency, lang } = useTranslation();
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Service | null>(null);
-  const [form, setForm] = useState({ name: "", defaultPrice: "", isActive: true });
+  const [form, setForm] = useState({ name: "", arabicName: "", defaultPrice: "", isActive: true });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
 
@@ -37,14 +38,14 @@ export default function ServicesPage() {
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ name: "", defaultPrice: "", isActive: true });
+    setForm({ name: "", arabicName: "", defaultPrice: "", isActive: true });
     setErrors({});
     setModalOpen(true);
   };
 
   const openEdit = (s: Service) => {
     setEditing(s);
-    setForm({ name: s.name, defaultPrice: String(s.defaultPrice), isActive: s.isActive });
+    setForm({ name: s.name, arabicName: s.arabicName ?? "", defaultPrice: String(s.defaultPrice), isActive: s.isActive });
     setErrors({});
     setModalOpen(true);
   };
@@ -54,6 +55,7 @@ export default function ServicesPage() {
     setErrors({});
     const parsed = serviceSchema.safeParse({
       name: form.name,
+      arabicName: form.arabicName || undefined,
       defaultPrice: parseFloat(form.defaultPrice) || 0,
       isActive: form.isActive,
     });
@@ -127,7 +129,12 @@ export default function ServicesPage() {
             <tbody className="divide-y divide-gray-100">
               {services.map((s) => (
                 <tr key={s.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium text-gray-900">{s.name}</td>
+                  <td className="px-4 py-3 font-medium text-gray-900">
+                    {lang === "ar" && s.arabicName ? s.arabicName : s.name}
+                    {s.arabicName && lang !== "ar" && (
+                      <div className="text-xs text-gray-400 font-normal">{s.arabicName}</div>
+                    )}
+                  </td>
                   <td className="px-4 py-3 text-end text-gray-700">${fmtCurrency(s.defaultPrice)}</td>
                   <td className="px-4 py-3 text-center">
                     <Badge variant={s.isActive ? "green" : "gray"}>
@@ -163,6 +170,12 @@ export default function ServicesPage() {
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               placeholder={t("services.namePlaceholder")} />
             {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
+          </div>
+          <div>
+            <label className="label">{t("services.arabicName")} <span className="text-gray-400 font-normal">({t("field.optional")})</span></label>
+            <input className="input" dir="rtl" value={form.arabicName}
+              onChange={(e) => setForm({ ...form, arabicName: e.target.value })}
+              placeholder="مثال: قص شعر" />
           </div>
           <div>
             <label className="label">{t("field.defaultPrice")}</label>
