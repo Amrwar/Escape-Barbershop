@@ -70,7 +70,7 @@ export default function CustomersPage() {
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: form.name || "", phone: form.phone || null, notes: form.notes || null }),
+        body: JSON.stringify({ name: form.name || "", phone: form.phone, notes: form.notes }),
       });
       if (res.ok) { setModalOpen(false); load(search); }
       else { const d = await res.json(); setErrors({ form: d.error ?? "Failed" }); }

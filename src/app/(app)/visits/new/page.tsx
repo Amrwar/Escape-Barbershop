@@ -93,7 +93,7 @@ function NewVisitInner() {
     const res = await fetch("/api/customers", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: newCustForm.name || "", phone: newCustForm.phone || null }),
+      body: JSON.stringify({ name: newCustForm.name || "", phone: newCustForm.phone }),
     });
     const customer = await res.json();
     setSelectedCustomer(customer);
@@ -154,7 +154,6 @@ function NewVisitInner() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Customer */}
             <div className="relative">
-              <label className="label">{t("field.barber").replace(t("field.barber"), t("customers.title"))} *</label>
               <label className="label">{t("customers.title")} *</label>
               {selectedCustomer ? (
                 <div className="flex items-center gap-2">
