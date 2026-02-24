@@ -34,9 +34,20 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const data = customerSchema.parse(body);
 
+    let name = data.name?.trim() || "";
+    if (!name) {
+      // Auto-generate a daily walk-in number
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      const todayCount = await prisma.customer.count({
+        where: { createdAt: { gte: todayStart } },
+      });
+      name = `Walk-in #${todayCount + 1}`;
+    }
+
     const customer = await prisma.customer.create({
       data: {
-        name: data.name,
+        name,
         phone: data.phone || null,
         notes: data.notes || null,
       },

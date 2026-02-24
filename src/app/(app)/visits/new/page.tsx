@@ -90,11 +90,10 @@ function NewVisitInner() {
   const total = subtotal - discountAmount;
 
   const createCustomer = async () => {
-    if (!newCustForm.name.trim()) return;
     const res = await fetch("/api/customers", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: newCustForm.name, phone: newCustForm.phone || null }),
+      body: JSON.stringify({ name: newCustForm.name || "", phone: newCustForm.phone || null }),
     });
     const customer = await res.json();
     setSelectedCustomer(customer);
@@ -358,8 +357,8 @@ function NewVisitInner() {
       <Modal open={newCustModal} onClose={() => setNewCustModal(false)} title={t("customers.newCustomer")} size="sm">
         <div className="space-y-4">
           <div>
-            <label className="label">{t("field.name")} *</label>
-            <input className="input" value={newCustForm.name}
+            <label className="label">{t("field.name")} <span className="text-gray-400 font-normal">({t("field.optional")})</span></label>
+            <input className="input" placeholder="Leave blank → Walk-in #" value={newCustForm.name}
               onChange={(e) => setNewCustForm({ ...newCustForm, name: e.target.value })} />
           </div>
           <div>
@@ -369,7 +368,7 @@ function NewVisitInner() {
           </div>
           <div className="flex gap-3">
             <button type="button" onClick={() => setNewCustModal(false)} className="btn-secondary flex-1">{t("action.cancel")}</button>
-            <button type="button" onClick={createCustomer} disabled={!newCustForm.name.trim()} className="btn-primary flex-1">
+            <button type="button" onClick={createCustomer} className="btn-primary flex-1">
               {t("action.createSelect")}
             </button>
           </div>

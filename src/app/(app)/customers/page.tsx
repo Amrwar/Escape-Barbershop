@@ -52,13 +52,6 @@ export default function CustomersPage() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
-    const parsed = customerSchema.safeParse(form);
-    if (!parsed.success) {
-      const errs: Record<string, string> = {};
-      parsed.error.errors.forEach((e) => { errs[String(e.path[0])] = e.message; });
-      setErrors(errs);
-      return;
-    }
     setSaving(true);
     try {
       const url = editing ? `/api/customers/${editing.id}` : "/api/customers";
@@ -66,7 +59,7 @@ export default function CustomersPage() {
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: parsed.data.name, phone: parsed.data.phone || null, notes: parsed.data.notes || null }),
+        body: JSON.stringify({ name: form.name || "", phone: form.phone || null, notes: form.notes || null }),
       });
       if (res.ok) { setModalOpen(false); load(search); }
       else { const d = await res.json(); setErrors({ form: d.error ?? "Failed" }); }
@@ -149,8 +142,8 @@ export default function CustomersPage() {
         title={editing ? t("customers.editCustomer") : t("customers.newCustomer")}>
         <form onSubmit={handleSave} className="space-y-4">
           <div>
-            <label className="label">{t("field.name")} *</label>
-            <input className="input" value={form.name}
+            <label className="label">{t("field.name")} <span className="text-gray-400 font-normal">({t("field.optional")})</span></label>
+            <input className="input" placeholder="Leave blank to auto-assign Walk-in #" value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })} />
             {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
           </div>
