@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
 import { Modal } from "@/components/ui/Modal";
@@ -169,6 +170,7 @@ export default function BarbersPage() {
                   <td className="px-4 py-3 text-end text-gray-600 hidden md:table-cell">{b._count.visits}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-2">
+                      <Link href={`/barbers/${b.id}/stats`} className="btn-ghost text-xs px-2 py-1">{t("action.stats")}</Link>
                       <button onClick={() => openSalary(b)} className="btn-ghost text-xs px-2 py-1">{t("barbers.salarySettings").replace(" —", "")}</button>
                       <button onClick={() => openEdit(b)} className="btn-secondary text-xs px-2 py-1">{t("action.edit")}</button>
                       <button onClick={() => toggleActive(b)} className="btn-ghost text-xs px-2 py-1">

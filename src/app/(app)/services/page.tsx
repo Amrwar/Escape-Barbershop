@@ -161,7 +161,7 @@ export default function ServicesPage() {
             <label className="label">{t("field.service")}</label>
             <input className="input" value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="e.g. Hair cut" />
+              placeholder={t("services.namePlaceholder")} />
             {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
           </div>
           <div>

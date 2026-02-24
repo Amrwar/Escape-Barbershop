@@ -124,6 +124,7 @@ const ar: Record<TranslationKey, string> = {
   "services.editService": "تعديل الخدمة",
   "services.activeHint": "نشط (يظهر في نموذج الزيارة الجديدة)",
   "services.noServices": "لا توجد خدمات بعد",
+  "services.namePlaceholder": "مثال: قص شعر",
 
   // Customers
   "customers.title": "العملاء",
@@ -220,6 +221,30 @@ const ar: Record<TranslationKey, string> = {
   "report.topServices": "أكثر الخدمات طلباً",
   "report.visitsList": "الزيارات",
   "report.movementsList": "حركات النقد",
+
+  // Reports
+  "nav.reports": "التقارير",
+  "reports.title": "التقارير",
+  "reports.subtitle": "تقارير الإيرادات والزيارات والأداء للفترة المحددة",
+  "reports.today": "اليوم",
+  "reports.thisWeek": "هذا الأسبوع",
+  "reports.thisMonth": "هذا الشهر",
+  "reports.custom": "مخصص",
+  "reports.from": "من",
+  "reports.to": "إلى",
+  "reports.exportExcel": "تصدير Excel",
+  "reports.noData": "لا توجد بيانات لهذه الفترة",
+  "reports.topServices": "أكثر الخدمات طلباً",
+  "reports.perBarber": "لكل حلاق",
+  "reports.visitsList": "الزيارات",
+  "reports.penaltiesList": "الخصومات",
+  "reports.totalRevenue": "إجمالي الإيرادات",
+  "reports.cashRevenue": "نقداً",
+  "reports.cardRevenue": "بطاقة",
+  "reports.mixedRevenue": "مختلط",
+  "reports.discounts": "الخصومات الممنوحة",
+  "reports.salaryEstimate": "تقدير الراتب",
+  "action.stats": "إحصائيات ←",
 
   // Salaries
   "salaries.title": "الرواتب والمستحقات",

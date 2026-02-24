@@ -122,6 +122,7 @@ const en = {
   "services.editService": "Edit Service",
   "services.activeHint": "Active (visible in new visit form)",
   "services.noServices": "No services yet",
+  "services.namePlaceholder": "e.g. Hair cut",
 
   // Customers
   "customers.title": "Customers",
@@ -218,6 +219,30 @@ const en = {
   "report.topServices": "Top Services",
   "report.visitsList": "Visits",
   "report.movementsList": "Cash Movements",
+
+  // Reports
+  "nav.reports": "Reports",
+  "reports.title": "Reports",
+  "reports.subtitle": "Period revenue, visits, and performance reports",
+  "reports.today": "Today",
+  "reports.thisWeek": "This Week",
+  "reports.thisMonth": "This Month",
+  "reports.custom": "Custom",
+  "reports.from": "From",
+  "reports.to": "To",
+  "reports.exportExcel": "Export Excel",
+  "reports.noData": "No data for this period",
+  "reports.topServices": "Top Services",
+  "reports.perBarber": "Per Barber",
+  "reports.visitsList": "Visits",
+  "reports.penaltiesList": "Penalties",
+  "reports.totalRevenue": "Total Revenue",
+  "reports.cashRevenue": "Cash",
+  "reports.cardRevenue": "Card",
+  "reports.mixedRevenue": "Mixed",
+  "reports.discounts": "Discounts Given",
+  "reports.salaryEstimate": "Salary Estimate",
+  "action.stats": "Stats →",
 
   // Salaries
   "salaries.title": "Salaries & Payroll",
