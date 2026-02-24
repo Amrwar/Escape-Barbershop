@@ -35,7 +35,7 @@ export const visitSchema = z.object({
   visitAt: z.string().optional(),
   paymentMethod: z.enum(["CASH", "CARD", "MIXED"]),
   discount: z.number().min(0).max(100).optional().default(0),
-  notes: z.string().max(500).optional().or(z.literal("")),
+  notes: z.string().max(500).nullable().optional().or(z.literal("")),
   items: z.array(visitItemSchema).min(1, "At least one service is required"),
   cashAmount: z.number().min(0).optional(),
   cardAmount: z.number().min(0).optional(),

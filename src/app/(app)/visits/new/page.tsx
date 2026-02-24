@@ -122,13 +122,15 @@ function NewVisitInner() {
           visitAt,
           paymentMethod,
           discount,
-          notes: notes || null,
+          notes,
           items: cart.map((i) => ({ serviceId: i.serviceId, quantity: i.quantity, priceAtTime: i.priceAtTime })),
           ...(paymentMethod === "MIXED" ? { cashAmount, cardAmount } : {}),
         }),
       });
       if (res.ok) router.push("/visits");
-      else { const d = await res.json(); setError(d.error ?? "Failed"); }
+      else { const d = await res.json(); setError(d.error ?? "Failed to save visit"); }
+    } catch {
+      setError("Network error — please try again");
     } finally { setSubmitting(false); }
   };
 
