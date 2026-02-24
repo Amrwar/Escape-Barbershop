@@ -1,0 +1,119 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  OWNER
+  BARBER
+}
+
+enum CommissionType {
+  PERCENT
+  FIXED_PER_VISIT
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  MIXED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role     @default(BARBER)
+  barberId  String?  @unique
+  barber    Barber?  @relation(fields: [barberId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Barber {
+  id             String               @id @default(cuid())
+  name           String
+  phone          String?
+  isActive       Boolean              @default(true)
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  visits         Visit[]
+  user           User?
+  penalties      Penalty[]
+  salarySettings BarberSalarySettings?
+}
+
+model BarberSalarySettings {
+  id              String         @id @default(cuid())
+  barberId        String         @unique
+  barber          Barber         @relation(fields: [barberId], references: [id])
+  baseSalary      Float          @default(0)
+  commissionType  CommissionType @default(PERCENT)
+  commissionValue Float          @default(0)
+  updatedAt       DateTime       @updatedAt
+}
+
+model Service {
+  id           String      @id @default(cuid())
+  name         String      @unique
+  defaultPrice Float       @default(0)
+  isActive     Boolean     @default(true)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  visitItems   VisitItem[]
+}
+
+model Customer {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  visits    Visit[]
+}
+
+model Visit {
+  id            String        @id @default(cuid())
+  customerId    String
+  customer      Customer      @relation(fields: [customerId], references: [id])
+  barberId      String
+  barber        Barber        @relation(fields: [barberId], references: [id])
+  visitAt       DateTime      @default(now())
+  paymentMethod PaymentMethod @default(CASH)
+  discount      Float         @default(0)
+  total         Float
+  notes         String?
+  items         VisitItem[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model VisitItem {
+  id          String   @id @default(cuid())
+  visitId     String
+  visit       Visit    @relation(fields: [visitId], references: [id], onDelete: Cascade)
+  serviceId   String
+  service     Service  @relation(fields: [serviceId], references: [id])
+  quantity    Int      @default(1)
+  priceAtTime Float
+  createdAt   DateTime @default(now())
+}
+
+model Penalty {
+  id        String   @id @default(cuid())
+  barberId  String
+  barber    Barber   @relation(fields: [barberId], references: [id])
+  date      DateTime
+  amount    Float
+  reason    String
+  createdAt DateTime @default(now())
+}
