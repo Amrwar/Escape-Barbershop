@@ -14,6 +14,7 @@ interface Service {
   arabicName: string | null;
   defaultPrice: number;
   isActive: boolean;
+  excludeFromCommission: boolean;
 }
 
 export default function ServicesPage() {
@@ -22,7 +23,7 @@ export default function ServicesPage() {
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Service | null>(null);
-  const [form, setForm] = useState({ name: "", arabicName: "", defaultPrice: "", isActive: true });
+  const [form, setForm] = useState({ name: "", arabicName: "", defaultPrice: "", isActive: true, excludeFromCommission: false });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
 
@@ -38,14 +39,14 @@ export default function ServicesPage() {
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ name: "", arabicName: "", defaultPrice: "", isActive: true });
+    setForm({ name: "", arabicName: "", defaultPrice: "", isActive: true, excludeFromCommission: false });
     setErrors({});
     setModalOpen(true);
   };
 
   const openEdit = (s: Service) => {
     setEditing(s);
-    setForm({ name: s.name, arabicName: s.arabicName ?? "", defaultPrice: String(s.defaultPrice), isActive: s.isActive });
+    setForm({ name: s.name, arabicName: s.arabicName ?? "", defaultPrice: String(s.defaultPrice), isActive: s.isActive, excludeFromCommission: s.excludeFromCommission });
     setErrors({});
     setModalOpen(true);
   };
@@ -58,6 +59,7 @@ export default function ServicesPage() {
       arabicName: form.arabicName || undefined,
       defaultPrice: parseFloat(form.defaultPrice) || 0,
       isActive: form.isActive,
+      excludeFromCommission: form.excludeFromCommission,
     });
     if (!parsed.success) {
       const errs: Record<string, string> = {};
@@ -137,9 +139,14 @@ export default function ServicesPage() {
                   </td>
                   <td className="px-4 py-3 text-end text-gray-700">${fmtCurrency(s.defaultPrice)}</td>
                   <td className="px-4 py-3 text-center">
-                    <Badge variant={s.isActive ? "green" : "gray"}>
-                      {s.isActive ? t("common.active") : t("common.inactive")}
-                    </Badge>
+                    <div className="flex flex-col items-center gap-1">
+                      <Badge variant={s.isActive ? "green" : "gray"}>
+                        {s.isActive ? t("common.active") : t("common.inactive")}
+                      </Badge>
+                      {s.excludeFromCommission && (
+                        <Badge variant="yellow">{t("services.noCommission")}</Badge>
+                      )}
+                    </div>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-2">
@@ -190,6 +197,14 @@ export default function ServicesPage() {
               className="rounded border-gray-300 text-primary-600" />
             <label htmlFor="isActive" className="text-sm text-gray-700">
               {t("services.activeHint")}
+            </label>
+          </div>
+          <div className="flex items-center gap-3">
+            <input type="checkbox" id="excludeFromCommission" checked={form.excludeFromCommission}
+              onChange={(e) => setForm({ ...form, excludeFromCommission: e.target.checked })}
+              className="rounded border-gray-300 text-amber-600" />
+            <label htmlFor="excludeFromCommission" className="text-sm text-gray-700">
+              {t("services.excludeFromCommission")}
             </label>
           </div>
           {errors.form && <p className="text-red-500 text-sm bg-red-50 px-3 py-2 rounded-lg">{errors.form}</p>}

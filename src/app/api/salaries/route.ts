@@ -21,7 +21,17 @@ export async function GET(req: NextRequest) {
         salarySettings: true,
         visits: {
           where: { visitAt: { gte: periodStart, lte: periodEnd } },
-          select: { total: true },
+          select: {
+            total: true,
+            discount: true,
+            items: {
+              select: {
+                priceAtTime: true,
+                quantity: true,
+                service: { select: { excludeFromCommission: true } },
+              },
+            },
+          },
         },
         penalties: {
           where: { date: { gte: periodStart, lte: periodEnd } },
@@ -36,10 +46,21 @@ export async function GET(req: NextRequest) {
       const visitTotal = barber.visits.reduce((s, v) => s + v.total, 0);
       const visitCount = barber.visits.length;
 
+      // Commission only on non-excluded services, with discount applied proportionally
+      const commissionableTotal = barber.visits.reduce((s, v) => {
+        const allSubtotal = v.items.reduce((s2, i) => s2 + i.priceAtTime * i.quantity, 0);
+        const commissionableSubtotal = v.items
+          .filter((i) => !i.service.excludeFromCommission)
+          .reduce((s2, i) => s2 + i.priceAtTime * i.quantity, 0);
+        // Apply the same discount factor proportionally
+        const discountFactor = allSubtotal > 0 ? v.total / allSubtotal : 1;
+        return s + commissionableSubtotal * discountFactor;
+      }, 0);
+
       let commission = 0;
       if (settings) {
         if (settings.commissionType === "PERCENT") {
-          commission = (visitTotal * settings.commissionValue) / 100;
+          commission = (commissionableTotal * settings.commissionValue) / 100;
         } else {
           commission = visitCount * settings.commissionValue;
         }
@@ -58,6 +79,7 @@ export async function GET(req: NextRequest) {
         commissionValue: settings?.commissionValue ?? 0,
         visitCount,
         visitTotal,
+        commissionableTotal,
         commission,
         gross,
         penaltiesTotal,

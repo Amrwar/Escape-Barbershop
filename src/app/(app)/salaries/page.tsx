@@ -12,7 +12,7 @@ interface PenaltyRecord { id: string; date: string; amount: number; reason: stri
 interface BarberPayroll {
   barberId: string; name: string;
   baseSalary: number; commissionType: "PERCENT" | "FIXED_PER_VISIT"; commissionValue: number;
-  visitCount: number; visitTotal: number; commission: number;
+  visitCount: number; visitTotal: number; commissionableTotal: number; commission: number;
   gross: number; penaltiesTotal: number; penalties: PenaltyRecord[]; net: number;
 }
 
@@ -38,6 +38,10 @@ export default function SalariesPage() {
   const [penaltyErrors, setPenaltyErrors] = useState<Record<string, string>>({});
   const [savingPenalty, setSavingPenalty] = useState(false);
   const [detailBarber, setDetailBarber] = useState<BarberPayroll | null>(null);
+  const [pinModal, setPinModal] = useState(false);
+  const [pinForm, setPinForm] = useState({ newPin: "", confirm: "" });
+  const [pinError, setPinError] = useState("");
+  const [savingPin, setSavingPin] = useState(false);
 
   const months = lang === "ar" ? MONTHS_AR : MONTHS_EN;
   const years = Array.from({ length: 5 }, (_, i) => now.getFullYear() - i);
@@ -80,6 +84,22 @@ export default function SalariesPage() {
     } finally { setSavingPenalty(false); }
   };
 
+  const savePin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPinError("");
+    if (pinForm.newPin.length < 4) { setPinError(t("salaries.pinTooShort")); return; }
+    if (pinForm.newPin !== pinForm.confirm) { setPinError(t("salaries.pinMismatch")); return; }
+    setSavingPin(true);
+    try {
+      const res = await fetch("/api/settings/discount-pin", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pin: pinForm.newPin }),
+      });
+      if (res.ok) { setPinModal(false); setPinForm({ newPin: "", confirm: "" }); }
+    } finally { setSavingPin(false); }
+  };
+
   const deletePenalty = async (id: string) => {
     if (!confirm(t("salaries.confirmDelete"))) return;
     await fetch(`/api/penalties/${id}`, { method: "DELETE" });
@@ -96,7 +116,12 @@ export default function SalariesPage() {
       <PageHeader
         title={t("salaries.title")}
         subtitle={t("salaries.subtitle")}
-        action={<button onClick={openPenaltyModal} className="btn-secondary">{t("action.addPenalty")}</button>}
+        action={
+          <div className="flex gap-2">
+            <button onClick={() => { setPinForm({ newPin: "", confirm: "" }); setPinError(""); setPinModal(true); }} className="btn-ghost text-xs px-3 py-1.5">🔒 {t("salaries.changePin")}</button>
+            <button onClick={openPenaltyModal} className="btn-secondary">{t("action.addPenalty")}</button>
+          </div>
+        }
       />
 
       {/* Period selector */}
@@ -235,12 +260,13 @@ export default function SalariesPage() {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               {[
-                [t("salaries.visitCount"),   detailBarber.visitCount],
-                [t("salaries.visitRevenue"), `$${fmtCurrency(detailBarber.visitTotal)}`],
-                [t("field.baseSalary"), `$${fmtCurrency(detailBarber.baseSalary)}`],
-                [t("salaries.commission"),   `$${fmtCurrency(detailBarber.commission)}`],
-                [t("salaries.gross"),        `$${fmtCurrency(detailBarber.gross)}`],
-                [t("salaries.penalties"),    `-$${fmtCurrency(detailBarber.penaltiesTotal)}`],
+                [t("salaries.visitCount"),          detailBarber.visitCount],
+                [t("salaries.visitRevenue"),         `$${fmtCurrency(detailBarber.visitTotal)}`],
+                [t("salaries.commissionableRevenue"), `$${fmtCurrency(detailBarber.commissionableTotal)}`],
+                [t("field.baseSalary"),              `$${fmtCurrency(detailBarber.baseSalary)}`],
+                [t("salaries.commission"),           `$${fmtCurrency(detailBarber.commission)}`],
+                [t("salaries.gross"),                `$${fmtCurrency(detailBarber.gross)}`],
+                [t("salaries.penalties"),            `-$${fmtCurrency(detailBarber.penaltiesTotal)}`],
               ].map(([label, value]) => (
                 <div key={String(label)} className="bg-gray-50 rounded-lg px-3 py-2">
                   <p className="text-xs text-gray-500">{label}</p>
@@ -272,6 +298,31 @@ export default function SalariesPage() {
           </div>
         </Modal>
       )}
+
+      {/* Change Discount PIN modal */}
+      <Modal open={pinModal} onClose={() => setPinModal(false)} title={t("salaries.changePin")} size="sm">
+        <form onSubmit={savePin} className="space-y-4">
+          <div>
+            <label className="label">{t("salaries.newPin")}</label>
+            <input type="password" className="input" value={pinForm.newPin}
+              onChange={(e) => setPinForm({ ...pinForm, newPin: e.target.value })}
+              placeholder="••••" minLength={4} />
+          </div>
+          <div>
+            <label className="label">{t("salaries.confirmPin")}</label>
+            <input type="password" className="input" value={pinForm.confirm}
+              onChange={(e) => setPinForm({ ...pinForm, confirm: e.target.value })}
+              placeholder="••••" minLength={4} />
+          </div>
+          {pinError && <p className="text-red-500 text-sm">{pinError}</p>}
+          <div className="flex gap-3 pt-2">
+            <button type="button" onClick={() => setPinModal(false)} className="btn-secondary flex-1">{t("action.cancel")}</button>
+            <button type="submit" disabled={savingPin} className="btn-primary flex-1">
+              {savingPin ? t("action.saving") : t("action.save")}
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

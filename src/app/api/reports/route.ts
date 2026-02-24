@@ -92,7 +92,7 @@ export async function GET(req: NextRequest) {
     // Compute per-barber breakdown
     const barberMap = new Map<
       string,
-      { barberId: string; barberName: string; visitCount: number; revenue: number; services: Map<string, { name: string; count: number }> }
+      { barberId: string; barberName: string; visitCount: number; revenue: number; commissionableRevenue: number; services: Map<string, { name: string; count: number }> }
     >();
 
     for (const v of visits) {
@@ -104,12 +104,22 @@ export async function GET(req: NextRequest) {
           barberName: v.barber.name,
           visitCount: 0,
           revenue: 0,
+          commissionableRevenue: 0,
           services: new Map(),
         };
         barberMap.set(key, entry);
       }
       entry.visitCount++;
       entry.revenue += v.total;
+
+      // Commissionable portion of this visit
+      const allSubtotal = v.items.reduce((s, i) => s + i.priceAtTime * i.quantity, 0);
+      const commSubtotal = v.items
+        .filter((i) => !i.service.excludeFromCommission)
+        .reduce((s, i) => s + i.priceAtTime * i.quantity, 0);
+      const factor = allSubtotal > 0 ? v.total / allSubtotal : 1;
+      entry.commissionableRevenue += commSubtotal * factor;
+
       for (const item of v.items) {
         const svc = entry.services.get(item.serviceId);
         if (svc) {
@@ -125,6 +135,7 @@ export async function GET(req: NextRequest) {
       barberName: b.barberName,
       visitCount: b.visitCount,
       revenue: b.revenue,
+      commissionableRevenue: b.commissionableRevenue,
       services: Array.from(b.services.values()).sort((a, c) => c.count - a.count),
     }));
 

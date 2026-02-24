@@ -41,6 +41,13 @@ function NewVisitInner() {
   const [cashAmount,     setCashAmount]     = useState(0);
   const [cardAmount,     setCardAmount]     = useState(0);
 
+  // Discount PIN gate
+  const [discountUnlocked, setDiscountUnlocked] = useState(false);
+  const [pinModal,          setPinModal]          = useState(false);
+  const [pinInput,          setPinInput]          = useState("");
+  const [pinError,          setPinError]          = useState("");
+  const [verifyingPin,      setVerifyingPin]      = useState(false);
+
   const preCustomerId = params.get("customerId");
 
   useEffect(() => {
@@ -84,6 +91,29 @@ function NewVisitInner() {
 
   const removeFromCart = (serviceId: string) =>
     setCart((prev) => prev.filter((i) => i.serviceId !== serviceId));
+
+  const verifyPin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPinError("");
+    setVerifyingPin(true);
+    try {
+      const res = await fetch("/api/settings/discount-pin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pin: pinInput }),
+      });
+      const data = await res.json();
+      if (data.valid) {
+        setDiscountUnlocked(true);
+        setPinModal(false);
+        setPinInput("");
+      } else {
+        setPinError(t("newVisit.wrongPin"));
+      }
+    } finally {
+      setVerifyingPin(false);
+    }
+  };
 
   const subtotal = cart.reduce((s, i) => s + i.priceAtTime * i.quantity, 0);
   const discountAmount = (subtotal * discount) / 100;
@@ -315,8 +345,15 @@ function NewVisitInner() {
           <div className="space-y-3">
             <div className="flex items-center gap-4">
               <label className="label mb-0 flex-1">{t("newVisit.discountPercent")}</label>
-              <input type="number" min="0" max="100" step="1" className="input w-24 text-end"
-                value={discount} onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)} />
+              {discountUnlocked ? (
+                <input type="number" min="0" max="100" step="1" className="input w-24 text-end"
+                  value={discount} onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)} />
+              ) : (
+                <button type="button" onClick={() => { setPinInput(""); setPinError(""); setPinModal(true); }}
+                  className="btn-ghost text-xs px-3 py-1.5 border border-dashed border-gray-300">
+                  🔒 {t("newVisit.unlockDiscount")}
+                </button>
+              )}
             </div>
             <div className="flex items-center gap-4">
               <label className="label mb-0 flex-1">{t("field.notes")}</label>
@@ -353,6 +390,22 @@ function NewVisitInner() {
           </button>
         </div>
       </form>
+
+      {/* Discount PIN modal */}
+      <Modal open={pinModal} onClose={() => setPinModal(false)} title={t("newVisit.discountPin")} size="sm">
+        <form onSubmit={verifyPin} className="space-y-4">
+          <p className="text-sm text-gray-600">{t("newVisit.discountPinHint")}</p>
+          <input type="password" className="input text-center text-xl tracking-widest" value={pinInput}
+            onChange={(e) => setPinInput(e.target.value)} placeholder="••••" autoFocus maxLength={20} />
+          {pinError && <p className="text-red-500 text-sm text-center">{pinError}</p>}
+          <div className="flex gap-3 pt-1">
+            <button type="button" onClick={() => setPinModal(false)} className="btn-secondary flex-1">{t("action.cancel")}</button>
+            <button type="submit" disabled={verifyingPin} className="btn-primary flex-1">
+              {verifyingPin ? "…" : t("newVisit.unlockDiscount")}
+            </button>
+          </div>
+        </form>
+      </Modal>
 
       {/* New customer modal */}
       <Modal open={newCustModal} onClose={() => setNewCustModal(false)} title={t("customers.newCustomer")} size="sm">

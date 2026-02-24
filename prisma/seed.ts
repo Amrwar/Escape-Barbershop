@@ -3,6 +3,16 @@ import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
+// Services excluded from barber commission (base services the shop charges for)
+const NO_COMMISSION_SERVICES = new Set([
+  "Hair cut",
+  "Beard cut",
+  "curly or hair dryer",
+  "external hair dryer",
+  "hair dryer for tall hair",
+  "hair dryer for beard",
+]);
+
 const SERVICES: { name: string; arabicName: string }[] = [
   { name: "Hair cut",                arabicName: "قص شعر" },
   { name: "Beard cut",               arabicName: "قص لحية" },
@@ -37,20 +47,24 @@ const SERVICES: { name: string; arabicName: string }[] = [
 async function main() {
   console.log("Seeding database...");
 
-  // Upsert services (update arabicName on each run)
+  // Upsert services (update arabicName + excludeFromCommission on each run)
   for (const { name, arabicName } of SERVICES) {
+    const excludeFromCommission = NO_COMMISSION_SERVICES.has(name);
     await prisma.service.upsert({
       where: { name },
-      update: { arabicName },
-      create: {
-        name,
-        arabicName,
-        defaultPrice: 0,
-        isActive: true,
-      },
+      update: { arabicName, excludeFromCommission },
+      create: { name, arabicName, defaultPrice: 0, isActive: true, excludeFromCommission },
     });
   }
   console.log(`Seeded ${SERVICES.length} services`);
+
+  // Upsert app settings — default discount PIN
+  await prisma.setting.upsert({
+    where: { key: "discount_pin" },
+    update: {},
+    create: { key: "discount_pin", value: "1234" },
+  });
+  console.log("Default discount PIN seeded (1234)");
 
   // Create default owner
   const ownerEmail = process.env.SEED_OWNER_EMAIL ?? "owner@barbershop.com";

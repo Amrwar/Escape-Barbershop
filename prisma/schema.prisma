@@ -74,12 +74,18 @@ model BarberSalarySettings {
   updatedAt       DateTime       @updatedAt
 }
 
+model Setting {
+  key   String @id
+  value String
+}
+
 model Service {
-  id           String      @id @default(cuid())
-  name         String      @unique
-  arabicName   String?
-  defaultPrice Float       @default(0)
-  isActive     Boolean     @default(true)
+  id                   String      @id @default(cuid())
+  name                 String      @unique
+  arabicName           String?
+  defaultPrice         Float       @default(0)
+  isActive             Boolean     @default(true)
+  excludeFromCommission Boolean    @default(false)
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
   visitItems   VisitItem[]

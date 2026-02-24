@@ -126,6 +126,8 @@ const ar: Record<TranslationKey, string> = {
   "services.noServices": "لا توجد خدمات بعد",
   "services.namePlaceholder": "مثال: قص شعر",
   "services.arabicName": "الاسم بالعربي",
+  "services.noCommission": "بدون عمولة",
+  "services.excludeFromCommission": "استثناء من حساب العمولة",
 
   // Customers
   "customers.title": "العملاء",
@@ -164,6 +166,10 @@ const ar: Record<TranslationKey, string> = {
   "newVisit.cashAmount": "المبلغ النقدي ($)",
   "newVisit.cardAmount": "مبلغ البطاقة ($)",
   "newVisit.splitMustEqualTotal": "النقد + البطاقة يجب أن يساوي الإجمالي",
+  "newVisit.discountPin": "رمز الخصم",
+  "newVisit.discountPinHint": "أدخل الرمز لتفعيل حقل الخصم",
+  "newVisit.wrongPin": "رمز خاطئ — يرجى المحاولة مرة أخرى",
+  "newVisit.unlockDiscount": "تفعيل الخصم",
 
   // Barbers
   "barbers.title": "الحلاقون",
@@ -265,6 +271,12 @@ const ar: Record<TranslationKey, string> = {
   "salaries.addPenaltyTitle": "إضافة خصم",
   "salaries.penaltiesTitle": "الخصومات",
   "salaries.confirmDelete": "حذف هذا الخصم؟",
+  "salaries.changePin": "تغيير رمز الخصم",
+  "salaries.newPin": "الرمز الجديد",
+  "salaries.confirmPin": "تأكيد الرمز",
+  "salaries.pinTooShort": "يجب أن يتكون الرمز من 4 أرقام على الأقل",
+  "salaries.pinMismatch": "الرمزان غير متطابقان",
+  "salaries.commissionableRevenue": "الإيرادات الخاضعة للعمولة",
 };
 
 export default ar;

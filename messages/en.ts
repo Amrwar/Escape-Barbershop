@@ -124,6 +124,8 @@ const en = {
   "services.noServices": "No services yet",
   "services.namePlaceholder": "e.g. Hair cut",
   "services.arabicName": "Arabic Name",
+  "services.noCommission": "No Commission",
+  "services.excludeFromCommission": "Exclude from commission calculation",
 
   // Customers
   "customers.title": "Customers",
@@ -162,6 +164,10 @@ const en = {
   "newVisit.cashAmount": "Cash Amount ($)",
   "newVisit.cardAmount": "Card Amount ($)",
   "newVisit.splitMustEqualTotal": "Cash + Card must equal total",
+  "newVisit.discountPin": "Discount PIN",
+  "newVisit.discountPinHint": "Enter the PIN to unlock the discount field",
+  "newVisit.wrongPin": "Incorrect PIN — please try again",
+  "newVisit.unlockDiscount": "Unlock Discount",
 
   // Barbers
   "barbers.title": "Barbers",
@@ -263,6 +269,12 @@ const en = {
   "salaries.addPenaltyTitle": "Add Penalty",
   "salaries.penaltiesTitle": "Penalties",
   "salaries.confirmDelete": "Delete this penalty?",
+  "salaries.changePin": "Change Discount PIN",
+  "salaries.newPin": "New PIN",
+  "salaries.confirmPin": "Confirm PIN",
+  "salaries.pinTooShort": "PIN must be at least 4 digits",
+  "salaries.pinMismatch": "PINs do not match",
+  "salaries.commissionableRevenue": "Commissionable Revenue",
 } as const;
 
 export type TranslationKey = keyof typeof en;

@@ -16,6 +16,7 @@ export const serviceSchema = z.object({
   arabicName: z.string().max(100).optional(),
   defaultPrice: z.number().min(0, "Price must be non-negative"),
   isActive: z.boolean().optional().default(true),
+  excludeFromCommission: z.boolean().optional().default(false),
 });
 
 export const barberSchema = z.object({
