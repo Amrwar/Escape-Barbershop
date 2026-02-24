@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { useState } from "react";
@@ -35,15 +36,17 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
   return (
     <div className="flex flex-col h-full bg-white border-e border-gray-200 w-64">
       {/* Logo */}
-      <div className="flex items-center gap-3 px-6 py-5 border-b border-gray-100">
-        <span className="text-2xl">💈</span>
+      <div className="flex items-center gap-3 px-4 py-4 border-b border-gray-100">
+        <Image
+          src="/logo.jpg"
+          alt="Escape Barbershop"
+          width={44}
+          height={44}
+          className="rounded-lg shrink-0"
+        />
         <div>
-          <div className="font-bold text-gray-900 text-sm leading-tight">
-            {lang === "ar" ? "صالون" : "Barbershop"}
-          </div>
-          <div className="text-xs text-primary-600 font-medium">
-            {lang === "ar" ? "مدير" : "Manager"}
-          </div>
+          <div className="font-bold text-gray-900 text-sm leading-tight">Escape</div>
+          <div className="text-xs text-primary-600 font-medium">Barbershop</div>
         </div>
       </div>
 
@@ -142,9 +145,10 @@ export function SidebarShell({ children }: { children: React.ReactNode }) {
                 d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-          <span className="font-semibold text-gray-900 flex-1">
-            Barbershop Manager
-          </span>
+          <div className="flex items-center gap-2 flex-1">
+            <Image src="/logo.jpg" alt="Escape Barbershop" width={28} height={28} className="rounded-md" />
+            <span className="font-semibold text-gray-900">Escape Barbershop</span>
+          </div>
           <LanguageToggle />
         </div>
 

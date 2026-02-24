@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { loginSchema } from "@/lib/validations";
@@ -46,8 +47,16 @@ export default function LoginPage() {
 
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="text-5xl mb-3">💈</div>
-          <h1 className="text-3xl font-bold text-white">{t("login.title")}</h1>
+          <div className="flex justify-center mb-4">
+            <Image
+              src="/logo.jpg"
+              alt="Escape Barbershop"
+              width={120}
+              height={120}
+              className="rounded-2xl shadow-lg"
+              priority
+            />
+          </div>
           <p className="text-primary-200 mt-1 text-sm">{t("auth.loginSubtitle")}</p>
         </div>
 
