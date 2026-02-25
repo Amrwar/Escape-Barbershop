@@ -24,8 +24,12 @@ export async function GET(req: NextRequest) {
     });
 
     return NextResponse.json(expenses);
-  } catch {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  } catch (err: unknown) {
+    if (err instanceof Error && err.message.includes("Unauthorized")) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    console.error("[expenses GET]", err);
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }
 

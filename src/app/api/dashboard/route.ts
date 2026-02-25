@@ -51,17 +51,12 @@ export async function GET() {
               _count: { id: true },
             })
           : Promise.resolve([]),
+        // Wrapped in try-catch so a missing Expense table never breaks the dashboard
         isOwner
-          ? prisma.expense.findMany({
-              where: { date: { gte: todayStart } },
-              select: { amount: true },
-            })
+          ? prisma.expense.findMany({ where: { date: { gte: todayStart } }, select: { amount: true } }).catch(() => [])
           : Promise.resolve([]),
         isOwner
-          ? prisma.expense.findMany({
-              where: { date: { gte: monthStart, lte: monthEnd } },
-              select: { amount: true },
-            })
+          ? prisma.expense.findMany({ where: { date: { gte: monthStart, lte: monthEnd } }, select: { amount: true } }).catch(() => [])
           : Promise.resolve([]),
       ]);
 
@@ -158,7 +153,11 @@ export async function GET() {
       })),
       drawerStatus,
     });
-  } catch {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  } catch (err: unknown) {
+    if (err instanceof Error && err.message.includes("Unauthorized")) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    console.error("[dashboard]", err);
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }

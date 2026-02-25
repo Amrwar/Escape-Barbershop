@@ -48,10 +48,7 @@ export async function GET(req: NextRequest) {
       }),
       // Only fetch expenses when viewing all barbers (not filtered to one barber)
       !effectiveBarberId
-        ? prisma.expense.findMany({
-            where: { date: dateFilter },
-            orderBy: { date: "desc" },
-          })
+        ? prisma.expense.findMany({ where: { date: dateFilter }, orderBy: { date: "desc" } }).catch(() => [])
         : Promise.resolve([]),
     ]);
 
