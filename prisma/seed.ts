@@ -114,7 +114,7 @@ async function main() {
     create: {
       email: "cashier@escape.com",
       password: barberPassword,
-      name: "Ahmed",
+      name: "Co-Owner",
       role: "CASHIER",
       barberId: barber.id,
     },

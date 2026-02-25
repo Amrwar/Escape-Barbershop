@@ -34,13 +34,7 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
   const { t, lang } = useTranslation();
   const role = session?.user?.role;
 
-  const barberId = session?.user?.barberId;
-  const filtered = [
-    ...NAV_ITEMS.filter((item) => role && item.roles.includes(role)),
-    ...(role === "CASHIER" && barberId
-      ? [{ href: `/barbers/${barberId}/stats`, labelKey: "nav.myStats" as const, icon: "📊", roles: ["CASHIER"] }]
-      : []),
-  ];
+  const filtered = NAV_ITEMS.filter((item) => role && item.roles.includes(role));
 
   return (
     <div className="flex flex-col h-full bg-white border-e border-gray-200 w-64">
