@@ -55,7 +55,14 @@ function NewVisitInner() {
       fetch("/api/services?active=true").then((r) => r.json()),
       fetch("/api/barbers?active=true").then((r) => r.json()),
     ]).then(([svcs, brbs]) => {
-      setServices(Array.isArray(svcs) ? svcs.filter((s: Service) => s.isActive) : []);
+      const active = Array.isArray(svcs) ? svcs.filter((s: Service) => s.isActive) : [];
+      // Keep l'oreal/techniArt last
+      active.sort((a: Service, b: Service) => {
+        const aLast = /l.?oreal|techniart/i.test(a.name);
+        const bLast = /l.?oreal|techniart/i.test(b.name);
+        return aLast === bLast ? 0 : aLast ? 1 : -1;
+      });
+      setServices(active);
       setBarbers(Array.isArray(brbs) ? brbs : []);
       if (!isOwner && session?.user?.barberId) setBarberId(session.user.barberId);
       setLoading(false);
@@ -309,6 +316,7 @@ function NewVisitInner() {
               const inCart = cart.some((i) => i.serviceId === s.id);
               const isPedicure = /pedicure/i.test(s.name) || /pedicure/i.test(s.arabicName ?? "");
               const isSkin = /skin|facial|hydrofacial/i.test(s.name) || /skin|facial|hydrofacial/i.test(s.arabicName ?? "");
+              const isLoreal = /l.?oreal|techniart/i.test(s.name) || /l.?oreal|techniart/i.test(s.arabicName ?? "");
               const className = isPedicure
                 ? inCart
                   ? "border-rose-400 bg-rose-50 text-rose-700"
@@ -317,10 +325,14 @@ function NewVisitInner() {
                   ? inCart
                     ? "border-teal-400 bg-teal-50 text-teal-700"
                     : "border-teal-200 bg-teal-50/40 text-teal-900 hover:border-teal-400 hover:bg-teal-50"
-                  : inCart
-                    ? "border-primary-400 bg-primary-50 text-primary-700"
-                    : "border-gray-200 hover:border-primary-300 hover:bg-primary-50";
-              const priceColor = isPedicure ? "text-rose-400" : isSkin ? "text-teal-400" : "text-gray-400";
+                  : isLoreal
+                    ? inCart
+                      ? "border-amber-400 bg-amber-50 text-amber-800"
+                      : "border-amber-200 bg-amber-50/60 text-amber-900 hover:border-amber-400 hover:bg-amber-50"
+                    : inCart
+                      ? "border-primary-400 bg-primary-50 text-primary-700"
+                      : "border-gray-200 hover:border-primary-300 hover:bg-primary-50";
+              const priceColor = isPedicure ? "text-rose-400" : isSkin ? "text-teal-400" : isLoreal ? "text-amber-400" : "text-gray-400";
               return (
                 <button key={s.id} type="button" onClick={() => addToCart(s)}
                   className={`text-start px-3 py-2 rounded-lg border text-xs font-medium transition-colors ${className}`}>
