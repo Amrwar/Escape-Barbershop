@@ -8,6 +8,13 @@ export async function requireOwnerPage() {
   return session;
 }
 
+export async function requireOwnerOrCashierPage() {
+  const session = await getSession();
+  if (!session) redirect("/login");
+  if (session.user.role !== "OWNER" && session.user.role !== "CASHIER") redirect("/dashboard");
+  return session;
+}
+
 export async function requireAuthPage() {
   const session = await getSession();
   if (!session) redirect("/login");
