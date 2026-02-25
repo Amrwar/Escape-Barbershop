@@ -171,6 +171,7 @@ const en = {
   "newVisit.discountPinHint": "Enter the PIN to unlock the discount field",
   "newVisit.wrongPin": "Incorrect PIN — please try again",
   "newVisit.unlockDiscount": "Unlock Discount",
+  "newVisit.walkIn": "Walk-in",
 
   // Barbers
   "barbers.title": "Barbers",

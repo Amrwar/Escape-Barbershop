@@ -119,6 +119,23 @@ function NewVisitInner() {
   const discountAmount = (subtotal * discount) / 100;
   const total = subtotal - discountAmount;
 
+  const [walkInLoading, setWalkInLoading] = useState(false);
+
+  const createWalkIn = async () => {
+    setWalkInLoading(true);
+    try {
+      const res = await fetch("/api/customers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: "", phone: "" }),
+      });
+      const customer = await res.json();
+      setSelectedCustomer(customer);
+    } finally {
+      setWalkInLoading(false);
+    }
+  };
+
   const createCustomer = async () => {
     const res = await fetch("/api/customers", {
       method: "POST",
@@ -198,6 +215,10 @@ function NewVisitInner() {
                       onChange={(e) => { setCustomerSearch(e.target.value); setShowDropdown(true); }}
                       onFocus={() => setShowDropdown(true)}
                       onBlur={() => setTimeout(() => setShowDropdown(false), 200)} />
+                    <button type="button" onClick={createWalkIn} disabled={walkInLoading}
+                      className="btn-primary text-xs whitespace-nowrap">
+                      {walkInLoading ? "…" : t("newVisit.walkIn")}
+                    </button>
                     <button type="button" onClick={() => setNewCustModal(true)} className="btn-secondary text-xs whitespace-nowrap">
                       + {t("customers.newCustomer")}
                     </button>

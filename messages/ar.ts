@@ -173,6 +173,7 @@ const ar: Record<TranslationKey, string> = {
   "newVisit.discountPinHint": "أدخل الرمز لتفعيل حقل الخصم",
   "newVisit.wrongPin": "رمز خاطئ — يرجى المحاولة مرة أخرى",
   "newVisit.unlockDiscount": "تفعيل الخصم",
+  "newVisit.walkIn": "زبون عابر",
 
   // Barbers
   "barbers.title": "الحلاقون",
