@@ -96,6 +96,7 @@ const en = {
   "common.visit": "visit",
   "common.owner": "Owner",
   "common.barber": "Barber",
+  "common.cashier": "Cashier",
   "common.by": "by",
   "common.since": "since",
   "common.optional": "optional",

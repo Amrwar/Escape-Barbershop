@@ -11,7 +11,7 @@ export async function GET() {
     const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
 
     const barberFilter =
-      session.user.role === "BARBER" && session.user.barberId
+      session.user.role === "CASHIER" && session.user.barberId
         ? { barberId: session.user.barberId }
         : {};
 

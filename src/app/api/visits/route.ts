@@ -11,9 +11,9 @@ export async function GET(req: NextRequest) {
     const from = searchParams.get("from");
     const to = searchParams.get("to");
 
-    // Barbers only see their own visits
+    // Cashiers only see their own visits
     const effectiveBarberId =
-      session.user.role === "BARBER" ? session.user.barberId : barberId;
+      session.user.role === "CASHIER" ? session.user.barberId : barberId;
 
     const visits = await prisma.visit.findMany({
       where: {

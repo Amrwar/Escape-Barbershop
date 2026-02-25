@@ -15,11 +15,11 @@ const NAV_ITEMS: {
   icon: string;
   roles: string[];
 }[] = [
-  { href: "/dashboard",   labelKey: "nav.dashboard",  icon: "📊", roles: ["OWNER","BARBER"] },
-  { href: "/visits/new",  labelKey: "nav.newVisit",   icon: "➕", roles: ["OWNER","BARBER"] },
-  { href: "/visits",      labelKey: "nav.visits",     icon: "📋", roles: ["OWNER","BARBER"] },
-  { href: "/reports",     labelKey: "nav.reports",    icon: "📈", roles: ["OWNER","BARBER"] },
-  { href: "/customers",   labelKey: "nav.customers",  icon: "👥", roles: ["OWNER","BARBER"] },
+  { href: "/dashboard",   labelKey: "nav.dashboard",  icon: "📊", roles: ["OWNER","CASHIER"] },
+  { href: "/visits/new",  labelKey: "nav.newVisit",   icon: "➕", roles: ["OWNER","CASHIER"] },
+  { href: "/visits",      labelKey: "nav.visits",     icon: "📋", roles: ["OWNER","CASHIER"] },
+  { href: "/reports",     labelKey: "nav.reports",    icon: "📈", roles: ["OWNER","CASHIER"] },
+  { href: "/customers",   labelKey: "nav.customers",  icon: "👥", roles: ["OWNER","CASHIER"] },
   { href: "/services",    labelKey: "nav.services",   icon: "✂️", roles: ["OWNER"] },
   { href: "/barbers",     labelKey: "nav.barbers",    icon: "💈", roles: ["OWNER"] },
   { href: "/salaries",    labelKey: "nav.salaries",   icon: "💰", roles: ["OWNER"] },
@@ -37,8 +37,8 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
   const barberId = session?.user?.barberId;
   const filtered = [
     ...NAV_ITEMS.filter((item) => role && item.roles.includes(role)),
-    ...(role === "BARBER" && barberId
-      ? [{ href: `/barbers/${barberId}/stats`, labelKey: "nav.myStats" as const, icon: "📊", roles: ["BARBER"] }]
+    ...(role === "CASHIER" && barberId
+      ? [{ href: `/barbers/${barberId}/stats`, labelKey: "nav.myStats" as const, icon: "📊", roles: ["CASHIER"] }]
       : []),
   ];
 
@@ -101,7 +101,7 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
               {session?.user?.name}
             </div>
             <div className="text-xs text-gray-500 capitalize">
-              {role === "OWNER" ? t("common.owner") : t("common.barber")}
+              {role === "OWNER" ? t("common.owner") : t("common.cashier")}
             </div>
           </div>
         </div>

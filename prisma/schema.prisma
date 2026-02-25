@@ -12,7 +12,7 @@ model User {
   email          String              @unique
   password       String
   name           String
-  role           Role                @default(BARBER)
+  role           Role                @default(CASHIER)
   barberId       String?             @unique
   createdAt      DateTime            @default(now())
   updatedAt      DateTime            @updatedAt
@@ -162,7 +162,7 @@ model Expense {
 
 enum Role {
   OWNER
-  BARBER
+  CASHIER
 }
 
 enum CommissionType {

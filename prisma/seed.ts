@@ -115,7 +115,7 @@ async function main() {
       email: "ahmed@barbershop.com",
       password: barberPassword,
       name: "Ahmed",
-      role: "BARBER",
+      role: "CASHIER",
       barberId: barber.id,
     },
   });

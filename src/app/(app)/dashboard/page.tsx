@@ -76,7 +76,7 @@ function getPeriodRange(period: Period): { from: string; to: string } {
 export default function DashboardPage() {
   const { t, fmtCurrency, fmtDateTime, lang } = useTranslation();
   const { data: session } = useSession();
-  const isBarber = session?.user?.role === "BARBER";
+  const isBarber = session?.user?.role === "CASHIER";
 
   const [activeTab, setActiveTab] = useState<"overview" | "barbers">("overview");
 

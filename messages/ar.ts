@@ -98,6 +98,7 @@ const ar: Record<TranslationKey, string> = {
   "common.visit": "زيارة",
   "common.owner": "مالك",
   "common.barber": "حلاق",
+  "common.cashier": "كاشير",
   "common.by": "بواسطة",
   "common.since": "منذ",
   "common.optional": "اختياري",
