@@ -54,7 +54,7 @@ function buildReceiptBlock(
   const displayTotal = showTotals ? visit.total : items.reduce((s, i) => s + i.priceAtTime * i.quantity, 0);
 
   const logoHtml = shop.shopLogo
-    ? `<img src="${shop.shopLogo}" alt="logo" style="width:120px;height:120px;object-fit:contain;display:block;margin:0 auto 10px;" />`
+    ? `<img src="${shop.shopLogo}" alt="logo" style="width:240px;height:auto;max-height:200px;object-fit:contain;display:block;margin:0 auto 10px;" />`
     : "";
 
   const contactParts = [shop.shopPhone, shop.shopAddress].filter(Boolean);
@@ -219,7 +219,7 @@ export async function downloadReceiptPdf(
   const contentW = pageW - margin * 2;            // ~475 pt
   const col2 = pageW - margin;                    // right-align anchor
   const lh = 18;
-  let y = margin;
+  let y = 30;
 
   const sep = () => {
     doc.setLineDashPattern([2, 2], 0);
@@ -234,11 +234,12 @@ export async function downloadReceiptPdf(
     const match = shop.shopLogo.match(/^data:image\/(\w+);base64,/);
     if (match) {
       const fmt = match[1].toUpperCase() === "JPG" ? "JPEG" : match[1].toUpperCase();
-      const logoSize = 90;
-      const logoX = (pageW - logoSize) / 2;
+      const logoW = 200;
+      const logoH = 160;
+      const logoX = (pageW - logoW) / 2;
       try {
-        doc.addImage(shop.shopLogo, fmt, logoX, y, logoSize, logoSize);
-        y += logoSize + 8;
+        doc.addImage(shop.shopLogo, fmt, logoX, y, logoW, logoH);
+        y += logoH + 10;
       } catch {
         // logo failed to render — skip it
       }
