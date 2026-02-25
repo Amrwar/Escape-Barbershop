@@ -35,6 +35,8 @@ export interface BarberStatsExportData {
     discountPercent: number;
     total: number;
   }[];
+  penalties: { date: string; amount: number; reason: string }[];
+  absentDays: string[];
 }
 
 function setColWidths(ws: XLSX.WorkSheet, widths: number[]) {
@@ -106,6 +108,31 @@ export function downloadBarberExcel(filename: string, data: BarberStatsExportDat
   const wsServices = XLSX.utils.json_to_sheet(serviceRows.length ? serviceRows : [{ "#": "", Service: "No data", "Times Done": "", "Revenue ($)": "" }]);
   setColWidths(wsServices, [5, 30, 12, 14]);
   XLSX.utils.book_append_sheet(wb, wsServices, "Services");
+
+  // ── Sheet 4: Penalties ────────────────────────────────────────────────────
+  const penaltyRows = data.penalties.length
+    ? data.penalties.map((p) => ({
+        "Date": new Date(p.date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
+        "Amount ($)": p.amount,
+        "Reason": p.reason,
+      }))
+    : [{ Date: "No penalties in this period", "Amount ($)": "", Reason: "" }];
+
+  const wsPenalties = XLSX.utils.json_to_sheet(penaltyRows);
+  setColWidths(wsPenalties, [18, 12, 40]);
+  XLSX.utils.book_append_sheet(wb, wsPenalties, "Penalties");
+
+  // ── Sheet 5: Attendance (absent days) ────────────────────────────────────
+  const attendanceRows = data.absentDays.length
+    ? data.absentDays.map((d, i) => ({
+        "#": i + 1,
+        "Absent Date": new Date(d).toLocaleDateString("en-GB", { weekday: "short", day: "2-digit", month: "short", year: "numeric" }),
+      }))
+    : [{ "#": "", "Absent Date": "No absent days in this period" }];
+
+  const wsAttendance = XLSX.utils.json_to_sheet(attendanceRows);
+  setColWidths(wsAttendance, [5, 28]);
+  XLSX.utils.book_append_sheet(wb, wsAttendance, "Attendance");
 
   XLSX.writeFile(wb, filename);
 }

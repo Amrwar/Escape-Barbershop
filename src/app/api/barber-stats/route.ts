@@ -16,15 +16,26 @@ export async function GET(req: NextRequest) {
 
     const dateFilter = { gte: new Date(from), lte: new Date(to) };
 
-    const visits = await prisma.visit.findMany({
-      where: { barberId, visitAt: dateFilter },
-      orderBy: { visitAt: "desc" },
-      include: {
-        customer: true,
-        barber: true,
-        items: { include: { service: true } },
-      },
-    });
+    const [visits, penalties, attendance] = await Promise.all([
+      prisma.visit.findMany({
+        where: { barberId, visitAt: dateFilter },
+        orderBy: { visitAt: "desc" },
+        include: {
+          customer: true,
+          barber: true,
+          items: { include: { service: true } },
+        },
+      }),
+      prisma.penalty.findMany({
+        where: { barberId, date: dateFilter },
+        orderBy: { date: "desc" },
+      }),
+      prisma.attendance.findMany({
+        where: { barberId, date: dateFilter },
+        orderBy: { date: "asc" },
+        select: { date: true },
+      }),
+    ]);
 
     let totalRevenue = 0;
     let cashTotal = 0;
@@ -72,6 +83,12 @@ export async function GET(req: NextRequest) {
         discountsTotal,
         topServices,
       },
+      penalties: penalties.map((p) => ({
+        date: p.date,
+        amount: p.amount,
+        reason: p.reason,
+      })),
+      absentDays: attendance.map((a) => a.date.toISOString().slice(0, 10)),
     });
   } catch (err: unknown) {
     if (err instanceof Error && err.message.includes("Unauthorized")) {

@@ -55,6 +55,8 @@ interface BarberStats {
     discountsTotal: number;
     topServices: { name: string; arabicName: string | null; count: number; revenue: number }[];
   };
+  penalties: { date: string; amount: number; reason: string }[];
+  absentDays: string[];
 }
 
 type Period = "today" | "week" | "month" | "custom";
@@ -199,6 +201,8 @@ export default function DashboardPage() {
           period: `${periodLabel} (${activeFrom} to ${activeTo})`,
           summary: stats.summary,
           visits: visitRows,
+          penalties: stats.penalties ?? [],
+          absentDays: stats.absentDays ?? [],
         }
       );
     } finally {
