@@ -15,6 +15,7 @@ const ar: Record<TranslationKey, string> = {
   "nav.cashDrawer": "صندوق النقد",
   "nav.settings": "الإعدادات",
   "nav.expenses": "المصاريف",
+  "nav.attendance": "الحضور",
 
   // Auth
   "auth.signIn": "تسجيل الدخول",
@@ -281,6 +282,14 @@ const ar: Record<TranslationKey, string> = {
   "salaries.pinTooShort": "يجب أن يتكون الرمز من 4 أرقام على الأقل",
   "salaries.pinMismatch": "الرمزان غير متطابقان",
   "salaries.commissionableRevenue": "الإيرادات الخاضعة للعمولة",
+  "salaries.attendanceDeduction": "خصم الغياب",
+
+  // Attendance
+  "attendance.title": "الحضور",
+  "attendance.subtitle": "تتبع حضور الحلاقين اليومي",
+  "attendance.absentDays": "أيام الغياب",
+  "attendance.dailyRate": "المعدل اليومي",
+  "attendance.deduction": "الخصم",
 
   // Expenses
   "expenses.title": "المصاريف",

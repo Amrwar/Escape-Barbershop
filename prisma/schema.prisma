@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,6 +5,159 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String              @id @default(cuid())
+  email          String              @unique
+  password       String
+  name           String
+  role           Role                @default(BARBER)
+  barberId       String?             @unique
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  closedSessions CashDrawerSession[] @relation("ClosedSessions")
+  openedSessions CashDrawerSession[] @relation("OpenedSessions")
+  cashMovements  CashMovement[]      @relation("CreatedMovements")
+  barber         Barber?             @relation(fields: [barberId], references: [id])
+}
+
+model Barber {
+  id             String                @id @default(cuid())
+  name           String
+  phone          String?
+  isActive       Boolean               @default(true)
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+  attendance     Attendance[]
+  salarySettings BarberSalarySettings?
+  penalties      Penalty[]
+  user           User?
+  visits         Visit[]
+}
+
+model Attendance {
+  id        String   @id @default(cuid())
+  barberId  String
+  date      DateTime @db.Date
+  createdAt DateTime @default(now())
+  barber    Barber   @relation(fields: [barberId], references: [id])
+
+  @@unique([barberId, date])
+}
+
+model BarberSalarySettings {
+  id              String         @id @default(cuid())
+  barberId        String         @unique
+  baseSalary      Float          @default(0)
+  commissionType  CommissionType @default(PERCENT)
+  commissionValue Float          @default(0)
+  updatedAt       DateTime       @updatedAt
+  barber          Barber         @relation(fields: [barberId], references: [id])
+}
+
+model Setting {
+  key   String @id
+  value String
+}
+
+model Service {
+  id                    String      @id @default(cuid())
+  name                  String      @unique
+  defaultPrice          Float       @default(0)
+  isActive              Boolean     @default(true)
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+  arabicName            String?
+  excludeFromCommission Boolean     @default(false)
+  visitItems            VisitItem[]
+}
+
+model Customer {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  visits    Visit[]
+}
+
+model Visit {
+  id            String             @id @default(cuid())
+  customerId    String
+  barberId      String
+  visitAt       DateTime           @default(now())
+  paymentMethod PaymentMethod      @default(CASH)
+  discount      Float              @default(0)
+  total         Float
+  notes         String?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  cardAmount    Float?
+  cashAmount    Float?
+  sessionId     String?
+  barber        Barber             @relation(fields: [barberId], references: [id])
+  customer      Customer           @relation(fields: [customerId], references: [id])
+  session       CashDrawerSession? @relation(fields: [sessionId], references: [id])
+  items         VisitItem[]
+}
+
+model CashDrawerSession {
+  id                 String         @id @default(cuid())
+  openedAt           DateTime       @default(now())
+  closedAt           DateTime?
+  openedByUserId     String
+  closedByUserId     String?
+  openingCash        Float
+  closingCashCounted Float?
+  notes              String?
+  status             SessionStatus  @default(OPEN)
+  closedBy           User?          @relation("ClosedSessions", fields: [closedByUserId], references: [id])
+  openedBy           User           @relation("OpenedSessions", fields: [openedByUserId], references: [id])
+  movements          CashMovement[]
+  visits             Visit[]
+}
+
+model CashMovement {
+  id              String            @id @default(cuid())
+  sessionId       String
+  type            MovementType
+  amount          Float
+  reason          String
+  createdAt       DateTime          @default(now())
+  createdByUserId String
+  createdBy       User              @relation("CreatedMovements", fields: [createdByUserId], references: [id])
+  session         CashDrawerSession @relation(fields: [sessionId], references: [id])
+}
+
+model VisitItem {
+  id          String   @id @default(cuid())
+  visitId     String
+  serviceId   String
+  quantity    Int      @default(1)
+  priceAtTime Float
+  createdAt   DateTime @default(now())
+  service     Service  @relation(fields: [serviceId], references: [id])
+  visit       Visit    @relation(fields: [visitId], references: [id], onDelete: Cascade)
+}
+
+model Penalty {
+  id        String   @id @default(cuid())
+  barberId  String
+  date      DateTime
+  amount    Float
+  reason    String
+  createdAt DateTime @default(now())
+  barber    Barber   @relation(fields: [barberId], references: [id])
+}
+
+model Expense {
+  id        String   @id @default(cuid())
+  date      DateTime
+  amount    Float
+  reason    String
+  createdAt DateTime @default(now())
 }
 
 enum Role {
@@ -34,146 +184,4 @@ enum SessionStatus {
 enum MovementType {
   IN
   OUT
-}
-
-model User {
-  id             String              @id @default(cuid())
-  email          String              @unique
-  password       String
-  name           String
-  role           Role                @default(BARBER)
-  barberId       String?             @unique
-  barber         Barber?             @relation(fields: [barberId], references: [id])
-  createdAt      DateTime            @default(now())
-  updatedAt      DateTime            @updatedAt
-  openedSessions CashDrawerSession[] @relation("OpenedSessions")
-  closedSessions CashDrawerSession[] @relation("ClosedSessions")
-  cashMovements  CashMovement[]      @relation("CreatedMovements")
-}
-
-model Barber {
-  id             String               @id @default(cuid())
-  name           String
-  phone          String?
-  isActive       Boolean              @default(true)
-  createdAt      DateTime             @default(now())
-  updatedAt      DateTime             @updatedAt
-  visits         Visit[]
-  user           User?
-  penalties      Penalty[]
-  salarySettings BarberSalarySettings?
-}
-
-model BarberSalarySettings {
-  id              String         @id @default(cuid())
-  barberId        String         @unique
-  barber          Barber         @relation(fields: [barberId], references: [id])
-  baseSalary      Float          @default(0)
-  commissionType  CommissionType @default(PERCENT)
-  commissionValue Float          @default(0)
-  updatedAt       DateTime       @updatedAt
-}
-
-model Setting {
-  key   String @id
-  value String
-}
-
-model Service {
-  id                   String      @id @default(cuid())
-  name                 String      @unique
-  arabicName           String?
-  defaultPrice         Float       @default(0)
-  isActive             Boolean     @default(true)
-  excludeFromCommission Boolean    @default(false)
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-  visitItems   VisitItem[]
-}
-
-model Customer {
-  id        String   @id @default(cuid())
-  name      String
-  phone     String?
-  notes     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  visits    Visit[]
-}
-
-model Visit {
-  id            String             @id @default(cuid())
-  customerId    String
-  customer      Customer           @relation(fields: [customerId], references: [id])
-  barberId      String
-  barber        Barber             @relation(fields: [barberId], references: [id])
-  visitAt       DateTime           @default(now())
-  paymentMethod PaymentMethod      @default(CASH)
-  discount      Float              @default(0)
-  total         Float
-  cashAmount    Float?
-  cardAmount    Float?
-  notes         String?
-  sessionId     String?
-  session       CashDrawerSession? @relation(fields: [sessionId], references: [id])
-  items         VisitItem[]
-  createdAt     DateTime           @default(now())
-  updatedAt     DateTime           @updatedAt
-}
-
-model CashDrawerSession {
-  id                 String        @id @default(cuid())
-  openedAt           DateTime      @default(now())
-  closedAt           DateTime?
-  openedByUserId     String
-  closedByUserId     String?
-  openingCash        Float
-  closingCashCounted Float?
-  notes              String?
-  status             SessionStatus @default(OPEN)
-  openedBy           User          @relation("OpenedSessions", fields: [openedByUserId], references: [id])
-  closedBy           User?         @relation("ClosedSessions", fields: [closedByUserId], references: [id])
-  movements          CashMovement[]
-  visits             Visit[]
-}
-
-model CashMovement {
-  id              String            @id @default(cuid())
-  sessionId       String
-  type            MovementType
-  amount          Float
-  reason          String
-  createdAt       DateTime          @default(now())
-  createdByUserId String
-  session         CashDrawerSession @relation(fields: [sessionId], references: [id])
-  createdBy       User              @relation("CreatedMovements", fields: [createdByUserId], references: [id])
-}
-
-model VisitItem {
-  id          String   @id @default(cuid())
-  visitId     String
-  visit       Visit    @relation(fields: [visitId], references: [id], onDelete: Cascade)
-  serviceId   String
-  service     Service  @relation(fields: [serviceId], references: [id])
-  quantity    Int      @default(1)
-  priceAtTime Float
-  createdAt   DateTime @default(now())
-}
-
-model Penalty {
-  id        String   @id @default(cuid())
-  barberId  String
-  barber    Barber   @relation(fields: [barberId], references: [id])
-  date      DateTime
-  amount    Float
-  reason    String
-  createdAt DateTime @default(now())
-}
-
-model Expense {
-  id        String   @id @default(cuid())
-  date      DateTime
-  amount    Float
-  reason    String
-  createdAt DateTime @default(now())
 }

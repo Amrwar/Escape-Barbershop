@@ -13,7 +13,9 @@ interface BarberPayroll {
   barberId: string; name: string;
   baseSalary: number; commissionType: "PERCENT" | "FIXED_PER_VISIT"; commissionValue: number;
   visitCount: number; visitTotal: number; commissionableTotal: number; commission: number;
-  gross: number; penaltiesTotal: number; penalties: PenaltyRecord[]; net: number;
+  gross: number; penaltiesTotal: number; penalties: PenaltyRecord[];
+  absentDays: number; dailyRate: number; attendanceDeduction: number;
+  net: number;
 }
 
 interface Barber { id: string; name: string; }
@@ -163,6 +165,7 @@ export default function SalariesPage() {
                 <th className="text-end px-4 py-3 font-medium text-gray-600">{t("salaries.commission")}</th>
                 <th className="text-end px-4 py-3 font-medium text-gray-600">{t("salaries.gross")}</th>
                 <th className="text-end px-4 py-3 font-medium text-gray-600 hidden sm:table-cell">{t("salaries.penalties")}</th>
+                <th className="text-end px-4 py-3 font-medium text-gray-600 hidden md:table-cell">{t("attendance.absentDays")}</th>
                 <th className="text-end px-4 py-3 font-medium text-gray-600">{t("salaries.net")}</th>
                 <th className="px-4 py-3" />
               </tr>
@@ -190,6 +193,13 @@ export default function SalariesPage() {
                       </button>
                     ) : <span className="text-gray-400">—</span>}
                   </td>
+                  <td className="px-4 py-3 text-end hidden md:table-cell">
+                    {b.absentDays > 0 ? (
+                      <span className="text-amber-600 font-medium">
+                        {b.absentDays}d / -${fmtCurrency(b.attendanceDeduction)}
+                      </span>
+                    ) : <span className="text-gray-400">—</span>}
+                  </td>
                   <td className="px-4 py-3 text-end">
                     <span className={`font-bold ${b.net < 0 ? "text-red-600" : "text-green-700"}`}>
                       ${fmtCurrency(b.net)}
@@ -205,6 +215,7 @@ export default function SalariesPage() {
               <tr className="bg-gray-50 border-t-2 border-gray-200 font-semibold">
                 <td className="px-4 py-3 text-gray-900">{t("salaries.totals")}</td>
                 <td colSpan={4} className="hidden md:table-cell" />
+                <td className="hidden md:table-cell" />
                 <td className="px-4 py-3 text-end text-gray-900">${fmtCurrency(totalGross)}</td>
                 <td className="px-4 py-3 text-end text-red-600 hidden sm:table-cell">-${fmtCurrency(totalPenalties)}</td>
                 <td className="px-4 py-3 text-end text-green-700">${fmtCurrency(totalNet)}</td>
@@ -267,6 +278,7 @@ export default function SalariesPage() {
                 [t("salaries.commission"),           `$${fmtCurrency(detailBarber.commission)}`],
                 [t("salaries.gross"),                `$${fmtCurrency(detailBarber.gross)}`],
                 [t("salaries.penalties"),            `-$${fmtCurrency(detailBarber.penaltiesTotal)}`],
+                [t("salaries.attendanceDeduction"),  detailBarber.absentDays > 0 ? `-$${fmtCurrency(detailBarber.attendanceDeduction)} (${detailBarber.absentDays}d)` : "—"],
               ].map(([label, value]) => (
                 <div key={String(label)} className="bg-gray-50 rounded-lg px-3 py-2">
                   <p className="text-xs text-gray-500">{label}</p>

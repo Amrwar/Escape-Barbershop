@@ -13,6 +13,7 @@ const en = {
   "nav.cashDrawer": "Cash Drawer",
   "nav.settings": "Settings",
   "nav.expenses": "Expenses",
+  "nav.attendance": "Attendance",
 
   // Auth
   "auth.signIn": "Sign in",
@@ -279,6 +280,14 @@ const en = {
   "salaries.pinTooShort": "PIN must be at least 4 digits",
   "salaries.pinMismatch": "PINs do not match",
   "salaries.commissionableRevenue": "Commissionable Revenue",
+  "salaries.attendanceDeduction": "Absence Deduction",
+
+  // Attendance
+  "attendance.title": "Attendance",
+  "attendance.subtitle": "Track daily barber attendance",
+  "attendance.absentDays": "Absent",
+  "attendance.dailyRate": "Daily Rate",
+  "attendance.deduction": "Deduction",
 
   // Expenses
   "expenses.title": "Expenses",

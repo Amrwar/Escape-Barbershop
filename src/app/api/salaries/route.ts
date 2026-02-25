@@ -37,6 +37,9 @@ export async function GET(req: NextRequest) {
           where: { date: { gte: periodStart, lte: periodEnd } },
           select: { amount: true, reason: true, date: true, id: true },
         },
+        attendance: {
+          where: { date: { gte: periodStart, lte: periodEnd } },
+        },
       },
       orderBy: { name: "asc" },
     });
@@ -69,7 +72,10 @@ export async function GET(req: NextRequest) {
       const baseSalary = settings?.baseSalary ?? 0;
       const gross = baseSalary + commission;
       const penaltiesTotal = barber.penalties.reduce((s, p) => s + p.amount, 0);
-      const net = gross - penaltiesTotal;
+      const absentDays = barber.attendance.length;
+      const dailyRate = baseSalary / 30;
+      const attendanceDeduction = absentDays * dailyRate;
+      const net = gross - penaltiesTotal - attendanceDeduction;
 
       return {
         barberId: barber.id,
@@ -84,6 +90,9 @@ export async function GET(req: NextRequest) {
         gross,
         penaltiesTotal,
         penalties: barber.penalties,
+        absentDays,
+        dailyRate,
+        attendanceDeduction,
         net,
       };
     });

@@ -23,6 +23,7 @@ const NAV_ITEMS: {
   { href: "/services",    labelKey: "nav.services",   icon: "✂️", roles: ["OWNER"] },
   { href: "/barbers",     labelKey: "nav.barbers",    icon: "💈", roles: ["OWNER"] },
   { href: "/salaries",    labelKey: "nav.salaries",   icon: "💰", roles: ["OWNER"] },
+  { href: "/attendance",  labelKey: "nav.attendance", icon: "📅", roles: ["OWNER"] },
   { href: "/expenses",    labelKey: "nav.expenses",   icon: "💸", roles: ["OWNER"] },
   { href: "/settings/receipt", labelKey: "nav.settings", icon: "⚙️", roles: ["OWNER"] },
 ];
