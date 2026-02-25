@@ -212,20 +212,36 @@ export async function downloadReceiptPdf(
 ): Promise<void> {
   const { jsPDF } = await import("jspdf");
 
-  const pageW = 227; // ~80mm in points
-  const margin = 14;
+  const pageW = 400; // wider page so long addresses never clip
+  const margin = 20;
+  const contentW = pageW - margin * 2;
   const col2 = pageW - margin;
-  const lh = 14;
+  const lh = 16;
+
+  // Pre-calculate wrapped contact lines to get accurate height
+  const tempDoc = new jsPDF({ unit: "pt", format: [pageW, 800] });
+  tempDoc.setFontSize(9);
+  const contact = [shop.shopPhone, shop.shopAddress].filter(Boolean).join("  |  ");
+  const contactLines = contact
+    ? tempDoc.splitTextToSize(contact, contentW)
+    : [];
 
   const itemCount = visit.items.length;
   const estimatedH =
-    180 +
-    itemCount * lh +
+    60 +                              // header shop name
+    contactLines.length * lh +        // contact (may wrap)
+    lh +                              // sep
+    lh * 4 +                          // receipt info (4 lines)
+    lh +                              // sep
+    itemCount * lh +                  // items
+    lh +                              // sep
     (visit.discount > 0 ? lh * 2 : 0) +
-    (shop.receiptFooter ? lh * 2 : 0);
+    lh * 2 +                          // TOTAL + payment
+    (shop.receiptFooter ? lh * 2 : 0) +
+    margin * 3;
 
-  const doc = new jsPDF({ unit: "pt", format: [pageW, Math.max(estimatedH, 280)] });
-  let y = margin + 10;
+  const doc = new jsPDF({ unit: "pt", format: [pageW, Math.max(estimatedH, 300)] });
+  let y = margin + 14;
 
   const sep = () => {
     doc.setLineDashPattern([2, 2], 0);
@@ -235,25 +251,27 @@ export async function downloadReceiptPdf(
     y += lh;
   };
 
-  // Header
+  // Header — shop name
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(14);
+  doc.setFontSize(16);
   doc.text(shop.shopName, pageW / 2, y, { align: "center" });
-  y += lh;
+  y += lh + 4;
 
-  if (shop.shopPhone || shop.shopAddress) {
+  // Contact line(s) — wrapped
+  if (contactLines.length > 0) {
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
-    const contact = [shop.shopPhone, shop.shopAddress].filter(Boolean).join(" | ");
-    doc.text(contact, pageW / 2, y, { align: "center" });
-    y += lh;
+    doc.setFontSize(9);
+    for (const line of contactLines) {
+      doc.text(line, pageW / 2, y, { align: "center" });
+      y += lh;
+    }
   }
 
   sep();
 
   const receiptNo = visit.id.slice(-8).toUpperCase();
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
+  doc.setFontSize(10);
   doc.text(`Receipt #: ${receiptNo}`, margin, y); y += lh;
   doc.text(`Date: ${fmtDate(visit.visitAt)}`, margin, y); y += lh;
   doc.text(`Barber: ${visit.barber.name}`, margin, y); y += lh;
@@ -262,19 +280,26 @@ export async function downloadReceiptPdf(
   sep();
 
   // Items
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
   for (const item of visit.items) {
     const name = item.service.name + (item.quantity > 1 ? ` ×${item.quantity}` : "");
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
-    doc.text(name, margin, y);
+    // Wrap item name if it's long
+    const nameLines = doc.splitTextToSize(name, contentW - 70);
+    doc.text(nameLines[0], margin, y);
     doc.text(`$${fmtMoney(item.priceAtTime * item.quantity)}`, col2, y, { align: "right" });
     y += lh;
+    // Additional wrapped lines (no price column)
+    for (let i = 1; i < nameLines.length; i++) {
+      doc.text(nameLines[i], margin + 8, y);
+      y += lh;
+    }
   }
 
   sep();
 
   const subtotal = visit.items.reduce((s, i) => s + i.priceAtTime * i.quantity, 0);
-  doc.setFontSize(9);
+  doc.setFontSize(10);
   if (visit.discount > 0) {
     const discAmt = (subtotal * visit.discount) / 100;
     doc.text("Subtotal", margin, y);
@@ -286,13 +311,13 @@ export async function downloadReceiptPdf(
   }
 
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(12);
+  doc.setFontSize(13);
   doc.text("TOTAL", margin, y);
   doc.text(`$${fmtMoney(visit.total)}`, col2, y, { align: "right" });
   y += lh;
 
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
+  doc.setFontSize(10);
   const payStr =
     visit.paymentMethod === "CASH" ? "Cash"
     : visit.paymentMethod === "CARD" ? "Card"
@@ -302,8 +327,12 @@ export async function downloadReceiptPdf(
 
   if (shop.receiptFooter) {
     sep();
-    doc.setFontSize(8);
-    doc.text(shop.receiptFooter, pageW / 2, y, { align: "center" });
+    doc.setFontSize(9);
+    const footerLines = doc.splitTextToSize(shop.receiptFooter, contentW);
+    for (const line of footerLines) {
+      doc.text(line, pageW / 2, y, { align: "center" });
+      y += lh;
+    }
   }
 
   doc.save(`receipt-${receiptNo}.pdf`);
