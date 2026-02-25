@@ -47,9 +47,14 @@ export default function CustomersPage() {
   const handleDelete = async (id: string) => {
     if (!confirm(t("action.delete") + "?")) return;
     setDeletingId(id);
-    await fetch(`/api/customers/${id}`, { method: "DELETE" });
+    const res = await fetch(`/api/customers/${id}`, { method: "DELETE" });
     setDeletingId(null);
-    load(search);
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}));
+      alert(d.error ?? "Failed to delete customer");
+    } else {
+      load(search);
+    }
   };
 
   const openCreate = () => { setEditing(null); setForm({ name: "", phone: "", notes: "" }); setErrors({}); setModalOpen(true); };

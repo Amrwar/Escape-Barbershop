@@ -25,8 +25,12 @@ export async function GET(
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
     return NextResponse.json(customer);
-  } catch {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  } catch (err: unknown) {
+    if (err instanceof Error && err.message.includes("Unauthorized")) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    console.error("[customers/GET]", err);
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }
 
@@ -37,7 +41,11 @@ export async function PATCH(
   try {
     await requireAuth();
     const body = await req.json();
-    const data = customerSchema.partial().parse(body);
+    const parsed = customerSchema.partial().safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error.errors[0]?.message ?? "Invalid data" }, { status: 400 });
+    }
+    const data = parsed.data;
 
     const customer = await prisma.customer.update({
       where: { id: params.id },
@@ -52,7 +60,8 @@ export async function PATCH(
     if (err instanceof Error && err.message.includes("Unauthorized")) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    return NextResponse.json({ error: "Invalid data" }, { status: 400 });
+    console.error("[customers/PATCH]", err);
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }
 
@@ -68,6 +77,12 @@ export async function DELETE(
     if (err instanceof Error && err.message.includes("Unauthorized")) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    return NextResponse.json({ error: "Error" }, { status: 400 });
+    // Prisma FK violation — customer still has visits
+    const msg = err instanceof Error ? err.message : "";
+    if (msg.includes("Foreign key constraint") || msg.includes("P2003") || msg.includes("P2014")) {
+      return NextResponse.json({ error: "Cannot delete a customer who has visits" }, { status: 409 });
+    }
+    console.error("[customers/DELETE]", err);
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }
