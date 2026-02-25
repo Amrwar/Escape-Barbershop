@@ -38,7 +38,7 @@ export default function RootLayout({
     <html lang={lang} dir={dir} className={cairo.variable}>
       <head>
         <meta name="theme-color" content="#9333ea" />
-        <link rel="apple-touch-icon" href="/logo.jpg" />
+        <link rel="apple-touch-icon" href="/icon-192.png" />
       </head>
       <body className="bg-gray-50 text-gray-900 antialiased">
         <Providers initialLang={lang}>{children}</Providers>
