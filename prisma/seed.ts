@@ -68,7 +68,7 @@ async function main() {
 
   // Create default owner
   const ownerEmail = process.env.SEED_OWNER_EMAIL ?? "Admin@escape.com";
-  const ownerPassword = process.env.SEED_OWNER_PASSWORD ?? "01555";
+  const ownerPassword = process.env.SEED_OWNER_PASSWORD ?? "015555";
   const hashedPassword = await bcrypt.hash(ownerPassword, 12);
 
   await prisma.user.upsert({
