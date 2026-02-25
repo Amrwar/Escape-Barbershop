@@ -76,8 +76,6 @@ function getPeriodRange(period: Period): { from: string; to: string } {
 export default function DashboardPage() {
   const { t, fmtCurrency, fmtDateTime, lang } = useTranslation();
   const { data: session } = useSession();
-  const isBarber = session?.user?.role === "CASHIER";
-
   const [activeTab, setActiveTab] = useState<"overview" | "barbers">("overview");
 
   // Overview tab
@@ -96,9 +94,7 @@ export default function DashboardPage() {
 
   const now = new Date();
   const monthName = now.toLocaleString("default", { month: "long", year: "numeric" });
-  const subtitle = isBarber && session?.user?.name
-    ? `${session.user.name} — ${t("dashboard.overviewFor")} ${monthName}`
-    : `${t("dashboard.overviewFor")} ${monthName}`;
+  const subtitle = `${t("dashboard.overviewFor")} ${monthName}`;
 
   // Load overview data
   useEffect(() => {

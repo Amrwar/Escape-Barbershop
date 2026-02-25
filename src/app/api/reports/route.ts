@@ -14,11 +14,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "from and to are required" }, { status: 400 });
     }
 
-    // CASHIER role is always forced to their own barberId
-    const effectiveBarberId =
-      session.user.role === "CASHIER"
-        ? session.user.barberId
-        : barberIdParam || undefined;
+    const effectiveBarberId = barberIdParam || undefined;
 
     const dateFilter = {
       gte: new Date(from),

@@ -10,12 +10,9 @@ export async function GET() {
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
     const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
 
-    const barberFilter =
-      session.user.role === "CASHIER" && session.user.barberId
-        ? { barberId: session.user.barberId }
-        : {};
+    const barberFilter = {};
 
-    const isOwner = session.user.role === "OWNER";
+    const isOwner = session.user.role === "OWNER" || session.user.role === "CASHIER";
 
     const [todayVisits, monthVisits, topServices, revenuePerBarber, todayExpenses, monthExpenses] =
       await Promise.all([

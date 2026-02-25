@@ -109,17 +109,17 @@ async function main() {
   // Create barber user account
   const barberPassword = await bcrypt.hash("barber123", 12);
   await prisma.user.upsert({
-    where: { email: "ahmed@barbershop.com" },
+    where: { email: "cashier@escape.com" },
     update: {},
     create: {
-      email: "ahmed@barbershop.com",
+      email: "cashier@escape.com",
       password: barberPassword,
       name: "Ahmed",
       role: "CASHIER",
       barberId: barber.id,
     },
   });
-  console.log("Sample barber account: ahmed@barbershop.com / barber123");
+  console.log("Sample cashier account: cashier@escape.com / barber123");
 
   console.log("Seeding complete!");
 }
