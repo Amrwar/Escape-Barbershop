@@ -117,6 +117,7 @@ const ar: Record<TranslationKey, string> = {
   "dashboard.lastDifference": "آخر فرق",
   "dashboard.closeDay": "إغلاق اليوم ←",
   "dashboard.openDrawer": "فتح الصندوق ←",
+  "dashboard.barberSelectHint": "اختر حلاقاً لعرض إحصائياته",
 
   // Services
   "services.title": "الخدمات",

@@ -115,6 +115,7 @@ const en = {
   "dashboard.lastDifference": "Last Difference",
   "dashboard.closeDay": "Close Day →",
   "dashboard.openDrawer": "Open Drawer →",
+  "dashboard.barberSelectHint": "Select a barber above to view their stats",
 
   // Services
   "services.title": "Services",
