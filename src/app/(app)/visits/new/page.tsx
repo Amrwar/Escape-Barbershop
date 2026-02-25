@@ -56,12 +56,15 @@ function NewVisitInner() {
       fetch("/api/barbers?active=true").then((r) => r.json()),
     ]).then(([svcs, brbs]) => {
       const active = Array.isArray(svcs) ? svcs.filter((s: Service) => s.isActive) : [];
-      // Keep l'oreal/techniArt last
-      active.sort((a: Service, b: Service) => {
-        const aLast = /l.?oreal|techniart/i.test(a.name);
-        const bLast = /l.?oreal|techniart/i.test(b.name);
-        return aLast === bLast ? 0 : aLast ? 1 : -1;
-      });
+      // Group order: regular (0) → pedicure (1) → skin (2) → l'oreal (3)
+      const groupOf = (s: Service) => {
+        const n = s.name + " " + (s.arabicName ?? "");
+        if (/l.?oreal|techniart/i.test(n)) return 3;
+        if (/skin|facial|hydrofacial/i.test(n)) return 2;
+        if (/pedicure/i.test(n)) return 1;
+        return 0;
+      };
+      active.sort((a: Service, b: Service) => groupOf(a) - groupOf(b));
       setServices(active);
       setBarbers(Array.isArray(brbs) ? brbs : []);
       if (!isOwner && session?.user?.barberId) setBarberId(session.user.barberId);
