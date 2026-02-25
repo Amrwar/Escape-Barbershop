@@ -54,7 +54,7 @@ function buildReceiptBlock(
   const displayTotal = showTotals ? visit.total : items.reduce((s, i) => s + i.priceAtTime * i.quantity, 0);
 
   const logoHtml = shop.shopLogo
-    ? `<img src="${shop.shopLogo}" alt="logo" style="width:60px;height:60px;object-fit:contain;display:block;margin:0 auto 8px;" />`
+    ? `<img src="${shop.shopLogo}" alt="logo" style="width:120px;height:120px;object-fit:contain;display:block;margin:0 auto 10px;" />`
     : "";
 
   const contactParts = [shop.shopPhone, shop.shopAddress].filter(Boolean);
@@ -228,6 +228,22 @@ export async function downloadReceiptPdf(
     doc.setLineDashPattern([], 0);
     y += lh;
   };
+
+  // Logo
+  if (shop.shopLogo) {
+    const match = shop.shopLogo.match(/^data:image\/(\w+);base64,/);
+    if (match) {
+      const fmt = match[1].toUpperCase() === "JPG" ? "JPEG" : match[1].toUpperCase();
+      const logoSize = 90;
+      const logoX = (pageW - logoSize) / 2;
+      try {
+        doc.addImage(shop.shopLogo, fmt, logoX, y, logoSize, logoSize);
+        y += logoSize + 8;
+      } catch {
+        // logo failed to render — skip it
+      }
+    }
+  }
 
   // Shop name
   doc.setFont("helvetica", "bold");
