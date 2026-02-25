@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { useTranslation } from "@/lib/i18n";
 
@@ -28,6 +28,34 @@ export default function ReceiptSettingsPage() {
   const [saved, setSaved] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [logoMsg, setLogoMsg] = useState("");
+
+  // Edit PIN
+  const [editPin, setEditPin] = useState("");
+  const [pinSaving, setPinSaving] = useState(false);
+  const [pinMsg, setPinMsg] = useState<{ text: string; ok: boolean } | null>(null);
+
+  const handlePinSave = useCallback(async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPinMsg(null);
+    setPinSaving(true);
+    try {
+      const res = await fetch("/api/settings/edit-pin", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pin: editPin }),
+      });
+      if (res.ok) {
+        setEditPin("");
+        setPinMsg({ text: t("settings.editPinSaved"), ok: true });
+        setTimeout(() => setPinMsg(null), 3000);
+      } else {
+        const d = await res.json();
+        setPinMsg({ text: d.error ?? "Failed", ok: false });
+      }
+    } finally {
+      setPinSaving(false);
+    }
+  }, [editPin, t]);
 
   useEffect(() => {
     fetch("/api/settings/receipt")
@@ -196,6 +224,34 @@ export default function ReceiptSettingsPage() {
           )}
         </div>
       </form>
+
+      {/* Edit PIN */}
+      <div className="card p-5 mt-6">
+        <h2 className="text-sm font-semibold text-gray-900 mb-1">{t("settings.editPin")}</h2>
+        <p className="text-xs text-gray-400 mb-4">{t("settings.editPinHint")}</p>
+        <form onSubmit={handlePinSave} className="flex gap-3 items-end">
+          <div className="flex-1 max-w-xs">
+            <label className="label">{t("settings.editPinLabel")}</label>
+            <input
+              type="password"
+              className="input"
+              placeholder={t("settings.editPinPlaceholder")}
+              value={editPin}
+              onChange={(e) => setEditPin(e.target.value)}
+              minLength={4}
+              required
+            />
+          </div>
+          <button type="submit" disabled={pinSaving || !editPin} className="btn-primary">
+            {pinSaving ? t("action.saving") : t("action.save")}
+          </button>
+        </form>
+        {pinMsg && (
+          <p className={`text-sm mt-2 ${pinMsg.ok ? "text-green-600" : "text-red-600"}`}>
+            {pinMsg.text}
+          </p>
+        )}
+      </div>
     </div>
   );
 }

@@ -316,6 +316,17 @@ const en = {
   "settings.logoUploading": "Uploading…",
   "settings.logoUploaded": "Logo saved",
   "settings.saved": "Settings saved",
+  "settings.editPin": "Authorization PIN",
+  "settings.editPinHint": "Cashier must enter this PIN to add or delete expenses and attendance",
+  "settings.editPinLabel": "New PIN",
+  "settings.editPinPlaceholder": "Min 4 characters",
+  "settings.editPinSaved": "PIN saved",
+  "editPin.title": "Authorization Required",
+  "editPin.hint": "Enter the authorization PIN to continue",
+  "editPin.placeholder": "Enter PIN",
+  "editPin.incorrect": "Incorrect PIN",
+  "editPin.notSet": "No PIN set — ask the owner to set one",
+  "editPin.verify": "Verify",
 
   // Visit detail
   "visit.title": "Visit Details",

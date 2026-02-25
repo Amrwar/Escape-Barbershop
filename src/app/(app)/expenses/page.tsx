@@ -2,7 +2,9 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { format } from "date-fns";
+import { useSession } from "next-auth/react";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { EditPinModal } from "@/components/ui/EditPinModal";
 import { useTranslation } from "@/lib/i18n";
 
 interface Expense {
@@ -14,6 +16,8 @@ interface Expense {
 
 export default function ExpensesPage() {
   const { t, fmtCurrency, fmtDate } = useTranslation();
+  const { data: session } = useSession();
+  const isOwner = session?.user?.role === "OWNER";
 
   const today = format(new Date(), "yyyy-MM-dd");
   const [from, setFrom] = useState(today);
@@ -27,6 +31,17 @@ export default function ExpensesPage() {
   const [form, setForm] = useState({ date: today, amount: "", reason: "" });
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
+
+  // PIN modal
+  const [pinModal, setPinModal] = useState<{ open: boolean; onConfirm: () => void }>({
+    open: false,
+    onConfirm: () => {},
+  });
+
+  const withPin = (action: () => void) => {
+    if (isOwner) { action(); return; }
+    setPinModal({ open: true, onConfirm: action });
+  };
 
   const load = useCallback(() => {
     setLoading(true);
@@ -42,17 +57,8 @@ export default function ExpensesPage() {
 
   useEffect(() => { load(); }, [load]);
 
-  const handleAdd = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const doAdd = async () => {
     setFormError("");
-    if (!form.amount || parseFloat(form.amount) <= 0) {
-      setFormError(t("expenses.invalidAmount"));
-      return;
-    }
-    if (!form.reason.trim()) {
-      setFormError(t("expenses.reasonRequired"));
-      return;
-    }
     setSubmitting(true);
     try {
       const res = await fetch("/api/expenses", {
@@ -76,12 +82,30 @@ export default function ExpensesPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm(t("action.delete") + "?")) return;
+  const handleAdd = (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormError("");
+    if (!form.amount || parseFloat(form.amount) <= 0) {
+      setFormError(t("expenses.invalidAmount"));
+      return;
+    }
+    if (!form.reason.trim()) {
+      setFormError(t("expenses.reasonRequired"));
+      return;
+    }
+    withPin(doAdd);
+  };
+
+  const doDelete = async (id: string) => {
     setDeletingId(id);
     await fetch(`/api/expenses/${id}`, { method: "DELETE" });
     setDeletingId(null);
     load();
+  };
+
+  const handleDelete = (id: string) => {
+    if (!confirm(t("action.delete") + "?")) return;
+    withPin(() => doDelete(id));
   };
 
   const total = expenses.reduce((s, e) => s + e.amount, 0);
@@ -213,6 +237,12 @@ export default function ExpensesPage() {
           </table>
         </div>
       )}
+
+      <EditPinModal
+        open={pinModal.open}
+        onSuccess={() => { setPinModal((p) => ({ ...p, open: false })); pinModal.onConfirm(); }}
+        onClose={() => setPinModal((p) => ({ ...p, open: false }))}
+      />
     </div>
   );
 }

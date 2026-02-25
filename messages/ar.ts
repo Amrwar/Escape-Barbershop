@@ -318,6 +318,17 @@ const ar: Record<TranslationKey, string> = {
   "settings.logoUploading": "جارٍ الرفع…",
   "settings.logoUploaded": "تم حفظ الشعار",
   "settings.saved": "تم حفظ الإعدادات",
+  "settings.editPin": "رمز التفويض",
+  "settings.editPinHint": "يجب على الكاشير إدخال هذا الرمز لإضافة أو حذف المصروفات والحضور",
+  "settings.editPinLabel": "رمز جديد",
+  "settings.editPinPlaceholder": "٤ أحرف على الأقل",
+  "settings.editPinSaved": "تم حفظ الرمز",
+  "editPin.title": "مطلوب تفويض",
+  "editPin.hint": "أدخل رمز التفويض للمتابعة",
+  "editPin.placeholder": "أدخل الرمز",
+  "editPin.incorrect": "رمز غير صحيح",
+  "editPin.notSet": "لم يتم تعيين رمز — اطلب من المالك تعيينه",
+  "editPin.verify": "تحقق",
 
   // Visit detail
   "visit.title": "تفاصيل الزيارة",

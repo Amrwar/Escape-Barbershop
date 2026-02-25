@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireOwner } from "@/lib/auth";
+import { requireAuth } from "@/lib/auth";
 
 export async function DELETE(
   _req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    await requireOwner();
+    await requireAuth();
     await prisma.expense.delete({ where: { id: params.id } });
     return NextResponse.json({ success: true });
   } catch (err: unknown) {

@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { useSession } from "next-auth/react";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { EditPinModal } from "@/components/ui/EditPinModal";
 import { useTranslation } from "@/lib/i18n";
 
 interface SalarySettings {
@@ -23,12 +25,26 @@ function toDateStr(year: number, month: number, day: number) {
 
 export default function AttendancePage() {
   const { t, fmtCurrency, lang } = useTranslation();
+  const { data: session } = useSession();
+  const isOwner = session?.user?.role === "OWNER";
+
   const now = new Date();
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [year, setYear] = useState(now.getFullYear());
   const [barbers, setBarbers] = useState<Barber[]>([]);
   const [absentMap, setAbsentMap] = useState<Record<string, string[]>>({});
-  const [toggling, setToggling] = useState<string | null>(null); // "barberId|dateStr"
+  const [toggling, setToggling] = useState<string | null>(null);
+
+  // PIN modal
+  const [pinModal, setPinModal] = useState<{ open: boolean; onConfirm: () => void }>({
+    open: false,
+    onConfirm: () => {},
+  });
+
+  const withPin = (action: () => void) => {
+    if (isOwner) { action(); return; }
+    setPinModal({ open: true, onConfirm: action });
+  };
 
   const months = lang === "ar" ? MONTHS_AR : MONTHS_EN;
   const years = Array.from({ length: 5 }, (_, i) => now.getFullYear() - i);
@@ -50,7 +66,7 @@ export default function AttendancePage() {
     loadAttendance();
   }, [loadAttendance]);
 
-  const toggleDay = async (barberId: string, dateStr: string) => {
+  const doToggle = async (barberId: string, dateStr: string) => {
     const key = `${barberId}|${dateStr}`;
     if (toggling === key) return;
     setToggling(key);
@@ -74,6 +90,10 @@ export default function AttendancePage() {
     } finally {
       setToggling(null);
     }
+  };
+
+  const toggleDay = (barberId: string, dateStr: string) => {
+    withPin(() => doToggle(barberId, dateStr));
   };
 
   const todayStr = toDateStr(now.getFullYear(), now.getMonth() + 1, now.getDate());
@@ -176,6 +196,12 @@ export default function AttendancePage() {
           </div>
         )}
       </div>
+
+      <EditPinModal
+        open={pinModal.open}
+        onSuccess={() => { setPinModal((p) => ({ ...p, open: false })); pinModal.onConfirm(); }}
+        onClose={() => setPinModal((p) => ({ ...p, open: false }))}
+      />
     </div>
   );
 }

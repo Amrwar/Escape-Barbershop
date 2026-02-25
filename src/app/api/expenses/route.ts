@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    await requireOwner();
+    await requireAuth();
     const body = await req.json();
     const { date, amount, reason } = body;
 

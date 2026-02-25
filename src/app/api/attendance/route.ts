@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireOwner } from "@/lib/auth";
+import { requireAuth } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
   try {
-    await requireOwner();
+    await requireAuth();
     const month = parseInt(req.nextUrl.searchParams.get("month") ?? "0");
     const year = parseInt(req.nextUrl.searchParams.get("year") ?? "0");
 
@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    await requireOwner();
+    await requireAuth();
     const { barberId, date } = await req.json();
 
     if (!barberId || !date) {
