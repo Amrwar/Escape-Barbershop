@@ -13,8 +13,15 @@ const cairo = Cairo({
 });
 
 export const metadata: Metadata = {
-  title: "Barbershop Manager",
+  title: "Escape Barbershop",
   description: "Manage your barbershop — visits, customers, salaries and more",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Escape",
+  },
+  formatDetection: { telephone: false },
 };
 
 export default function RootLayout({
@@ -29,6 +36,10 @@ export default function RootLayout({
 
   return (
     <html lang={lang} dir={dir} className={cairo.variable}>
+      <head>
+        <meta name="theme-color" content="#9333ea" />
+        <link rel="apple-touch-icon" href="/logo.jpg" />
+      </head>
       <body className="bg-gray-50 text-gray-900 antialiased">
         <Providers initialLang={lang}>{children}</Providers>
       </body>
