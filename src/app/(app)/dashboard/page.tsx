@@ -57,9 +57,9 @@ interface BarberStats {
   };
 }
 
-type Period = "today" | "week" | "month";
+type Period = "today" | "week" | "month" | "custom";
 
-function getPeriodRange(period: Period): { from: string; to: string } {
+function getPeriodRange(period: Exclude<Period, "custom">): { from: string; to: string } {
   const now = new Date();
   const today = format(now, "yyyy-MM-dd");
   if (period === "today") return { from: today, to: today };
@@ -88,6 +88,11 @@ export default function DashboardPage() {
   const [barbersLoaded, setBarbersLoaded] = useState(false);
   const [selectedBarber, setSelectedBarber] = useState<Barber | null>(null);
   const [period, setPeriod] = useState<Period>("month");
+  const initialRange = getPeriodRange("month");
+  const [customFrom, setCustomFrom] = useState(initialRange.from);
+  const [customTo, setCustomTo] = useState(initialRange.to);
+  const [activeFrom, setActiveFrom] = useState(initialRange.from);
+  const [activeTo, setActiveTo] = useState(initialRange.to);
   const [statsLoading, setStatsLoading] = useState(false);
   const [stats, setStats] = useState<BarberStats | null>(null);
   const [exporting, setExporting] = useState(false);
@@ -114,15 +119,16 @@ export default function DashboardPage() {
       .finally(() => { setBarbersLoading(false); setBarbersLoaded(true); });
   }, [barbersLoaded]);
 
-  // Load stats for selected barber + period
-  const loadStats = useCallback((barber: Barber, p: Period) => {
+  // Load stats for selected barber using explicit from/to dates
+  const loadStats = useCallback((barber: Barber, from: string, to: string) => {
     setStatsLoading(true);
     setStats(null);
-    const range = getPeriodRange(p);
+    setActiveFrom(from);
+    setActiveTo(to);
     const params = new URLSearchParams({
       barberId: barber.id,
-      from: startOfDay(new Date(range.from)).toISOString(),
-      to: new Date(range.to + "T23:59:59").toISOString(),
+      from: startOfDay(new Date(from)).toISOString(),
+      to: new Date(to + "T23:59:59").toISOString(),
     });
     fetch(`/api/barber-stats?${params}`)
       .then((r) => r.json())
@@ -137,12 +143,22 @@ export default function DashboardPage() {
 
   const handleBarberSelect = (barber: Barber) => {
     setSelectedBarber(barber);
-    loadStats(barber, period);
+    const range = period === "custom" ? { from: customFrom, to: customTo } : getPeriodRange(period);
+    loadStats(barber, range.from, range.to);
   };
 
   const handlePeriodChange = (p: Period) => {
     setPeriod(p);
-    if (selectedBarber) loadStats(selectedBarber, p);
+    if (p !== "custom") {
+      const range = getPeriodRange(p);
+      setCustomFrom(range.from);
+      setCustomTo(range.to);
+      if (selectedBarber) loadStats(selectedBarber, range.from, range.to);
+    }
+  };
+
+  const handleCustomFetch = () => {
+    if (selectedBarber) loadStats(selectedBarber, customFrom, customTo);
   };
 
   const handleExport = async () => {
@@ -150,11 +166,11 @@ export default function DashboardPage() {
     setExporting(true);
     try {
       const { downloadBarberExcel } = await import("@/lib/excel");
-      const range = getPeriodRange(period);
       const periodLabel =
         period === "today" ? "Today"
         : period === "week" ? "This Week"
-        : "This Month";
+        : period === "month" ? "This Month"
+        : `${activeFrom} to ${activeTo}`;
 
       const visitRows = stats.visits.map((v) => {
         const subtotal = v.items.reduce((s, i) => s + i.priceAtTime * i.quantity, 0);
@@ -177,10 +193,10 @@ export default function DashboardPage() {
       });
 
       downloadBarberExcel(
-        `${selectedBarber.name.replace(/\s+/g, "-")}-${period}-stats.xlsx`,
+        `${selectedBarber.name.replace(/\s+/g, "-")}-${activeFrom}-to-${activeTo}.xlsx`,
         {
           barberName: selectedBarber.name,
-          period: `${periodLabel} (${range.from} to ${range.to})`,
+          period: `${periodLabel} (${activeFrom} to ${activeTo})`,
           summary: stats.summary,
           visits: visitRows,
         }
@@ -194,6 +210,7 @@ export default function DashboardPage() {
     today: t("reports.today"),
     week: t("reports.thisWeek"),
     month: t("reports.thisMonth"),
+    custom: t("reports.custom"),
   };
 
   return (
@@ -338,9 +355,9 @@ export default function DashboardPage() {
         <div className="space-y-5">
 
           {/* Period selector */}
-          <div className="flex gap-2 items-center flex-wrap">
+          <div className="flex flex-wrap gap-2 items-center">
             <span className="text-sm text-gray-500 font-medium me-1">{t("field.date")}:</span>
-            {(["today", "week", "month"] as Period[]).map((p) => (
+            {(["today", "week", "month", "custom"] as Period[]).map((p) => (
               <button
                 key={p}
                 onClick={() => handlePeriodChange(p)}
@@ -354,6 +371,37 @@ export default function DashboardPage() {
               </button>
             ))}
           </div>
+
+          {/* Custom date pickers */}
+          {period === "custom" && (
+            <div className="flex flex-wrap gap-3 items-end mt-3">
+              <div>
+                <label className="label">{t("reports.from")}</label>
+                <input
+                  type="date"
+                  className="input"
+                  value={customFrom}
+                  onChange={(e) => setCustomFrom(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="label">{t("reports.to")}</label>
+                <input
+                  type="date"
+                  className="input"
+                  value={customTo}
+                  onChange={(e) => setCustomTo(e.target.value)}
+                />
+              </div>
+              <button
+                onClick={handleCustomFetch}
+                disabled={statsLoading || !selectedBarber}
+                className="btn-primary"
+              >
+                {statsLoading ? "…" : t("action.filter")}
+              </button>
+            </div>
+          )}
 
           {/* Barber list */}
           {barbersLoading ? (
