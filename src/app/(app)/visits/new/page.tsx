@@ -137,9 +137,6 @@ function NewVisitInner() {
     if (!selectedCustomer) { setError(t("newVisit.noCustomer")); return; }
     if (!barberId)          { setError(t("newVisit.noBarber"));   return; }
     if (cart.length === 0)  { setError(t("newVisit.noServices")); return; }
-    if (paymentMethod === "MIXED" && Math.abs(cashAmount + cardAmount - total) > 0.01) {
-      setError(t("newVisit.splitMustEqualTotal")); return;
-    }
 
     setSubmitting(true);
     try {
