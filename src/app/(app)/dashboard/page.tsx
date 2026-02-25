@@ -11,7 +11,13 @@ import { format, startOfDay, startOfWeek, startOfMonth } from "date-fns";
 
 interface DashboardData {
   todayRevenue: number;
+  todayCash: number;
+  todayCard: number;
+  todayExpenses: number;
   monthRevenue: number;
+  monthCash: number;
+  monthCard: number;
+  monthExpenses: number;
   visitsToday: number;
   visitsThisMonth: number;
   topServices: { serviceId: string; name: string; arabicName: string | null; count: number }[];
@@ -233,10 +239,58 @@ export default function DashboardPage() {
         ) : (
           <>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              <StatCard title={t("dashboard.todayRevenue")}    value={`$${fmtCurrency(data?.todayRevenue ?? 0)}`}    icon="💵" color="green"  />
-              <StatCard title={t("dashboard.monthRevenue")}    value={`$${fmtCurrency(data?.monthRevenue ?? 0)}`}    icon="📈" color="purple" />
-              <StatCard title={t("dashboard.visitsToday")}     value={data?.visitsToday ?? 0}                         icon="✂️" color="blue"   />
-              <StatCard title={t("dashboard.visitsThisMonth")} value={data?.visitsThisMonth ?? 0}                     icon="📋" color="yellow" />
+              {/* Today Revenue — with cash/card/expenses breakdown */}
+              <div className="card p-5 border-green-200 bg-green-50">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-base">💵</span>
+                  <span className="text-xs font-medium text-green-700">{t("dashboard.todayRevenue")}</span>
+                </div>
+                <div className="text-2xl font-bold text-gray-900 mb-3">${fmtCurrency(data?.todayRevenue ?? 0)}</div>
+                <div className="space-y-1 border-t border-green-100 pt-2">
+                  <div className="flex justify-between text-xs text-gray-500">
+                    <span>{t("common.cash")}</span>
+                    <span className="font-medium text-gray-700">${fmtCurrency(data?.todayCash ?? 0)}</span>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-500">
+                    <span>{t("common.card")}</span>
+                    <span className="font-medium text-gray-700">${fmtCurrency(data?.todayCard ?? 0)}</span>
+                  </div>
+                  {(data?.todayExpenses ?? 0) > 0 && (
+                    <div className="flex justify-between text-xs text-red-500">
+                      <span>{t("nav.expenses")}</span>
+                      <span className="font-medium">-${fmtCurrency(data?.todayExpenses ?? 0)}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Month Revenue — with cash/card/expenses breakdown */}
+              <div className="card p-5 border-purple-200 bg-purple-50">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-base">📈</span>
+                  <span className="text-xs font-medium text-purple-700">{t("dashboard.monthRevenue")}</span>
+                </div>
+                <div className="text-2xl font-bold text-gray-900 mb-3">${fmtCurrency(data?.monthRevenue ?? 0)}</div>
+                <div className="space-y-1 border-t border-purple-100 pt-2">
+                  <div className="flex justify-between text-xs text-gray-500">
+                    <span>{t("common.cash")}</span>
+                    <span className="font-medium text-gray-700">${fmtCurrency(data?.monthCash ?? 0)}</span>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-500">
+                    <span>{t("common.card")}</span>
+                    <span className="font-medium text-gray-700">${fmtCurrency(data?.monthCard ?? 0)}</span>
+                  </div>
+                  {(data?.monthExpenses ?? 0) > 0 && (
+                    <div className="flex justify-between text-xs text-red-500">
+                      <span>{t("nav.expenses")}</span>
+                      <span className="font-medium">-${fmtCurrency(data?.monthExpenses ?? 0)}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <StatCard title={t("dashboard.visitsToday")}     value={data?.visitsToday ?? 0}     icon="✂️" color="blue"   />
+              <StatCard title={t("dashboard.visitsThisMonth")} value={data?.visitsThisMonth ?? 0} icon="📋" color="yellow" />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
