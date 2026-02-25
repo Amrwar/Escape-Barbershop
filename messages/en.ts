@@ -14,6 +14,7 @@ const en = {
   "nav.settings": "Settings",
   "nav.expenses": "Expenses",
   "nav.attendance": "Attendance",
+  "nav.myStats": "My Stats",
 
   // Auth
   "auth.signIn": "Sign in",
@@ -275,6 +276,7 @@ const en = {
   "salaries.penaltiesTitle": "Penalties",
   "salaries.confirmDelete": "Delete this penalty?",
   "salaries.changePin": "Change Discount PIN",
+  "salaries.shareWhatsapp": "Share Salary via WhatsApp",
   "salaries.newPin": "New PIN",
   "salaries.confirmPin": "Confirm PIN",
   "salaries.pinTooShort": "PIN must be at least 4 digits",
@@ -321,6 +323,8 @@ const en = {
   "visit.printFull": "Full Receipt",
   "visit.printPerService": "Per-Service Receipts",
   "visit.printOptions": "Print Options",
+  "visit.whatsapp": "Send via WhatsApp",
+  "visit.downloadPdf": "Download PDF",
 } as const;
 
 export type TranslationKey = keyof typeof en;

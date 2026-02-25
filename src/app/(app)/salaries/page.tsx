@@ -10,7 +10,7 @@ import { useTranslation } from "@/lib/i18n";
 interface PenaltyRecord { id: string; date: string; amount: number; reason: string; }
 
 interface BarberPayroll {
-  barberId: string; name: string;
+  barberId: string; name: string; barberPhone: string | null;
   baseSalary: number; commissionType: "PERCENT" | "FIXED_PER_VISIT"; commissionValue: number;
   visitCount: number; visitTotal: number; commissionableTotal: number; commission: number;
   gross: number; penaltiesTotal: number; penalties: PenaltyRecord[];
@@ -100,6 +100,26 @@ export default function SalariesPage() {
       });
       if (res.ok) { setPinModal(false); setPinForm({ newPin: "", confirm: "" }); }
     } finally { setSavingPin(false); }
+  };
+
+  const shareSalaryWhatsApp = (b: BarberPayroll) => {
+    if (!b.barberPhone) return;
+    const monthLabel = months[month - 1];
+    const lines = [
+      `*Escape Barbershop — Salary Slip*`,
+      `📅 ${monthLabel} ${year}`,
+      `👤 ${b.name}`,
+      ``,
+      `Base Salary: $${fmtCurrency(b.baseSalary)}`,
+      `Commission: $${fmtCurrency(b.commission)}`,
+      `*Gross: $${fmtCurrency(b.gross)}*`,
+      ...(b.penaltiesTotal > 0 ? [`Penalties: -$${fmtCurrency(b.penaltiesTotal)}`] : []),
+      ...(b.absentDays > 0 ? [`Absence (${b.absentDays} days): -$${fmtCurrency(b.attendanceDeduction)}`] : []),
+      ``,
+      `*Net Pay: $${fmtCurrency(b.net)}*`,
+    ];
+    const phone = b.barberPhone.replace(/\D/g, "");
+    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(lines.join("\n"))}`, "_blank");
   };
 
   const deletePenalty = async (id: string) => {
@@ -290,6 +310,14 @@ export default function SalariesPage() {
               <span className="font-semibold text-primary-700">{t("salaries.netPay")}</span>
               <span className="text-xl font-bold text-primary-700">${fmtCurrency(detailBarber.net)}</span>
             </div>
+            {detailBarber.barberPhone && (
+              <button
+                onClick={() => shareSalaryWhatsApp(detailBarber)}
+                className="btn-secondary w-full text-sm"
+              >
+                💬 {t("salaries.shareWhatsapp")}
+              </button>
+            )}
             {detailBarber.penalties.length > 0 && (
               <div>
                 <h3 className="text-sm font-semibold text-gray-900 mb-2">{t("salaries.penaltiesTitle")}</h3>

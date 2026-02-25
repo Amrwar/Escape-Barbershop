@@ -17,6 +17,7 @@ export async function GET(req: NextRequest) {
 
     const barbers = await prisma.barber.findMany({
       where: { isActive: true },
+      orderBy: { name: "asc" },
       include: {
         salarySettings: true,
         visits: {
@@ -41,7 +42,6 @@ export async function GET(req: NextRequest) {
           where: { date: { gte: periodStart, lte: periodEnd } },
         },
       },
-      orderBy: { name: "asc" },
     });
 
     const payroll = barbers.map((barber) => {
@@ -80,6 +80,7 @@ export async function GET(req: NextRequest) {
       return {
         barberId: barber.id,
         name: barber.name,
+        barberPhone: barber.phone ?? null,
         baseSalary,
         commissionType: settings?.commissionType ?? "PERCENT",
         commissionValue: settings?.commissionValue ?? 0,

@@ -159,6 +159,156 @@ function buildReceiptBlock(
     </div>`;
 }
 
+export function buildWhatsAppText(
+  visit: ReceiptVisit,
+  shop: ReceiptShopSettings
+): string {
+  const receiptNo = visit.id.slice(-8).toUpperCase();
+  const date = fmtDate(visit.visitAt);
+  const subtotal = visit.items.reduce((s, i) => s + i.priceAtTime * i.quantity, 0);
+  const discAmt = (subtotal * visit.discount) / 100;
+
+  const serviceLines = visit.items
+    .map((i) => {
+      const qty = i.quantity > 1 ? ` ×${i.quantity}` : "";
+      return `  • ${i.service.name}${qty} — $${fmtMoney(i.priceAtTime * i.quantity)}`;
+    })
+    .join("\n");
+
+  const payStr =
+    visit.paymentMethod === "CASH" ? "Cash"
+    : visit.paymentMethod === "CARD" ? "Card"
+    : "Mixed";
+
+  const parts: string[] = [
+    `*${shop.shopName}*`,
+    `📋 Receipt #${receiptNo}`,
+    `📅 ${date}`,
+    `👤 Barber: ${visit.barber.name}`,
+    ``,
+    `*Services:*`,
+    serviceLines,
+    ``,
+  ];
+
+  if (visit.discount > 0) {
+    parts.push(`Subtotal: $${fmtMoney(subtotal)}`);
+    parts.push(`Discount (${visit.discount}%): -$${fmtMoney(discAmt)}`);
+  }
+  parts.push(`*Total: $${fmtMoney(visit.total)}*`);
+  parts.push(`Payment: ${payStr}`);
+
+  if (shop.receiptFooter) {
+    parts.push(``);
+    parts.push(shop.receiptFooter);
+  }
+
+  return parts.join("\n");
+}
+
+export async function downloadReceiptPdf(
+  visit: ReceiptVisit,
+  shop: ReceiptShopSettings
+): Promise<void> {
+  const { jsPDF } = await import("jspdf");
+
+  const pageW = 227; // ~80mm in points
+  const margin = 14;
+  const col2 = pageW - margin;
+  const lh = 14;
+
+  const itemCount = visit.items.length;
+  const estimatedH =
+    180 +
+    itemCount * lh +
+    (visit.discount > 0 ? lh * 2 : 0) +
+    (shop.receiptFooter ? lh * 2 : 0);
+
+  const doc = new jsPDF({ unit: "pt", format: [pageW, Math.max(estimatedH, 280)] });
+  let y = margin + 10;
+
+  const sep = () => {
+    doc.setLineDashPattern([2, 2], 0);
+    doc.setDrawColor(0);
+    doc.line(margin, y, pageW - margin, y);
+    doc.setLineDashPattern([], 0);
+    y += lh;
+  };
+
+  // Header
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(14);
+  doc.text(shop.shopName, pageW / 2, y, { align: "center" });
+  y += lh;
+
+  if (shop.shopPhone || shop.shopAddress) {
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    const contact = [shop.shopPhone, shop.shopAddress].filter(Boolean).join(" | ");
+    doc.text(contact, pageW / 2, y, { align: "center" });
+    y += lh;
+  }
+
+  sep();
+
+  const receiptNo = visit.id.slice(-8).toUpperCase();
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.text(`Receipt #: ${receiptNo}`, margin, y); y += lh;
+  doc.text(`Date: ${fmtDate(visit.visitAt)}`, margin, y); y += lh;
+  doc.text(`Barber: ${visit.barber.name}`, margin, y); y += lh;
+  doc.text(`Customer: ${visit.customer.name}`, margin, y); y += lh;
+
+  sep();
+
+  // Items
+  for (const item of visit.items) {
+    const name = item.service.name + (item.quantity > 1 ? ` ×${item.quantity}` : "");
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.text(name, margin, y);
+    doc.text(`$${fmtMoney(item.priceAtTime * item.quantity)}`, col2, y, { align: "right" });
+    y += lh;
+  }
+
+  sep();
+
+  const subtotal = visit.items.reduce((s, i) => s + i.priceAtTime * i.quantity, 0);
+  doc.setFontSize(9);
+  if (visit.discount > 0) {
+    const discAmt = (subtotal * visit.discount) / 100;
+    doc.text("Subtotal", margin, y);
+    doc.text(`$${fmtMoney(subtotal)}`, col2, y, { align: "right" });
+    y += lh;
+    doc.text(`Discount (${visit.discount}%)`, margin, y);
+    doc.text(`-$${fmtMoney(discAmt)}`, col2, y, { align: "right" });
+    y += lh;
+  }
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.text("TOTAL", margin, y);
+  doc.text(`$${fmtMoney(visit.total)}`, col2, y, { align: "right" });
+  y += lh;
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  const payStr =
+    visit.paymentMethod === "CASH" ? "Cash"
+    : visit.paymentMethod === "CARD" ? "Card"
+    : "Mixed";
+  doc.text(`Payment: ${payStr}`, margin, y);
+  y += lh;
+
+  if (shop.receiptFooter) {
+    sep();
+    doc.setFontSize(8);
+    doc.text(shop.receiptFooter, pageW / 2, y, { align: "center" });
+  }
+
+  doc.save(`receipt-${receiptNo}.pdf`);
+}
+
 export function printReceipt(
   visit: ReceiptVisit,
   shop: ReceiptShopSettings,

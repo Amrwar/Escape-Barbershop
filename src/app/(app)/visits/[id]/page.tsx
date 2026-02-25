@@ -8,7 +8,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
 import { Modal } from "@/components/ui/Modal";
 import { useTranslation } from "@/lib/i18n";
-import { printReceipt, type ReceiptVisit, type ReceiptShopSettings } from "@/lib/receipt";
+import { printReceipt, buildWhatsAppText, downloadReceiptPdf, type ReceiptVisit, type ReceiptShopSettings } from "@/lib/receipt";
 
 interface VisitDetail {
   id: string;
@@ -47,6 +47,7 @@ export default function VisitDetailPage() {
   const [loading, setLoading] = useState(true);
   const [printModal, setPrintModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -63,6 +64,33 @@ export default function VisitDetailPage() {
     setDeleting(true);
     await fetch(`/api/visits/${id}`, { method: "DELETE" });
     router.push("/visits");
+  };
+
+  const handleWhatsApp = () => {
+    if (!visit || !shopSettings) return;
+    const receiptVisit: ReceiptVisit = {
+      id: visit.id, visitAt: visit.visitAt, customer: visit.customer, barber: visit.barber,
+      paymentMethod: visit.paymentMethod, cashAmount: visit.cashAmount, cardAmount: visit.cardAmount,
+      discount: visit.discount, total: visit.total, notes: visit.notes, items: visit.items,
+    };
+    const text = buildWhatsAppText(receiptVisit, shopSettings);
+    const phone = visit.customer.phone!.replace(/\D/g, "");
+    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, "_blank");
+  };
+
+  const handleDownloadPdf = async () => {
+    if (!visit || !shopSettings) return;
+    setDownloadingPdf(true);
+    try {
+      const receiptVisit: ReceiptVisit = {
+        id: visit.id, visitAt: visit.visitAt, customer: visit.customer, barber: visit.barber,
+        paymentMethod: visit.paymentMethod, cashAmount: visit.cashAmount, cardAmount: visit.cardAmount,
+        discount: visit.discount, total: visit.total, notes: visit.notes, items: visit.items,
+      };
+      await downloadReceiptPdf(receiptVisit, shopSettings);
+    } finally {
+      setDownloadingPdf(false);
+    }
   };
 
   const handlePrint = (mode: "full" | "per-service") => {
@@ -130,6 +158,23 @@ export default function VisitDetailPage() {
                 {deleting ? "…" : t("action.delete")}
               </button>
             </>
+          )}
+          {visit.customer.phone && (
+            <button
+              onClick={handleWhatsApp}
+              className="btn-secondary text-sm"
+            >
+              💬 {t("visit.whatsapp")}
+            </button>
+          )}
+          {isOwner && (
+            <button
+              onClick={handleDownloadPdf}
+              disabled={downloadingPdf}
+              className="btn-secondary text-sm"
+            >
+              {downloadingPdf ? "…" : `⬇ ${t("visit.downloadPdf")}`}
+            </button>
           )}
           <button
             onClick={() => setPrintModal(true)}

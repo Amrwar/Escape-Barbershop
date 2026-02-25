@@ -16,6 +16,7 @@ const ar: Record<TranslationKey, string> = {
   "nav.settings": "الإعدادات",
   "nav.expenses": "المصاريف",
   "nav.attendance": "الحضور",
+  "nav.myStats": "إحصائياتي",
 
   // Auth
   "auth.signIn": "تسجيل الدخول",
@@ -277,6 +278,7 @@ const ar: Record<TranslationKey, string> = {
   "salaries.penaltiesTitle": "الخصومات",
   "salaries.confirmDelete": "حذف هذا الخصم؟",
   "salaries.changePin": "تغيير رمز الخصم",
+  "salaries.shareWhatsapp": "مشاركة الراتب عبر واتساب",
   "salaries.newPin": "الرمز الجديد",
   "salaries.confirmPin": "تأكيد الرمز",
   "salaries.pinTooShort": "يجب أن يتكون الرمز من 4 أرقام على الأقل",
@@ -323,6 +325,8 @@ const ar: Record<TranslationKey, string> = {
   "visit.printFull": "إيصال كامل",
   "visit.printPerService": "إيصال لكل خدمة",
   "visit.printOptions": "خيارات الطباعة",
+  "visit.whatsapp": "إرسال عبر واتساب",
+  "visit.downloadPdf": "تحميل PDF",
 };
 
 export default ar;
