@@ -308,18 +308,24 @@ function NewVisitInner() {
             {services.map((s) => {
               const inCart = cart.some((i) => i.serviceId === s.id);
               const isPedicure = /pedicure/i.test(s.name) || /pedicure/i.test(s.arabicName ?? "");
+              const isSkin = /skin|facial|hydrofacial/i.test(s.name) || /skin|facial|hydrofacial/i.test(s.arabicName ?? "");
               const className = isPedicure
                 ? inCart
                   ? "border-rose-400 bg-rose-50 text-rose-700"
                   : "border-rose-200 bg-rose-50/40 text-rose-900 hover:border-rose-400 hover:bg-rose-50"
-                : inCart
-                  ? "border-primary-400 bg-primary-50 text-primary-700"
-                  : "border-gray-200 hover:border-primary-300 hover:bg-primary-50";
+                : isSkin
+                  ? inCart
+                    ? "border-teal-400 bg-teal-50 text-teal-700"
+                    : "border-teal-200 bg-teal-50/40 text-teal-900 hover:border-teal-400 hover:bg-teal-50"
+                  : inCart
+                    ? "border-primary-400 bg-primary-50 text-primary-700"
+                    : "border-gray-200 hover:border-primary-300 hover:bg-primary-50";
+              const priceColor = isPedicure ? "text-rose-400" : isSkin ? "text-teal-400" : "text-gray-400";
               return (
                 <button key={s.id} type="button" onClick={() => addToCart(s)}
                   className={`text-start px-3 py-2 rounded-lg border text-xs font-medium transition-colors ${className}`}>
                   <div className="truncate">{lang === "ar" && s.arabicName ? s.arabicName : s.name}</div>
-                  <div className={`font-normal ${isPedicure ? "text-rose-400" : "text-gray-400"}`}>${fmtCurrency(s.defaultPrice)}</div>
+                  <div className={`font-normal ${priceColor}`}>${fmtCurrency(s.defaultPrice)}</div>
                 </button>
               );
             })}
