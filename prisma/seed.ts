@@ -67,8 +67,8 @@ async function main() {
   console.log("Default discount PIN seeded (1234)");
 
   // Create default owner
-  const ownerEmail = process.env.SEED_OWNER_EMAIL ?? "owner@barbershop.com";
-  const ownerPassword = process.env.SEED_OWNER_PASSWORD ?? "changeme123";
+  const ownerEmail = process.env.SEED_OWNER_EMAIL ?? "Admin@escape.com";
+  const ownerPassword = process.env.SEED_OWNER_PASSWORD ?? "01555";
   const hashedPassword = await bcrypt.hash(ownerPassword, 12);
 
   await prisma.user.upsert({
