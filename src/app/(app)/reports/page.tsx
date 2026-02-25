@@ -45,6 +45,13 @@ interface Penalty {
   reason: string;
 }
 
+interface Expense {
+  id: string;
+  date: string;
+  amount: number;
+  reason: string;
+}
+
 interface Summary {
   visitCount: number;
   totalRevenue: number;
@@ -52,6 +59,8 @@ interface Summary {
   cardTotal: number;
   mixedTotal: number;
   discountsTotal: number;
+  expensesTotal: number;
+  netRevenue: number;
   topServices: TopService[];
 }
 
@@ -60,6 +69,7 @@ interface ReportData {
   summary: Summary;
   perBarber: PerBarber[];
   penalties: Penalty[];
+  expenses: Expense[];
 }
 
 type Preset = "today" | "week" | "month" | "custom";
@@ -141,6 +151,8 @@ export default function ReportsPage() {
       { Field: t("reports.cardRevenue"), Value: data.summary.cardTotal },
       { Field: t("reports.mixedRevenue"), Value: data.summary.mixedTotal },
       { Field: t("reports.discounts"), Value: data.summary.discountsTotal },
+      { Field: t("expenses.totalExpenses"), Value: data.summary.expensesTotal },
+      { Field: t("expenses.netRevenue"), Value: data.summary.netRevenue },
       { Field: "Visits", Value: data.summary.visitCount },
       {},
       { Field: "Top Services", Value: "" },
@@ -183,6 +195,15 @@ export default function ReportsPage() {
       sheets.push({ name: "Per Barber", rows: perBarberRows });
     }
     sheets.push({ name: "Penalties", rows: penaltiesRows });
+
+    if (data.expenses.length > 0) {
+      const expensesRows = data.expenses.map((e) => ({
+        Date: new Date(e.date).toLocaleDateString(),
+        Reason: e.reason,
+        Amount: e.amount,
+      }));
+      sheets.push({ name: "Expenses", rows: expensesRows });
+    }
 
     downloadExcel(`report-${from}-to-${to}.xlsx`, sheets);
   };
@@ -270,9 +291,13 @@ export default function ReportsPage() {
       {hasData && !loading && (
         <div className="space-y-6">
           {/* Summary cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-            <SummaryCard label={t("reports.totalRevenue")} value={`$${fmtCurrency(data.summary.totalRevenue)}`} accent />
-            <SummaryCard label={`${t("common.visits")}`} value={String(data.summary.visitCount)} />
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            <SummaryCard label={t("reports.totalRevenue")} value={`$${fmtCurrency(data.summary.totalRevenue)}`} />
+            <SummaryCard label={t("expenses.totalExpenses")} value={`-$${fmtCurrency(data.summary.expensesTotal)}`} danger />
+            <SummaryCard label={t("expenses.netRevenue")} value={`$${fmtCurrency(data.summary.netRevenue)}`} accent />
+            <SummaryCard label={t("common.visits")} value={String(data.summary.visitCount)} />
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <SummaryCard label={t("reports.cashRevenue")} value={`$${fmtCurrency(data.summary.cashTotal)}`} />
             <SummaryCard label={t("reports.cardRevenue")} value={`$${fmtCurrency(data.summary.cardTotal)}`} />
             <SummaryCard label={t("reports.mixedRevenue")} value={`$${fmtCurrency(data.summary.mixedTotal)}`} />
@@ -404,17 +429,49 @@ export default function ReportsPage() {
               </table>
             </div>
           )}
+
+          {/* Expenses */}
+          {isOwner && data.expenses.length > 0 && (
+            <div className="card overflow-hidden">
+              <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+                <span className="font-semibold text-gray-700">
+                  {t("expenses.title")} ({data.expenses.length})
+                </span>
+                <span className="text-sm font-bold text-red-600">
+                  -{fmtCurrency(data.summary.expensesTotal)} total
+                </span>
+              </div>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-gray-50 border-b border-gray-100">
+                    <th className="th-start px-4 py-2 font-medium text-gray-500">{t("field.date")}</th>
+                    <th className="th-start px-4 py-2 font-medium text-gray-500">{t("field.reason")}</th>
+                    <th className="text-end px-4 py-2 font-medium text-gray-500">{t("expenses.amount")}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {data.expenses.map((e) => (
+                    <tr key={e.id} className="hover:bg-gray-50">
+                      <td className="px-4 py-2 text-gray-500 text-xs whitespace-nowrap">{fmtDate(e.date)}</td>
+                      <td className="px-4 py-2 text-gray-900">{e.reason}</td>
+                      <td className="px-4 py-2 text-end font-semibold text-red-600">-${fmtCurrency(e.amount)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
     </div>
   );
 }
 
-function SummaryCard({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
+function SummaryCard({ label, value, accent, danger }: { label: string; value: string; accent?: boolean; danger?: boolean }) {
   return (
-    <div className={`card p-4 ${accent ? "border-primary-200 bg-primary-50" : ""}`}>
-      <div className={`text-xs font-medium mb-1 ${accent ? "text-primary-600" : "text-gray-500"}`}>{label}</div>
-      <div className={`text-xl font-bold ${accent ? "text-primary-700" : "text-gray-900"}`}>{value}</div>
+    <div className={`card p-4 ${accent ? "border-primary-200 bg-primary-50" : danger ? "border-red-200 bg-red-50" : ""}`}>
+      <div className={`text-xs font-medium mb-1 ${accent ? "text-primary-600" : danger ? "text-red-600" : "text-gray-500"}`}>{label}</div>
+      <div className={`text-xl font-bold ${accent ? "text-primary-700" : danger ? "text-red-700" : "text-gray-900"}`}>{value}</div>
     </div>
   );
 }

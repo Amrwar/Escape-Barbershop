@@ -14,6 +14,7 @@ const ar: Record<TranslationKey, string> = {
   "nav.salaries": "الرواتب",
   "nav.cashDrawer": "صندوق النقد",
   "nav.settings": "الإعدادات",
+  "nav.expenses": "المصاريف",
 
   // Auth
   "auth.signIn": "تسجيل الدخول",
@@ -279,6 +280,18 @@ const ar: Record<TranslationKey, string> = {
   "salaries.pinTooShort": "يجب أن يتكون الرمز من 4 أرقام على الأقل",
   "salaries.pinMismatch": "الرمزان غير متطابقان",
   "salaries.commissionableRevenue": "الإيرادات الخاضعة للعمولة",
+
+  // Expenses
+  "expenses.title": "المصاريف",
+  "expenses.subtitle": "تتبع المصاريف اليومية المخصومة من الإيرادات",
+  "expenses.addExpense": "+ إضافة مصروف",
+  "expenses.amount": "المبلغ ($)",
+  "expenses.reasonPlaceholder": "مثال: إيجار، مستلزمات…",
+  "expenses.noExpenses": "لا توجد مصاريف لهذه الفترة",
+  "expenses.totalExpenses": "إجمالي المصاريف",
+  "expenses.netRevenue": "صافي الإيرادات",
+  "expenses.invalidAmount": "المبلغ يجب أن يكون أكبر من صفر",
+  "expenses.reasonRequired": "الرجاء إدخال السبب",
 
   // Settings
   "settings.receipt.title": "إعدادات الإيصال",

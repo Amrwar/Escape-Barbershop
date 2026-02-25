@@ -169,3 +169,11 @@ model Penalty {
   reason    String
   createdAt DateTime @default(now())
 }
+
+model Expense {
+  id        String   @id @default(cuid())
+  date      DateTime
+  amount    Float
+  reason    String
+  createdAt DateTime @default(now())
+}

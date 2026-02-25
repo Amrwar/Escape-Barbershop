@@ -15,7 +15,9 @@ export async function GET() {
         ? { barberId: session.user.barberId }
         : {};
 
-    const [todayVisits, monthVisits, topServices, revenuePerBarber] =
+    const isOwner = session.user.role === "OWNER";
+
+    const [todayVisits, monthVisits, topServices, revenuePerBarber, todayExpenses, monthExpenses] =
       await Promise.all([
         prisma.visit.findMany({
           where: { visitAt: { gte: todayStart }, ...barberFilter },
@@ -41,12 +43,24 @@ export async function GET() {
           orderBy: { _sum: { quantity: "desc" } },
           take: 5,
         }),
-        session.user.role === "OWNER"
+        isOwner
           ? prisma.visit.groupBy({
               by: ["barberId"],
               where: { visitAt: { gte: monthStart, lte: monthEnd } },
               _sum: { total: true },
               _count: { id: true },
+            })
+          : Promise.resolve([]),
+        isOwner
+          ? prisma.expense.findMany({
+              where: { date: { gte: todayStart } },
+              select: { amount: true },
+            })
+          : Promise.resolve([]),
+        isOwner
+          ? prisma.expense.findMany({
+              where: { date: { gte: monthStart, lte: monthEnd } },
+              select: { amount: true },
             })
           : Promise.resolve([]),
       ]);
@@ -114,9 +128,14 @@ export async function GET() {
       // Cash drawer tables not available yet — return default closed status
     }
 
+    const todayExpensesTotal = (todayExpenses as { amount: number }[]).reduce((s, e) => s + e.amount, 0);
+    const monthExpensesTotal = (monthExpenses as { amount: number }[]).reduce((s, e) => s + e.amount, 0);
+
     return NextResponse.json({
-      todayRevenue: todayVisits.reduce((s, v) => s + v.total, 0),
-      monthRevenue: monthVisits.reduce((s, v) => s + v.total, 0),
+      todayRevenue: todayVisits.reduce((s, v) => s + v.total, 0) - todayExpensesTotal,
+      monthRevenue: monthVisits.reduce((s, v) => s + v.total, 0) - monthExpensesTotal,
+      todayExpenses: todayExpensesTotal,
+      monthExpenses: monthExpensesTotal,
       visitsToday: todayVisits.length,
       visitsThisMonth: monthVisits.length,
       topServices: topServices.map((s) => ({

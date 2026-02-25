@@ -12,6 +12,7 @@ const en = {
   "nav.salaries": "Salaries",
   "nav.cashDrawer": "Cash Drawer",
   "nav.settings": "Settings",
+  "nav.expenses": "Expenses",
 
   // Auth
   "auth.signIn": "Sign in",
@@ -277,6 +278,18 @@ const en = {
   "salaries.pinTooShort": "PIN must be at least 4 digits",
   "salaries.pinMismatch": "PINs do not match",
   "salaries.commissionableRevenue": "Commissionable Revenue",
+
+  // Expenses
+  "expenses.title": "Expenses",
+  "expenses.subtitle": "Track daily expenses deducted from revenue",
+  "expenses.addExpense": "+ Add Expense",
+  "expenses.amount": "Amount ($)",
+  "expenses.reasonPlaceholder": "e.g. Rent, Supplies…",
+  "expenses.noExpenses": "No expenses for this period",
+  "expenses.totalExpenses": "Total Expenses",
+  "expenses.netRevenue": "Net Revenue",
+  "expenses.invalidAmount": "Amount must be greater than 0",
+  "expenses.reasonRequired": "Please enter a reason",
 
   // Settings
   "settings.receipt.title": "Receipt Settings",

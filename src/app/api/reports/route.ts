@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
       lte: new Date(to),
     };
 
-    const [visits, penalties] = await Promise.all([
+    const [visits, penalties, expenses] = await Promise.all([
       prisma.visit.findMany({
         where: {
           visitAt: dateFilter,
@@ -46,6 +46,13 @@ export async function GET(req: NextRequest) {
         orderBy: { date: "desc" },
         include: { barber: { select: { name: true } } },
       }),
+      // Only fetch expenses when viewing all barbers (not filtered to one barber)
+      !effectiveBarberId
+        ? prisma.expense.findMany({
+            where: { date: dateFilter },
+            orderBy: { date: "desc" },
+          })
+        : Promise.resolve([]),
     ]);
 
     // Compute summary
@@ -148,6 +155,14 @@ export async function GET(req: NextRequest) {
       reason: p.reason,
     }));
 
+    const expensesTotal = (expenses as { amount: number }[]).reduce((s, e) => s + e.amount, 0);
+    const expensesOut = (expenses as { id: string; date: Date; amount: number; reason: string }[]).map((e) => ({
+      id: e.id,
+      date: e.date,
+      amount: e.amount,
+      reason: e.reason,
+    }));
+
     return NextResponse.json({
       visits,
       summary: {
@@ -157,10 +172,13 @@ export async function GET(req: NextRequest) {
         cardTotal,
         mixedTotal,
         discountsTotal,
+        expensesTotal,
+        netRevenue: totalRevenue - expensesTotal,
         topServices,
       },
       perBarber,
       penalties: penaltiesOut,
+      expenses: expensesOut,
     });
   } catch (err: unknown) {
     if (err instanceof Error && err.message.includes("Unauthorized")) {
