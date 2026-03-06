@@ -60,3 +60,12 @@ html[dir="rtl"] .th-start {
 html[dir="ltr"] .th-start {
   text-align: left;
 }
+
+@media print {
+  * {
+    color: #000 !important;
+    background: #fff !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+}
