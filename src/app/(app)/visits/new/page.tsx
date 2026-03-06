@@ -252,16 +252,10 @@ function NewVisitInner() {
             {/* Barber */}
             <div>
               <label className="label">{t("field.barber")} *</label>
-              {isOwner ? (
-                <select className="input" value={barberId} onChange={(e) => setBarberId(e.target.value)} required>
-                  <option value="">{t("newVisit.selectBarber")}</option>
-                  {barbers.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
-                </select>
-              ) : (
-                <div className="input bg-gray-50 text-gray-700">
-                  {barbers.find((b) => b.id === barberId)?.name ?? "—"}
-                </div>
-              )}
+              <select className="input" value={barberId} onChange={(e) => setBarberId(e.target.value)} required>
+                <option value="">{t("newVisit.selectBarber")}</option>
+                {barbers.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+              </select>
             </div>
 
             <div>

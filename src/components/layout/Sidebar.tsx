@@ -25,6 +25,7 @@ const NAV_ITEMS: {
   { href: "/salaries",    labelKey: "nav.salaries",   icon: "💰", roles: ["OWNER"] },
   { href: "/attendance",  labelKey: "nav.attendance", icon: "📅", roles: ["OWNER","CASHIER"] },
   { href: "/cash-drawer", labelKey: "nav.cashDrawer", icon: "🗃️", roles: ["OWNER","CASHIER"] },
+  { href: "/inventory",   labelKey: "nav.inventory",  icon: "📦", roles: ["OWNER","CASHIER"] },
   { href: "/expenses",    labelKey: "nav.expenses",   icon: "💸", roles: ["OWNER","CASHIER"] },
   { href: "/settings/receipt", labelKey: "nav.settings", icon: "⚙️", roles: ["OWNER"] },
 ];

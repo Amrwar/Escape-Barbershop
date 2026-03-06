@@ -160,6 +160,26 @@ model Expense {
   createdAt DateTime @default(now())
 }
 
+model Product {
+  id        String         @id @default(cuid())
+  name      String         @unique
+  unit      String         @default("pcs")
+  isActive  Boolean        @default(true)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  usages    ProductUsage[]
+}
+
+model ProductUsage {
+  id        String   @id @default(cuid())
+  productId String
+  quantity  Float
+  date      DateTime
+  notes     String?
+  createdAt DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id])
+}
+
 enum Role {
   OWNER
   CASHIER

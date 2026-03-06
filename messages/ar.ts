@@ -226,6 +226,9 @@ const ar: Record<TranslationKey, string> = {
   "cashDrawer.recentSession": "آخر جلسة",
   "cashDrawer.cardSales": "مبيعات بطاقة",
   "cashDrawer.mixedSales": "مبيعات مختلطة",
+  "cashDrawer.deleteSession": "حذف الجلسة",
+  "cashDrawer.deleteSessionHint": "سيتم حذف الجلسة وحركاتها نهائياً. ستُفصل الزيارات عن الجلسة. أدخل رمز الخصم للتأكيد.",
+  "cashDrawer.enterPin": "رمز الخصم",
 
   // Report
   "report.title": "تقرير الجلسة",
@@ -329,6 +332,33 @@ const ar: Record<TranslationKey, string> = {
   "editPin.incorrect": "رمز غير صحيح",
   "editPin.notSet": "لم يتم تعيين رمز — اطلب من المالك تعيينه",
   "editPin.verify": "تحقق",
+
+  // Inventory
+  "nav.inventory": "المخزون",
+  "inventory.title": "المخزون",
+  "inventory.subtitle": "تتبع استهلاك المنتجات يومياً وشهرياً وسنوياً",
+  "inventory.products": "المنتجات",
+  "inventory.addProduct": "+ إضافة منتج",
+  "inventory.editProduct": "تعديل المنتج",
+  "inventory.product": "المنتج",
+  "inventory.productNamePlaceholder": "مثال: شامبو، واكس",
+  "inventory.unit": "الوحدة",
+  "inventory.unitPlaceholder": "مثال: زجاجة، مل، حبة",
+  "inventory.logUsage": "تسجيل استهلاك",
+  "inventory.selectProduct": "اختر المنتج…",
+  "inventory.usageQty": "الكمية المستهلكة",
+  "inventory.usageSummary": "ملخص الاستهلاك",
+  "inventory.usageLog": "سجل الاستهلاك",
+  "inventory.noProducts": "لا توجد منتجات بعد",
+  "inventory.noProductsHint": "أضف منتجات أولاً لبدء تسجيل الاستهلاك",
+  "inventory.noUsage": "لا يوجد استهلاك مسجل لهذه الفترة",
+  "inventory.nameRequired": "اسم المنتج مطلوب",
+  "inventory.selectProductError": "الرجاء اختيار منتج",
+  "inventory.qtyError": "الكمية يجب أن تكون أكبر من صفر",
+  "inventory.today": "اليوم",
+  "inventory.thisMonth": "هذا الشهر",
+  "inventory.thisYear": "هذه السنة",
+  "inventory.custom": "مخصص",
 
   // Visit detail
   "visit.title": "تفاصيل الزيارة",

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Modal } from "@/components/ui/Modal";
@@ -49,6 +50,7 @@ export default function CashDrawerPage() {
   const { data: authSession } = useSession();
   const isOwner = authSession?.user?.role === "OWNER";
   const { t, fmtCurrency } = useTranslation();
+  const router = useRouter();
 
   const [session, setSession] = useState<SessionData | null | undefined>(undefined);
   const [recentSessions, setRecentSessions] = useState<RecentSession[]>([]);
@@ -75,6 +77,13 @@ export default function CashDrawerPage() {
   const [closeNotes, setCloseNotes] = useState("");
   const [closeSubmitting, setCloseSubmitting] = useState(false);
   const [closeError, setCloseError] = useState("");
+
+  // Delete session state
+  const [deleteModal, setDeleteModal] = useState(false);
+  const [deleteSessionId, setDeleteSessionId] = useState<string | null>(null);
+  const [deletePin, setDeletePin] = useState("");
+  const [deleteSubmitting, setDeleteSubmitting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   const fetchSession = useCallback(async () => {
     const res = await fetch("/api/cash-drawer");
@@ -158,17 +167,42 @@ export default function CashDrawerPage() {
         }),
       });
       if (res.ok) {
+        const closed = await res.json();
         setCloseModal(false);
         setClosingCash(0);
         setCloseNotes("");
-        await fetchSession();
-        await fetchSessions();
+        router.push(`/cash-drawer/report/${closed.id}`);
       } else {
         const d = await res.json();
         setCloseError(d.error ?? "Failed");
       }
     } finally {
       setCloseSubmitting(false);
+    }
+  };
+
+  const handleDeleteSession = async () => {
+    if (!deleteSessionId) return;
+    setDeleteSubmitting(true);
+    setDeleteError("");
+    try {
+      const res = await fetch(`/api/cash-drawer/sessions/${deleteSessionId}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pin: deletePin }),
+      });
+      if (res.ok) {
+        setDeleteModal(false);
+        setDeleteSessionId(null);
+        setDeletePin("");
+        await fetchSessions();
+        await fetchSession();
+      } else {
+        const d = await res.json();
+        setDeleteError(d.error ?? "Failed");
+      }
+    } finally {
+      setDeleteSubmitting(false);
     }
   };
 
@@ -234,12 +268,27 @@ export default function CashDrawerPage() {
                           ` · Counted: $${fmtCurrency(s.closingCashCounted)}`}
                       </div>
                     </div>
-                    <Link
-                      href={`/cash-drawer/report/${s.id}`}
-                      className="btn-secondary text-xs"
-                    >
-                      {t("cashDrawer.viewReport")}
-                    </Link>
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href={`/cash-drawer/report/${s.id}`}
+                        className="btn-secondary text-xs"
+                      >
+                        {t("cashDrawer.viewReport")}
+                      </Link>
+                      {isOwner && (
+                        <button
+                          onClick={() => {
+                            setDeleteSessionId(s.id);
+                            setDeletePin("");
+                            setDeleteError("");
+                            setDeleteModal(true);
+                          }}
+                          className="text-xs text-red-400 hover:text-red-600"
+                        >
+                          {t("action.delete")}
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -528,6 +577,47 @@ export default function CashDrawerPage() {
               className="btn-primary flex-1"
             >
               {movementSubmitting ? t("action.saving") : t("action.add")}
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Delete Session Modal */}
+      <Modal
+        open={deleteModal}
+        onClose={() => setDeleteModal(false)}
+        title={t("cashDrawer.deleteSession")}
+        size="sm"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-gray-600">{t("cashDrawer.deleteSessionHint")}</p>
+          <div>
+            <label className="label">{t("cashDrawer.enterPin")}</label>
+            <input
+              type="password"
+              className="input text-center tracking-widest text-lg"
+              placeholder="••••"
+              value={deletePin}
+              onChange={(e) => setDeletePin(e.target.value)}
+              autoFocus
+            />
+          </div>
+          {deleteError && <p className="text-sm text-red-600">{deleteError}</p>}
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => setDeleteModal(false)}
+              className="btn-secondary flex-1"
+            >
+              {t("action.cancel")}
+            </button>
+            <button
+              type="button"
+              onClick={handleDeleteSession}
+              disabled={deleteSubmitting || !deletePin}
+              className="flex-1 py-2 px-4 rounded-lg text-sm font-medium bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
+            >
+              {deleteSubmitting ? t("action.saving") : t("action.delete")}
             </button>
           </div>
         </div>

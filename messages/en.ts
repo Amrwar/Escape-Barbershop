@@ -224,6 +224,9 @@ const en = {
   "cashDrawer.recentSession": "Most Recent Session",
   "cashDrawer.cardSales": "Card Sales",
   "cashDrawer.mixedSales": "Mixed Sales",
+  "cashDrawer.deleteSession": "Delete Session",
+  "cashDrawer.deleteSessionHint": "This will permanently delete the session and its movements. Visits will be unlinked. Enter the discount PIN to confirm.",
+  "cashDrawer.enterPin": "Discount PIN",
 
   // Report
   "report.title": "Session Report",
@@ -327,6 +330,33 @@ const en = {
   "editPin.incorrect": "Incorrect PIN",
   "editPin.notSet": "No PIN set — ask the owner to set one",
   "editPin.verify": "Verify",
+
+  // Inventory
+  "nav.inventory": "Inventory",
+  "inventory.title": "Inventory",
+  "inventory.subtitle": "Track product usage by day, month, or year",
+  "inventory.products": "Products",
+  "inventory.addProduct": "+ Add Product",
+  "inventory.editProduct": "Edit Product",
+  "inventory.product": "Product",
+  "inventory.productNamePlaceholder": "e.g. Shampoo, Wax",
+  "inventory.unit": "Unit",
+  "inventory.unitPlaceholder": "e.g. bottle, ml, pcs",
+  "inventory.logUsage": "Log Usage",
+  "inventory.selectProduct": "Select product…",
+  "inventory.usageQty": "Quantity Used",
+  "inventory.usageSummary": "Usage Summary",
+  "inventory.usageLog": "Usage Log",
+  "inventory.noProducts": "No products yet",
+  "inventory.noProductsHint": "Add products first to start logging usage",
+  "inventory.noUsage": "No usage recorded for this period",
+  "inventory.nameRequired": "Product name is required",
+  "inventory.selectProductError": "Please select a product",
+  "inventory.qtyError": "Quantity must be greater than 0",
+  "inventory.today": "Today",
+  "inventory.thisMonth": "This Month",
+  "inventory.thisYear": "This Year",
+  "inventory.custom": "Custom",
 
   // Visit detail
   "visit.title": "Visit Details",
