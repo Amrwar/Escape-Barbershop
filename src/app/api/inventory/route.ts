@@ -1,38 +1,60 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAuth, requireOwner } from "@/lib/auth";
+import { requireAuth } from "@/lib/auth";
 
+// GET /api/inventory?from=&to=
+// Returns per-service usage counts and quantities for the given period
 export async function GET(req: NextRequest) {
   try {
     await requireAuth();
-    const includeInactive = req.nextUrl.searchParams.get("all") === "true";
-    const products = await prisma.product.findMany({
-      where: includeInactive ? {} : { isActive: true },
-      orderBy: { name: "asc" },
+    const { searchParams } = req.nextUrl;
+    const from = searchParams.get("from");
+    const to = searchParams.get("to");
+
+    const items = await prisma.visitItem.findMany({
+      where: {
+        visit: {
+          ...(from || to
+            ? {
+                visitAt: {
+                  ...(from && { gte: new Date(from) }),
+                  ...(to && { lte: new Date(to) }),
+                },
+              }
+            : {}),
+        },
+      },
+      include: {
+        service: { select: { id: true, name: true, arabicName: true } },
+      },
     });
-    return NextResponse.json(products);
+
+    // Aggregate by service
+    const map = new Map<
+      string,
+      { serviceId: string; name: string; arabicName: string | null; count: number; totalQty: number }
+    >();
+    for (const item of items) {
+      const e = map.get(item.serviceId);
+      if (e) {
+        e.count += 1;
+        e.totalQty += item.quantity;
+      } else {
+        map.set(item.serviceId, {
+          serviceId: item.serviceId,
+          name: item.service.name,
+          arabicName: item.service.arabicName,
+          count: 1,
+          totalQty: item.quantity,
+        });
+      }
+    }
+
+    const result = Array.from(map.values()).sort((a, b) => b.totalQty - a.totalQty);
+    return NextResponse.json({ items: result, total: items.reduce((s, i) => s + i.quantity, 0) });
   } catch (err: unknown) {
     if (err instanceof Error && err.message.includes("Unauthorized"))
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
-  }
-}
-
-export async function POST(req: NextRequest) {
-  try {
-    await requireOwner();
-    const { name, unit } = await req.json();
-    if (!name?.trim())
-      return NextResponse.json({ error: "Name is required" }, { status: 400 });
-    const product = await prisma.product.create({
-      data: { name: name.trim(), unit: unit?.trim() || "pcs" },
-    });
-    return NextResponse.json(product, { status: 201 });
-  } catch (err: unknown) {
-    if (err instanceof Error && err.message.includes("Unauthorized"))
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    if (err instanceof Error && err.message.includes("Unique constraint"))
-      return NextResponse.json({ error: "Product name already exists" }, { status: 409 });
-    return NextResponse.json({ error: "Failed" }, { status: 500 });
   }
 }
