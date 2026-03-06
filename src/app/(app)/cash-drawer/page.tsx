@@ -246,6 +246,12 @@ export default function CashDrawerPage() {
           </div>
 
           {/* Recent sessions list */}
+          <div className="flex justify-end">
+            <Link href="/cash-drawer/day-report" className="btn-secondary text-sm">
+              {t("cashDrawer.viewDayReport")}
+            </Link>
+          </div>
+
           {recentSessions.length > 0 && (
             <div className="card p-5">
               <h2 className="text-sm font-semibold text-gray-900 mb-4">
@@ -405,6 +411,13 @@ export default function CashDrawerPage() {
                 ))}
               </div>
             )}
+          </div>
+
+          {/* Day report link */}
+          <div className="flex justify-end">
+            <Link href="/cash-drawer/day-report" className="btn-secondary text-sm">
+              {t("cashDrawer.viewDayReport")}
+            </Link>
           </div>
 
           {/* Owner actions */}

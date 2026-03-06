@@ -5,6 +5,96 @@ import { useParams } from "next/navigation";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { useTranslation } from "@/lib/i18n";
 
+interface ShopSettings {
+  shopName: string;
+  shopPhone: string | null;
+  shopAddress: string | null;
+  receiptFooter: string | null;
+}
+
+function fmt(n: number) {
+  return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function printSessionReceipt(report: ReportData, shop: ShopSettings) {
+  const { session, summary, movements, topServices } = report;
+  const date = new Date(session.openedAt).toLocaleString();
+
+  const diffLine =
+    summary.difference !== null
+      ? `${summary.difference >= 0 ? "+" : ""}$${fmt(summary.difference)} (${summary.difference >= 0 ? "Over" : "Short"})`
+      : "—";
+
+  const movementsHtml = movements
+    .map(
+      (m) =>
+        `<div style="display:flex;justify-content:space-between;padding:2px 0">` +
+        `<span>[${m.type}] ${m.reason}</span>` +
+        `<span>${m.type === "IN" ? "+" : "-"}$${fmt(m.amount)}</span></div>`
+    )
+    .join("");
+
+  const servicesHtml = topServices
+    .slice(0, 8)
+    .map((s, i) => `<div style="display:flex;justify-content:space-between;padding:1px 0"><span>${i + 1}. ${s.name}</span><span>${s.count}×</span></div>`)
+    .join("");
+
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<style>
+  * { color: #000 !important; }
+  body { font-family: monospace; font-size: 12px; width: 80mm; margin: 0 auto; padding: 8px; }
+  h1 { text-align: center; font-size: 14px; margin: 4px 0; }
+  p { text-align: center; margin: 2px 0; font-size: 11px; }
+  .title { text-align: center; font-size: 12px; font-weight: bold; margin: 6px 0; text-transform: uppercase; letter-spacing: 1px; }
+  hr { border: none; border-top: 1px dashed #000; margin: 6px 0; }
+  .row { display: flex; justify-content: space-between; padding: 2px 0; }
+  .bold { font-weight: bold; }
+  .footer { text-align: center; margin-top: 8px; font-size: 11px; }
+</style>
+</head>
+<body>
+<h1>${shop.shopName}</h1>
+${shop.shopPhone ? `<p>${shop.shopPhone}</p>` : ""}
+${shop.shopAddress ? `<p>${shop.shopAddress}</p>` : ""}
+<hr />
+<div class="title">Session Report</div>
+<div class="row"><span>Date:</span><span>${date}</span></div>
+<div class="row"><span>Opened by:</span><span>${session.openedBy.name}</span></div>
+${session.closedBy ? `<div class="row"><span>Closed by:</span><span>${session.closedBy.name}</span></div>` : ""}
+<div class="row"><span>Status:</span><span>${session.status}</span></div>
+<hr />
+<div class="bold">REVENUE</div>
+<div class="row"><span>Visits:</span><span>${summary.visitCount}</span></div>
+<div class="row"><span>Cash Sales:</span><span>$${fmt(summary.cashSales)}</span></div>
+<div class="row"><span>Card Sales:</span><span>$${fmt(summary.cardTotal)}</span></div>
+${summary.discountsTotal > 0 ? `<div class="row"><span>Discounts:</span><span>-$${fmt(summary.discountsTotal)}</span></div>` : ""}
+<hr />
+<div class="bold">CASH RECONCILIATION</div>
+<div class="row"><span>Opening:</span><span>$${fmt(session.openingCash)}</span></div>
+<div class="row"><span>+ Cash Sales:</span><span>$${fmt(summary.cashSales)}</span></div>
+${summary.cashIn > 0 ? `<div class="row"><span>+ Cash In:</span><span>$${fmt(summary.cashIn)}</span></div>` : ""}
+${summary.cashOut > 0 ? `<div class="row"><span>- Cash Out:</span><span>$${fmt(summary.cashOut)}</span></div>` : ""}
+<div class="row bold"><span>Expected:</span><span>$${fmt(summary.expectedCash)}</span></div>
+${summary.countedCash !== null ? `<div class="row"><span>Counted:</span><span>$${fmt(summary.countedCash)}</span></div>` : ""}
+${summary.difference !== null ? `<div class="row bold"><span>Difference:</span><span>${diffLine}</span></div>` : ""}
+${movements.length > 0 ? `<hr /><div class="bold">MOVEMENTS</div>${movementsHtml}` : ""}
+${topServices.length > 0 ? `<hr /><div class="bold">TOP SERVICES</div>${servicesHtml}` : ""}
+<hr />
+${shop.receiptFooter ? `<div class="footer">${shop.receiptFooter}</div>` : ""}
+</body>
+</html>`;
+
+  const w = window.open("", "_blank", "width=400,height=600");
+  if (!w) return;
+  w.document.write(html);
+  w.document.close();
+  w.focus();
+  w.print();
+}
+
 interface Movement {
   id: string;
   type: "IN" | "OUT";
@@ -71,6 +161,11 @@ export default function ReportPage() {
   const [report, setReport] = useState<ReportData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [shop, setShop] = useState<ShopSettings>({ shopName: "Escape Barbershop", shopPhone: null, shopAddress: null, receiptFooter: null });
+
+  useEffect(() => {
+    fetch("/api/settings/receipt").then((r) => r.json()).then((d) => { if (!d.error) setShop(d); });
+  }, []);
 
   useEffect(() => {
     fetch(`/api/cash-drawer/report/${id}`)
@@ -154,6 +249,9 @@ export default function ReportPage() {
         </div>
         <button onClick={() => window.print()} className="btn-secondary text-sm">
           {t("cashDrawer.printReport")}
+        </button>
+        <button onClick={() => report && printSessionReceipt(report, shop)} className="btn-secondary text-sm">
+          {t("cashDrawer.printReceiptBtn")}
         </button>
         <button onClick={exportCsv} className="btn-secondary text-sm">
           {t("cashDrawer.exportCsv")}
