@@ -23,6 +23,7 @@ export interface ReceiptVisit {
   discount: number;
   total: number;
   notes: string | null;
+  sessionSequence: number | null;
   items: ReceiptItem[];
 }
 
@@ -50,7 +51,9 @@ function buildReceiptBlock(
   items: ReceiptItem[],
   showTotals: boolean
 ): string {
-  const receiptNo = visit.id.slice(-8).toUpperCase();
+  const receiptNo = visit.sessionSequence != null
+    ? String(visit.sessionSequence)
+    : visit.id.slice(-8).toUpperCase();
   const displayTotal = showTotals ? visit.total : items.reduce((s, i) => s + i.priceAtTime * i.quantity, 0);
 
   const logoHtml = shop.shopLogo

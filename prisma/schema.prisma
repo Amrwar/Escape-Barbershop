@@ -94,9 +94,10 @@ model Visit {
   notes         String?
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
-  cardAmount    Float?
-  cashAmount    Float?
-  sessionId     String?
+  cardAmount       Float?
+  cashAmount       Float?
+  sessionId        String?
+  sessionSequence  Int?
   barber        Barber             @relation(fields: [barberId], references: [id])
   customer      Customer           @relation(fields: [customerId], references: [id])
   session       CashDrawerSession? @relation(fields: [sessionId], references: [id])

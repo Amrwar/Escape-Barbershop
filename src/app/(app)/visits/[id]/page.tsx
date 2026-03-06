@@ -19,6 +19,7 @@ interface VisitDetail {
   cashAmount: number | null;
   cardAmount: number | null;
   notes: string | null;
+  sessionSequence: number | null;
   customer: { name: string; phone: string | null };
   barber: { name: string };
   items: {
@@ -71,7 +72,8 @@ export default function VisitDetailPage() {
     const receiptVisit: ReceiptVisit = {
       id: visit.id, visitAt: visit.visitAt, customer: visit.customer, barber: visit.barber,
       paymentMethod: visit.paymentMethod, cashAmount: visit.cashAmount, cardAmount: visit.cardAmount,
-      discount: visit.discount, total: visit.total, notes: visit.notes, items: visit.items,
+      discount: visit.discount, total: visit.total, notes: visit.notes,
+      sessionSequence: visit.sessionSequence, items: visit.items,
     };
     const text = buildWhatsAppText(receiptVisit, shopSettings);
     const phone = visit.customer.phone!.replace(/\D/g, "");
@@ -85,7 +87,8 @@ export default function VisitDetailPage() {
       const receiptVisit: ReceiptVisit = {
         id: visit.id, visitAt: visit.visitAt, customer: visit.customer, barber: visit.barber,
         paymentMethod: visit.paymentMethod, cashAmount: visit.cashAmount, cardAmount: visit.cardAmount,
-        discount: visit.discount, total: visit.total, notes: visit.notes, items: visit.items,
+        discount: visit.discount, total: visit.total, notes: visit.notes,
+        sessionSequence: visit.sessionSequence, items: visit.items,
       };
       await downloadReceiptPdf(receiptVisit, shopSettings);
     } finally {
@@ -106,6 +109,7 @@ export default function VisitDetailPage() {
       discount: visit.discount,
       total: visit.total,
       notes: visit.notes,
+      sessionSequence: visit.sessionSequence,
       items: visit.items,
     };
     printReceipt(receiptVisit, shopSettings, mode);
@@ -136,7 +140,9 @@ export default function VisitDetailPage() {
 
   const subtotal = visit.items.reduce((s, i) => s + i.priceAtTime * i.quantity, 0);
   const discountAmount = (subtotal * visit.discount) / 100;
-  const receiptNo = visit.id.slice(-8).toUpperCase();
+  const receiptNo = visit.sessionSequence != null
+    ? String(visit.sessionSequence)
+    : visit.id.slice(-8).toUpperCase();
 
   return (
     <div className="p-6 max-w-3xl mx-auto">

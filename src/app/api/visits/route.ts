@@ -67,45 +67,48 @@ export async function POST(req: NextRequest) {
       cardAmount = data.cardAmount ?? total - cashAmount;
     }
 
-    // Link to open cash drawer session for CASH or MIXED visits
-    let sessionId: string | null = null;
-    try {
-      if (data.paymentMethod === "CASH" || data.paymentMethod === "MIXED") {
-        const openSession = await prisma.cashDrawerSession.findFirst({
-          where: { status: "OPEN" },
-          select: { id: true },
-        });
-        if (openSession) sessionId = openSession.id;
-      }
-    } catch {
-      // Cash drawer unavailable — visit is still saved without session link
-    }
+    // Link to open cash drawer session and assign sequential receipt number
+    const visit = await prisma.$transaction(async (tx) => {
+      // Find open session
+      const openSession = await tx.cashDrawerSession.findFirst({
+        where: { status: "OPEN" },
+        select: { id: true },
+      });
+      const sessionId = openSession?.id ?? null;
 
-    const visit = await prisma.visit.create({
-      data: {
-        customerId: data.customerId,
-        barberId: data.barberId,
-        visitAt: data.visitAt ? new Date(data.visitAt) : new Date(),
-        paymentMethod: data.paymentMethod,
-        discount: data.discount ?? 0,
-        total,
-        cashAmount,
-        cardAmount,
-        notes: data.notes || null,
-        ...(sessionId ? { sessionId } : {}),
-        items: {
-          create: data.items.map((item) => ({
-            serviceId: item.serviceId,
-            quantity: item.quantity,
-            priceAtTime: item.priceAtTime,
-          })),
+      // Assign next sequence number within the session
+      let sessionSequence: number | null = null;
+      if (sessionId) {
+        const count = await tx.visit.count({ where: { sessionId } });
+        sessionSequence = count + 1;
+      }
+
+      return tx.visit.create({
+        data: {
+          customerId: data.customerId,
+          barberId: data.barberId,
+          visitAt: data.visitAt ? new Date(data.visitAt) : new Date(),
+          paymentMethod: data.paymentMethod,
+          discount: data.discount ?? 0,
+          total,
+          cashAmount,
+          cardAmount,
+          notes: data.notes || null,
+          ...(sessionId ? { sessionId, sessionSequence } : {}),
+          items: {
+            create: data.items.map((item) => ({
+              serviceId: item.serviceId,
+              quantity: item.quantity,
+              priceAtTime: item.priceAtTime,
+            })),
+          },
         },
-      },
-      include: {
-        customer: true,
-        barber: true,
-        items: { include: { service: true } },
-      },
+        include: {
+          customer: true,
+          barber: true,
+          items: { include: { service: true } },
+        },
+      });
     });
     return NextResponse.json(visit, { status: 201 });
   } catch (err: unknown) {
