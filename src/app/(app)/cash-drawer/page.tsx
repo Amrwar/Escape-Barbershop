@@ -32,6 +32,7 @@ interface SessionData {
     cashSales: number;
     cashIn: number;
     cashOut: number;
+    expensesTotal: number;
     expectedCash: number;
   };
 }
@@ -73,6 +74,7 @@ export default function CashDrawerPage() {
 
   // Close state
   const [closeModal, setCloseModal] = useState(false);
+  const [closeTarget, setCloseTarget] = useState<"session" | "day">("session");
   const [closingCash, setClosingCash] = useState(0);
   const [closeNotes, setCloseNotes] = useState("");
   const [closeSubmitting, setCloseSubmitting] = useState(false);
@@ -171,7 +173,11 @@ export default function CashDrawerPage() {
         setCloseModal(false);
         setClosingCash(0);
         setCloseNotes("");
-        router.push(`/cash-drawer/report/${closed.id}`);
+        if (closeTarget === "day") {
+          router.push(`/cash-drawer/day-report`);
+        } else {
+          router.push(`/cash-drawer/report/${closed.id}`);
+        }
       } else {
         const d = await res.json();
         setCloseError(d.error ?? "Failed");
@@ -355,6 +361,14 @@ export default function CashDrawerPage() {
                   </span>
                 </div>
               )}
+              {session.visitSummary.expensesTotal > 0 && (
+                <div className="flex justify-between text-gray-600">
+                  <span>{t("expenses.title")}</span>
+                  <span className="text-red-600">
+                    -${fmtCurrency(session.visitSummary.expensesTotal)}
+                  </span>
+                </div>
+              )}
               <div className="flex justify-between font-bold text-base text-gray-900 pt-2 border-t border-green-200">
                 <span>{t("cashDrawer.expectedCash")}</span>
                 <span className="text-green-700">
@@ -445,10 +459,21 @@ export default function CashDrawerPage() {
               <button
                 onClick={() => {
                   setClosingCash(
-                    parseFloat(
-                      session.visitSummary.expectedCash.toFixed(2)
-                    )
+                    parseFloat(session.visitSummary.expectedCash.toFixed(2))
                   );
+                  setCloseTarget("session");
+                  setCloseModal(true);
+                }}
+                className="btn-secondary"
+              >
+                {t("cashDrawer.closeSession")}
+              </button>
+              <button
+                onClick={() => {
+                  setClosingCash(
+                    parseFloat(session.visitSummary.expectedCash.toFixed(2))
+                  );
+                  setCloseTarget("day");
                   setCloseModal(true);
                 }}
                 className="btn-primary"
@@ -640,7 +665,7 @@ export default function CashDrawerPage() {
       <Modal
         open={closeModal}
         onClose={() => setCloseModal(false)}
-        title={t("cashDrawer.closeDayTitle")}
+        title={closeTarget === "day" ? t("cashDrawer.closeDayTitle") : t("cashDrawer.closeSession")}
         size="sm"
       >
         <div className="space-y-4">

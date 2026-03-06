@@ -33,6 +33,12 @@ export async function GET(req: NextRequest) {
     });
 
     // Aggregate across all sessions
+    // Fetch expenses for the whole day
+    const expenseRows = await prisma.expense.findMany({
+      where: { date: { gte: from, lte: to } },
+    });
+    const expensesTotal = expenseRows.reduce((s, e) => s + e.amount, 0);
+
     let totalVisits = 0;
     let cashTotal = 0;
     let cardTotal = 0;
@@ -74,7 +80,7 @@ export async function GET(req: NextRequest) {
 
     const cashSales = cashTotal + mixedCashAmount;
     const totalRevenue = cashTotal + cardTotal + mixedCashAmount + (sessions.flatMap(s => s.visits).filter(v => v.paymentMethod === "MIXED").reduce((sum, v) => sum + (v.cardAmount ?? 0), 0));
-    const expectedCash = totalOpeningCash + cashSales + cashIn - cashOut;
+    const expectedCash = totalOpeningCash + cashSales + cashIn - cashOut - expensesTotal;
     const difference = totalCountedCash !== null ? totalCountedCash - expectedCash : null;
 
     return NextResponse.json({
@@ -100,6 +106,7 @@ export async function GET(req: NextRequest) {
         discountsTotal,
         cashIn,
         cashOut,
+        expensesTotal,
         cashSales,
         totalRevenue,
         totalOpeningCash,

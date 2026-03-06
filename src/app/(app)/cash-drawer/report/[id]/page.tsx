@@ -77,6 +77,7 @@ ${summary.discountsTotal > 0 ? `<div class="row"><span>Discounts:</span><span>-$
 <div class="row"><span>+ Cash Sales:</span><span>$${fmt(summary.cashSales)}</span></div>
 ${summary.cashIn > 0 ? `<div class="row"><span>+ Cash In:</span><span>$${fmt(summary.cashIn)}</span></div>` : ""}
 ${summary.cashOut > 0 ? `<div class="row"><span>- Cash Out:</span><span>$${fmt(summary.cashOut)}</span></div>` : ""}
+${summary.expensesTotal > 0 ? `<div class="row"><span>- Expenses:</span><span>$${fmt(summary.expensesTotal)}</span></div>` : ""}
 <div class="row bold"><span>Expected:</span><span>$${fmt(summary.expectedCash)}</span></div>
 ${summary.countedCash !== null ? `<div class="row"><span>Counted:</span><span>$${fmt(summary.countedCash)}</span></div>` : ""}
 ${summary.difference !== null ? `<div class="row bold"><span>Difference:</span><span>${diffLine}</span></div>` : ""}
@@ -144,6 +145,7 @@ interface ReportData {
     discountsTotal: number;
     cashIn: number;
     cashOut: number;
+    expensesTotal: number;
     cashSales: number;
     expectedCash: number;
     countedCash: number | null;
@@ -346,6 +348,12 @@ export default function ReportPage() {
             <div className="flex justify-between text-gray-600">
               <span>{t("cashDrawer.cashOut")}</span>
               <span className="text-red-600">-${fmtCurrency(summary.cashOut)}</span>
+            </div>
+          )}
+          {summary.expensesTotal > 0 && (
+            <div className="flex justify-between text-gray-600">
+              <span>{t("expenses.title")}</span>
+              <span className="text-red-600">-${fmtCurrency(summary.expensesTotal)}</span>
             </div>
           )}
           <div className="flex justify-between font-bold text-gray-900 pt-2 border-t border-gray-200">

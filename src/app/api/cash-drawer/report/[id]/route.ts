@@ -64,7 +64,18 @@ export async function GET(
       .filter((m) => m.type === "OUT")
       .reduce((s, m) => s + m.amount, 0);
 
-    const expectedCash = session.openingCash + cashSales + cashIn - cashOut;
+    // Expenses logged during this session's time window
+    const expenseRows = await prisma.expense.findMany({
+      where: {
+        date: {
+          gte: session.openedAt,
+          lte: session.closedAt ?? new Date(),
+        },
+      },
+    });
+    const expensesTotal = expenseRows.reduce((s, e) => s + e.amount, 0);
+
+    const expectedCash = session.openingCash + cashSales + cashIn - cashOut - expensesTotal;
     const countedCash = session.closingCashCounted ?? null;
     const difference = countedCash !== null ? countedCash - expectedCash : null;
 
@@ -128,6 +139,7 @@ export async function GET(
         discountsTotal,
         cashIn,
         cashOut,
+        expensesTotal,
         cashSales,
         expectedCash,
         countedCash,

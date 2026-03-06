@@ -230,6 +230,7 @@ const en = {
   "cashDrawer.viewDayReport": "Day Report →",
   "cashDrawer.sessions": "Sessions",
   "cashDrawer.noSessionsForDay": "No sessions found for this date",
+  "cashDrawer.closeSession": "Close Session",
   "cashDrawer.deleteSession": "Delete Session",
   "cashDrawer.deleteSessionHint": "This will permanently delete the session and its movements. Visits will be unlinked. Enter the discount PIN to confirm.",
   "cashDrawer.enterPin": "Discount PIN",

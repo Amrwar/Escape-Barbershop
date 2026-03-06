@@ -232,6 +232,7 @@ const ar: Record<TranslationKey, string> = {
   "cashDrawer.viewDayReport": "← تقرير اليوم",
   "cashDrawer.sessions": "الجلسات",
   "cashDrawer.noSessionsForDay": "لا توجد جلسات لهذا التاريخ",
+  "cashDrawer.closeSession": "إغلاق الجلسة",
   "cashDrawer.deleteSession": "حذف الجلسة",
   "cashDrawer.deleteSessionHint": "سيتم حذف الجلسة وحركاتها نهائياً. ستُفصل الزيارات عن الجلسة. أدخل رمز الخصم للتأكيد.",
   "cashDrawer.enterPin": "رمز الخصم",
