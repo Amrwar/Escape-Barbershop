@@ -19,7 +19,6 @@ const NAV_ITEMS: {
   { href: "/visits/new",  labelKey: "nav.newVisit",   icon: "➕", roles: ["OWNER","CASHIER"] },
   { href: "/visits",      labelKey: "nav.visits",     icon: "📋", roles: ["OWNER","CASHIER"] },
   { href: "/reports",     labelKey: "nav.reports",    icon: "📈", roles: ["OWNER","CASHIER"] },
-  { href: "/customers",   labelKey: "nav.customers",  icon: "👥", roles: ["OWNER","CASHIER"] },
   { href: "/services",    labelKey: "nav.services",   icon: "✂️", roles: ["OWNER"] },
   { href: "/barbers",     labelKey: "nav.barbers",    icon: "💈", roles: ["OWNER"] },
   { href: "/salaries",    labelKey: "nav.salaries",   icon: "💰", roles: ["OWNER"] },
