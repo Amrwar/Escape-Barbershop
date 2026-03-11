@@ -11,6 +11,7 @@ interface ShopSettings {
   shopPhone: string | null;
   shopAddress: string | null;
   receiptFooter: string | null;
+  shopLogo: string | null;
 }
 
 function fmt(n: number) {
@@ -70,6 +71,7 @@ function printReportReceipt(
 </style>
 </head>
 <body>
+${shop.shopLogo ? `<div style="text-align:center;margin-bottom:6px;"><img src="${shop.shopLogo}" style="max-width:160px;max-height:120px;object-fit:contain;" /></div>` : ""}
 <h1>${shop.shopName}</h1>
 ${shop.shopPhone ? `<p>${shop.shopPhone}</p>` : ""}
 ${shop.shopAddress ? `<p>${shop.shopAddress}</p>` : ""}
@@ -201,7 +203,7 @@ export default function ReportsPage() {
   const [data, setData] = useState<ReportData | null>(null);
   const [loading, setLoading] = useState(false);
   const [fetched, setFetched] = useState(false);
-  const [shop, setShop] = useState<ShopSettings>({ shopName: "Escape Barbershop", shopPhone: null, shopAddress: null, receiptFooter: null });
+  const [shop, setShop] = useState<ShopSettings>({ shopName: "Escape Barbershop", shopPhone: null, shopAddress: null, receiptFooter: null, shopLogo: null });
 
   useEffect(() => {
     fetch("/api/settings/receipt").then((r) => r.json()).then((d) => {
