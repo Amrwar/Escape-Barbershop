@@ -6,6 +6,102 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { useTranslation } from "@/lib/i18n";
 import { format, startOfDay, startOfWeek, startOfMonth } from "date-fns";
 
+interface ShopSettings {
+  shopName: string;
+  shopPhone: string | null;
+  shopAddress: string | null;
+  receiptFooter: string | null;
+}
+
+function fmt(n: number) {
+  return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function printReportReceipt(
+  data: ReportData,
+  shop: ShopSettings,
+  from: string,
+  to: string,
+  isOwner: boolean,
+) {
+  const { summary, perBarber, expenses } = data;
+  const period = from === to ? from : `${from} → ${to}`;
+
+  const topServicesHtml = summary.topServices.length > 0
+    ? `<hr /><div class="bold">TOP SERVICES</div><table>
+        ${summary.topServices.slice(0, 8).map((s, i) =>
+          `<tr><td>${i + 1}. ${s.name}</td><td style="text-align:right">${s.count}× $${fmt(s.revenue)}</td></tr>`
+        ).join("")}
+      </table>`
+    : "";
+
+  const perBarberHtml = isOwner && perBarber.length > 0
+    ? `<hr /><div class="bold">PER BARBER</div><table>
+        ${perBarber.map((b) =>
+          `<tr><td>${b.barberName}</td><td style="text-align:right">${b.visitCount}v $${fmt(b.revenue)}</td></tr>`
+        ).join("")}
+      </table>`
+    : "";
+
+  const expensesHtml = isOwner && expenses.length > 0
+    ? `<hr /><div class="bold">EXPENSES</div><table>
+        ${expenses.map((e) =>
+          `<tr><td>${e.reason}</td><td style="text-align:right">-$${fmt(e.amount)}</td></tr>`
+        ).join("")}
+      </table>`
+    : "";
+
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<style>
+  * { color: #000 !important; }
+  body { font-family: monospace; font-size: 12px; width: 80mm; margin: 0 auto; padding: 8px; }
+  h1 { text-align: center; font-size: 14px; margin: 4px 0; }
+  p { text-align: center; margin: 2px 0; font-size: 11px; }
+  .title { text-align: center; font-size: 12px; font-weight: bold; margin: 6px 0; text-transform: uppercase; letter-spacing: 1px; }
+  hr { border: none; border-top: 1px dashed #000; margin: 6px 0; }
+  table { width: 100%; border-collapse: collapse; }
+  td { padding: 2px 0; }
+  .row { display: flex; justify-content: space-between; padding: 2px 0; }
+  .bold { font-weight: bold; }
+  .footer { text-align: center; margin-top: 8px; font-size: 11px; }
+</style>
+</head>
+<body>
+<h1>${shop.shopName}</h1>
+${shop.shopPhone ? `<p>${shop.shopPhone}</p>` : ""}
+${shop.shopAddress ? `<p>${shop.shopAddress}</p>` : ""}
+<hr />
+<div class="title">Period Report</div>
+<div class="row"><span>Period:</span><span>${period}</span></div>
+<hr />
+<div class="bold">REVENUE</div>
+<div class="row"><span>Total Visits:</span><span>${summary.visitCount}</span></div>
+<div class="row"><span>Cash:</span><span>$${fmt(summary.cashTotal)}</span></div>
+<div class="row"><span>Card:</span><span>$${fmt(summary.cardTotal)}</span></div>
+${summary.mixedTotal > 0 ? `<div class="row"><span>Mixed:</span><span>$${fmt(summary.mixedTotal)}</span></div>` : ""}
+${summary.discountsTotal > 0 ? `<div class="row"><span>Discounts:</span><span>-$${fmt(summary.discountsTotal)}</span></div>` : ""}
+<div class="row bold" style="border-top:1px solid #000;padding-top:4px;margin-top:2px"><span>Total Revenue:</span><span>$${fmt(summary.totalRevenue)}</span></div>
+${isOwner && summary.expensesTotal > 0 ? `<div class="row"><span>Expenses:</span><span>-$${fmt(summary.expensesTotal)}</span></div>` : ""}
+${isOwner ? `<div class="row bold"><span>Net Revenue:</span><span>$${fmt(summary.netRevenue)}</span></div>` : ""}
+${topServicesHtml}
+${perBarberHtml}
+${expensesHtml}
+<hr />
+${shop.receiptFooter ? `<div class="footer">${shop.receiptFooter}</div>` : ""}
+</body>
+</html>`;
+
+  const w = window.open("", "_blank", "width=400,height=600");
+  if (!w) return;
+  w.document.write(html);
+  w.document.close();
+  w.focus();
+  w.print();
+}
+
 interface VisitItem {
   service: { name: string; arabicName: string | null };
   quantity: number;
@@ -105,6 +201,13 @@ export default function ReportsPage() {
   const [data, setData] = useState<ReportData | null>(null);
   const [loading, setLoading] = useState(false);
   const [fetched, setFetched] = useState(false);
+  const [shop, setShop] = useState<ShopSettings>({ shopName: "Escape Barbershop", shopPhone: null, shopAddress: null, receiptFooter: null });
+
+  useEffect(() => {
+    fetch("/api/settings/receipt").then((r) => r.json()).then((d) => {
+      if (!d.error) setShop(d);
+    });
+  }, []);
 
   const doFetch = useCallback(async (fromDate: string, toDate: string) => {
     setLoading(true);
@@ -266,6 +369,13 @@ export default function ReportsPage() {
             className="btn-secondary"
           >
             {t("reports.exportExcel")}
+          </button>
+          <button
+            onClick={() => data && printReportReceipt(data, shop, from, to, isOwner)}
+            disabled={!hasData}
+            className="btn-secondary"
+          >
+            🖨️ Print
           </button>
         </div>
       </div>
