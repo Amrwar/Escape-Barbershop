@@ -52,7 +52,6 @@ interface DayGroup {
   label: string;
   sessions: RecentSession[];
   totalVisits: number;
-  hasOpen: boolean;
 }
 
 export default function CashDrawerPage() {
@@ -256,7 +255,6 @@ export default function CashDrawerPage() {
       const g = map.get(key)!;
       g.sessions.push(s);
       g.totalVisits += s._count.visits;
-      if (s.status === "OPEN") g.hasOpen = true;
     }
     return Array.from(map.values()).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 10);
   })();
