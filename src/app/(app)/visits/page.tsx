@@ -29,7 +29,7 @@ const paymentBadge: Record<string, "green" | "blue" | "yellow"> = {
 export default function VisitsPage() {
   const { data: session } = useSession();
   const isOwner = session?.user?.role === "OWNER";
-  const { t, fmtCurrency, fmtDateTime, lang } = useTranslation();
+  const { t, fmtCurrency, fmtDateTime, lang, fmtCustomerName } = useTranslation();
 
   const [visits, setVisits] = useState<Visit[]>([]);
   const [barbers, setBarbers] = useState<Barber[]>([]);
@@ -121,7 +121,7 @@ export default function VisitsPage() {
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 flex-wrap">
-                    <span className="font-semibold text-gray-900">{v.customer.name}</span>
+                    <span className="font-semibold text-gray-900">{fmtCustomerName(v.customer.name)}</span>
                     <Badge variant={paymentBadge[v.paymentMethod] ?? "gray"}>
                       {v.paymentMethod === "CASH" ? t("common.cash") : v.paymentMethod === "CARD" ? t("common.card") : t("common.mixed")}
                     </Badge>

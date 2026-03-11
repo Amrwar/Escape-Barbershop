@@ -159,7 +159,7 @@ interface ReportData {
 
 export default function ReportPage() {
   const { id } = useParams<{ id: string }>();
-  const { t, fmtCurrency } = useTranslation();
+  const { t, fmtCurrency, fmtCustomerName } = useTranslation();
   const [report, setReport] = useState<ReportData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -439,7 +439,7 @@ export default function ReportPage() {
                 {visits.map((v) => (
                   <tr key={v.id}>
                     <td className="px-3 py-2 font-medium text-gray-900">
-                      {v.customer.name}
+                      {fmtCustomerName(v.customer.name)}
                       <div className="text-xs text-gray-400">{new Date(v.visitAt).toLocaleTimeString()}</div>
                     </td>
                     <td className="px-3 py-2 text-gray-600">{v.barber.name}</td>

@@ -36,13 +36,7 @@ export async function POST(req: NextRequest) {
 
     let name = data.name?.trim() || "";
     if (!name) {
-      // Auto-generate a daily walk-in number
-      const todayStart = new Date();
-      todayStart.setHours(0, 0, 0, 0);
-      const todayCount = await prisma.customer.count({
-        where: { createdAt: { gte: todayStart } },
-      });
-      name = `Walk-in #${todayCount + 1}`;
+      name = "Walk-in";
     }
 
     const customer = await prisma.customer.create({

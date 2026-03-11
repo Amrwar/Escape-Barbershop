@@ -105,6 +105,7 @@ const ar: Record<TranslationKey, string> = {
   "common.off": "خصم",
   "common.x": "×",
   "common.hash": "#",
+  "common.walkInName": "زائر بلا حجز",
 
   // Dashboard
   "dashboard.title": "لوحة التحكم",
@@ -176,7 +177,7 @@ const ar: Record<TranslationKey, string> = {
   "newVisit.discountPinHint": "أدخل الرمز لتفعيل حقل الخصم",
   "newVisit.wrongPin": "رمز خاطئ — يرجى المحاولة مرة أخرى",
   "newVisit.unlockDiscount": "تفعيل الخصم",
-  "newVisit.walkIn": "زبون عابر",
+  "newVisit.walkIn": "زائر بلا حجز",
 
   // Barbers
   "barbers.title": "الحلاقون",

@@ -42,7 +42,7 @@ const paymentBadge: Record<string, "green" | "blue" | "yellow"> = {
 export default function CustomerDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const { t, fmtCurrency, fmtDate, fmtDateTime, dir } = useTranslation();
+  const { t, fmtCurrency, fmtDate, fmtDateTime, dir, fmtCustomerName } = useTranslation();
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -77,7 +77,7 @@ export default function CustomerDetailPage() {
       </div>
 
       <PageHeader
-        title={customer.name}
+        title={fmtCustomerName(customer.name)}
         subtitle={`${t("customers.since")} ${fmtDate(customer.createdAt)}`}
         action={
           <Link href={`/visits/new?customerId=${customer.id}`} className="btn-primary">

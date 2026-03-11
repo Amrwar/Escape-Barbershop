@@ -41,7 +41,7 @@ export default function VisitDetailPage() {
   const router = useRouter();
   const { data: session } = useSession();
   const isOwner = session?.user?.role === "OWNER";
-  const { t, fmtCurrency, fmtDateTime, lang } = useTranslation();
+  const { t, fmtCurrency, fmtDateTime, lang, fmtCustomerName } = useTranslation();
 
   const [visit, setVisit] = useState<VisitDetail | null>(null);
   const [shopSettings, setShopSettings] = useState<ReceiptShopSettings | null>(null);
@@ -75,7 +75,7 @@ export default function VisitDetailPage() {
       discount: visit.discount, total: visit.total, notes: visit.notes,
       sessionSequence: visit.sessionSequence, items: visit.items,
     };
-    const text = buildWhatsAppText(receiptVisit, shopSettings);
+    const text = buildWhatsAppText(receiptVisit, shopSettings, lang);
     const phone = visit.customer.phone!.replace(/\D/g, "");
     window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, "_blank");
   };
@@ -90,7 +90,7 @@ export default function VisitDetailPage() {
         discount: visit.discount, total: visit.total, notes: visit.notes,
         sessionSequence: visit.sessionSequence, items: visit.items,
       };
-      await downloadReceiptPdf(receiptVisit, shopSettings);
+      await downloadReceiptPdf(receiptVisit, shopSettings, lang);
     } finally {
       setDownloadingPdf(false);
     }
@@ -112,7 +112,7 @@ export default function VisitDetailPage() {
       sessionSequence: visit.sessionSequence,
       items: visit.items,
     };
-    printReceipt(receiptVisit, shopSettings, mode);
+    printReceipt(receiptVisit, shopSettings, mode, lang);
     setPrintModal(false);
   };
 
@@ -206,7 +206,7 @@ export default function VisitDetailPage() {
           </div>
           <div>
             <div className="label mb-0.5">{t("customers.title")}</div>
-            <div className="font-medium text-gray-900">{visit.customer.name}</div>
+            <div className="font-medium text-gray-900">{fmtCustomerName(visit.customer.name)}</div>
             {visit.customer.phone && (
               <div className="text-xs text-gray-400">{visit.customer.phone}</div>
             )}

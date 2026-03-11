@@ -103,6 +103,7 @@ const en = {
   "common.off": "off",
   "common.x": "×",
   "common.hash": "#",
+  "common.walkInName": "Walk-in",
 
   // Dashboard
   "dashboard.title": "Dashboard",

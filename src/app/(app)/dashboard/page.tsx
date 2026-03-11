@@ -76,7 +76,7 @@ function getPeriodRange(period: Exclude<Period, "custom">): { from: string; to: 
 // ── Main Component ─────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
-  const { t, fmtCurrency, fmtDateTime, lang } = useTranslation();
+  const { t, fmtCurrency, fmtDateTime, lang, fmtCustomerName } = useTranslation();
   const { data: session } = useSession();
   const [activeTab, setActiveTab] = useState<"overview" | "barbers">("overview");
 
@@ -532,7 +532,7 @@ export default function DashboardPage() {
                               <td className="px-4 py-2 text-xs text-gray-500 whitespace-nowrap">
                                 {fmtDateTime(v.visitAt)}
                               </td>
-                              <td className="px-4 py-2 font-medium text-gray-900">{v.customer.name}</td>
+                              <td className="px-4 py-2 font-medium text-gray-900">{fmtCustomerName(v.customer.name)}</td>
                               <td className="px-4 py-2 text-xs text-gray-600">
                                 {v.items.map((i) =>
                                   `${lang === "ar" && i.service.arabicName ? i.service.arabicName : i.service.name}${i.quantity > 1 ? ` ×${i.quantity}` : ""}`

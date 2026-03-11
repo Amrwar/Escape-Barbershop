@@ -45,11 +45,16 @@ function fmtMoney(n: number): string {
 
 const SEP = `<div style="border-top:1px dashed #000;margin:8px 0;"></div>`;
 
+function customerDisplayName(name: string, lang?: string): string {
+  return name === "Walk-in" && lang === "ar" ? "زائر بلا حجز" : name;
+}
+
 function buildReceiptBlock(
   visit: ReceiptVisit,
   shop: ReceiptShopSettings,
   items: ReceiptItem[],
-  showTotals: boolean
+  showTotals: boolean,
+  lang?: string
 ): string {
   const receiptNo = visit.sessionSequence != null
     ? String(visit.sessionSequence)
@@ -151,7 +156,7 @@ function buildReceiptBlock(
       <div style="font-size:11px;color:#000;margin:4px 0;">Receipt #: ${receiptNo}</div>
       <div style="font-size:11px;color:#000;margin:4px 0;">Date: ${fmtDate(visit.visitAt)}</div>
       <div style="font-size:11px;color:#000;margin:4px 0;">Barber: ${visit.barber.name}</div>
-      <div style="font-size:11px;color:#000;margin:4px 0;">Customer: ${visit.customer.name}${visit.customer.phone ? `<br/>&nbsp;&nbsp;${visit.customer.phone}` : ""}</div>
+      <div style="font-size:11px;color:#000;margin:4px 0;">Customer: ${customerDisplayName(visit.customer.name, lang)}${visit.customer.phone ? `<br/>&nbsp;&nbsp;${visit.customer.phone}` : ""}</div>
       ${SEP}
       <table style="width:100%;">
         ${itemRows}
@@ -164,7 +169,8 @@ function buildReceiptBlock(
 
 export function buildWhatsAppText(
   visit: ReceiptVisit,
-  shop: ReceiptShopSettings
+  shop: ReceiptShopSettings,
+  lang?: string
 ): string {
   const receiptNo = visit.id.slice(-8).toUpperCase();
   const date = fmtDate(visit.visitAt);
@@ -211,7 +217,8 @@ export function buildWhatsAppText(
 
 export async function downloadReceiptPdf(
   visit: ReceiptVisit,
-  shop: ReceiptShopSettings
+  shop: ReceiptShopSettings,
+  lang?: string
 ): Promise<void> {
   const { jsPDF } = await import("jspdf");
 
@@ -275,7 +282,7 @@ export async function downloadReceiptPdf(
   doc.text(`Receipt #: ${receiptNo}`, margin, y); y += lh;
   doc.text(`Date: ${fmtDate(visit.visitAt)}`, margin, y); y += lh;
   doc.text(`Barber: ${visit.barber.name}`, margin, y); y += lh;
-  doc.text(`Customer: ${visit.customer.name}`, margin, y); y += lh;
+  doc.text(`Customer: ${customerDisplayName(visit.customer.name, lang)}`, margin, y); y += lh;
 
   sep();
 
@@ -339,16 +346,17 @@ export async function downloadReceiptPdf(
 export function printReceipt(
   visit: ReceiptVisit,
   shop: ReceiptShopSettings,
-  mode: "full" | "per-service"
+  mode: "full" | "per-service",
+  lang?: string
 ): void {
   let bodyContent: string;
 
   if (mode === "full") {
-    bodyContent = buildReceiptBlock(visit, shop, visit.items, true);
+    bodyContent = buildReceiptBlock(visit, shop, visit.items, true, lang);
   } else {
     bodyContent = visit.items
       .map((item, idx) => {
-        const block = buildReceiptBlock(visit, shop, [item], false);
+        const block = buildReceiptBlock(visit, shop, [item], false, lang);
         const isLast = idx === visit.items.length - 1;
         return isLast
           ? block

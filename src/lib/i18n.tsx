@@ -23,6 +23,7 @@ interface I18nContextValue {
   fmtCurrency: (n: number) => string;
   fmtDate: (date: Date | string) => string;
   fmtDateTime: (date: Date | string) => string;
+  fmtCustomerName: (name: string) => string;
 }
 
 const I18nContext = createContext<I18nContextValue | null>(null);
@@ -133,9 +134,15 @@ export function LanguageProvider({
     [lang]
   );
 
+  const fmtCustomerName = useCallback(
+    (name: string): string =>
+      name === "Walk-in" ? t("common.walkInName") : name,
+    [t]
+  );
+
   return (
     <I18nContext.Provider
-      value={{ lang, dir, setLang, t, fmtNumber, fmtCurrency, fmtDate, fmtDateTime }}
+      value={{ lang, dir, setLang, t, fmtNumber, fmtCurrency, fmtDate, fmtDateTime, fmtCustomerName }}
     >
       {children}
     </I18nContext.Provider>
