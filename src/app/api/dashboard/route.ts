@@ -1,14 +1,20 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     const session = await requireAuth();
+    // tz = client's offset in minutes east of UTC (e.g. 120 for UTC+2)
+    const tz = parseInt(req.nextUrl.searchParams.get("tz") ?? "0", 10) || 0;
+    const offsetMs = tz * 60 * 1000;
     const now = new Date();
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+    // Shift "now" by the client offset to compute local date components
+    const local = new Date(now.getTime() + offsetMs);
+    // Build day/month boundaries in local time, then convert back to UTC
+    const todayStart = new Date(Date.UTC(local.getUTCFullYear(), local.getUTCMonth(), local.getUTCDate()) - offsetMs);
+    const monthStart = new Date(Date.UTC(local.getUTCFullYear(), local.getUTCMonth(), 1) - offsetMs);
+    const monthEnd = new Date(Date.UTC(local.getUTCFullYear(), local.getUTCMonth() + 1, 0, 23, 59, 59) - offsetMs);
 
     const barberFilter = {};
 

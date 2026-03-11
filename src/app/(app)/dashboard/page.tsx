@@ -106,7 +106,8 @@ export default function DashboardPage() {
 
   // Load overview data
   useEffect(() => {
-    fetch("/api/dashboard")
+    const tz = -new Date().getTimezoneOffset(); // minutes east of UTC (e.g. 120 for UTC+2)
+    fetch(`/api/dashboard?tz=${tz}`)
       .then((r) => r.json())
       .then((d) => { if (d && !d.error) setData(d); })
       .finally(() => setOverviewLoading(false));

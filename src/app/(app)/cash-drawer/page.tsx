@@ -751,7 +751,7 @@ function RecentDays({
                 onClick={() => setExpanded(expanded === day.date ? null : day.date)}
               >
                 <span className="text-sm font-medium text-gray-900">{day.label}</span>
-                <span className="text-xs text-gray-400">{day.sessions.length} session{day.sessions.length !== 1 ? "s" : ""} · {day.totalVisits} visits</span>
+                <span className="text-xs text-gray-400" dir="ltr">{day.sessions.length} session{day.sessions.length !== 1 ? "s" : ""} · {day.totalVisits} visits</span>
                 <span className="text-gray-400 text-xs">{expanded === day.date ? "▲" : "▼"}</span>
               </button>
               <Link

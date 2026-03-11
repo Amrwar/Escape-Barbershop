@@ -6,13 +6,19 @@ export async function GET(req: NextRequest) {
   try {
     await requireAuth();
 
+    const fromParam = req.nextUrl.searchParams.get("from");
+    const toParam = req.nextUrl.searchParams.get("to");
+    // Legacy: fall back to date param for backward compat
     const dateParam = req.nextUrl.searchParams.get("date");
-    const date = dateParam ? new Date(dateParam) : new Date();
-
-    const from = new Date(date);
-    from.setHours(0, 0, 0, 0);
-    const to = new Date(date);
-    to.setHours(23, 59, 59, 999);
+    let from: Date, to: Date;
+    if (fromParam && toParam) {
+      from = new Date(fromParam);
+      to = new Date(toParam);
+    } else {
+      const date = dateParam ? new Date(dateParam) : new Date();
+      from = new Date(date); from.setHours(0, 0, 0, 0);
+      to = new Date(date); to.setHours(23, 59, 59, 999);
+    }
 
     const sessions = await prisma.cashDrawerSession.findMany({
       where: { openedAt: { gte: from, lte: to } },
