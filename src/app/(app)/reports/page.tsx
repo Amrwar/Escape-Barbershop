@@ -203,6 +203,9 @@ export default function ReportsPage() {
   const [data, setData] = useState<ReportData | null>(null);
   const [loading, setLoading] = useState(false);
   const [fetched, setFetched] = useState(false);
+  const [visitsPage, setVisitsPage] = useState(1);
+
+  const PAGE_SIZE = 15;
   const [shop, setShop] = useState<ShopSettings>({ shopName: "Escape Barbershop", shopPhone: null, shopAddress: null, receiptFooter: null, shopLogo: null });
 
   useEffect(() => {
@@ -219,7 +222,7 @@ export default function ReportsPage() {
         to: new Date(toDate + "T23:59:59").toISOString(),
       });
       const res = await fetch(`/api/reports?${params}`);
-      if (res.ok) setData(await res.json());
+      if (res.ok) { setData(await res.json()); setVisitsPage(1); }
     } finally {
       setLoading(false);
       setFetched(true);
@@ -470,48 +473,101 @@ export default function ReportsPage() {
           )}
 
           {/* Visits list */}
-          <div className="card overflow-hidden">
-            <div className="px-4 py-3 border-b border-gray-100 font-semibold text-gray-700">
-              {t("reports.visitsList")} ({data.visits.length})
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-gray-50 border-b border-gray-100">
-                    <th className="th-start px-4 py-2 font-medium text-gray-500">{t("field.dateTime")}</th>
-                    <th className="th-start px-4 py-2 font-medium text-gray-500">{t("field.name")}</th>
-                    {isOwner && <th className="th-start px-4 py-2 font-medium text-gray-500">{t("field.barber")}</th>}
-                    <th className="th-start px-4 py-2 font-medium text-gray-500">{t("field.services")}</th>
-                    <th className="th-start px-4 py-2 font-medium text-gray-500">{t("field.paymentMethod")}</th>
-                    <th className="text-end px-4 py-2 font-medium text-gray-500">{t("field.total")}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
-                  {data.visits.map((v) => (
-                    <tr key={v.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-2 text-gray-500 text-xs whitespace-nowrap">{fmtDateTime(v.visitAt)}</td>
-                      <td className="px-4 py-2 font-medium">{v.customer.name}</td>
-                      {isOwner && <td className="px-4 py-2 text-gray-600">{v.barber.name}</td>}
-                      <td className="px-4 py-2 text-gray-600 text-xs">
-                        {v.items.map((i) => `${lang === "ar" && i.service.arabicName ? i.service.arabicName : i.service.name}${i.quantity > 1 ? ` ×${i.quantity}` : ""}`).join(", ")}
-                      </td>
-                      <td className="px-4 py-2 text-gray-600">
-                        {v.paymentMethod === "CASH" ? t("common.cash")
-                          : v.paymentMethod === "CARD" ? t("common.card")
-                          : t("common.mixed")}
-                      </td>
-                      <td className="px-4 py-2 text-end font-semibold">
-                        {fmtCurrency(v.total)}
-                        {v.discount > 0 && (
-                          <span className="block text-xs text-red-400 font-normal">-{v.discount}%</span>
+          {(() => {
+            const totalPages = Math.ceil(data.visits.length / PAGE_SIZE);
+            const pageVisits = data.visits.slice((visitsPage - 1) * PAGE_SIZE, visitsPage * PAGE_SIZE);
+            return (
+              <div className="card overflow-hidden">
+                <div className="px-4 py-3 border-b border-gray-100 font-semibold text-gray-700">
+                  {t("reports.visitsList")} ({data.visits.length})
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-gray-50 border-b border-gray-100">
+                        <th className="th-start px-4 py-2 font-medium text-gray-500">{t("field.dateTime")}</th>
+                        <th className="th-start px-4 py-2 font-medium text-gray-500">{t("field.name")}</th>
+                        {isOwner && <th className="th-start px-4 py-2 font-medium text-gray-500">{t("field.barber")}</th>}
+                        <th className="th-start px-4 py-2 font-medium text-gray-500">{t("field.services")}</th>
+                        <th className="th-start px-4 py-2 font-medium text-gray-500">{t("field.paymentMethod")}</th>
+                        <th className="text-end px-4 py-2 font-medium text-gray-500">{t("field.total")}</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                      {pageVisits.map((v) => (
+                        <tr key={v.id} className="hover:bg-gray-50">
+                          <td className="px-4 py-2 text-gray-500 text-xs whitespace-nowrap">{fmtDateTime(v.visitAt)}</td>
+                          <td className="px-4 py-2 font-medium">{v.customer.name}</td>
+                          {isOwner && <td className="px-4 py-2 text-gray-600">{v.barber.name}</td>}
+                          <td className="px-4 py-2 text-gray-600 text-xs">
+                            {v.items.map((i) => `${lang === "ar" && i.service.arabicName ? i.service.arabicName : i.service.name}${i.quantity > 1 ? ` ×${i.quantity}` : ""}`).join(", ")}
+                          </td>
+                          <td className="px-4 py-2 text-gray-600">
+                            {v.paymentMethod === "CASH" ? t("common.cash")
+                              : v.paymentMethod === "CARD" ? t("common.card")
+                              : t("common.mixed")}
+                          </td>
+                          <td className="px-4 py-2 text-end font-semibold">
+                            {fmtCurrency(v.total)}
+                            {v.discount > 0 && (
+                              <span className="block text-xs text-red-400 font-normal">-{v.discount}%</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {totalPages > 1 && (
+                  <div className="px-4 py-3 border-t border-gray-100 flex items-center justify-between text-sm">
+                    <span className="text-gray-500">
+                      Page {visitsPage} of {totalPages}
+                    </span>
+                    <div className="flex gap-1">
+                      <button
+                        onClick={() => setVisitsPage(1)}
+                        disabled={visitsPage === 1}
+                        className="px-2 py-1 rounded border border-gray-200 text-gray-600 disabled:opacity-40 hover:bg-gray-50"
+                      >«</button>
+                      <button
+                        onClick={() => setVisitsPage((p) => p - 1)}
+                        disabled={visitsPage === 1}
+                        className="px-2 py-1 rounded border border-gray-200 text-gray-600 disabled:opacity-40 hover:bg-gray-50"
+                      >‹</button>
+                      {Array.from({ length: totalPages }, (_, i) => i + 1)
+                        .filter((p) => p === 1 || p === totalPages || Math.abs(p - visitsPage) <= 2)
+                        .reduce<(number | "…")[]>((acc, p, idx, arr) => {
+                          if (idx > 0 && p - (arr[idx - 1] as number) > 1) acc.push("…");
+                          acc.push(p);
+                          return acc;
+                        }, [])
+                        .map((p, i) =>
+                          p === "…" ? (
+                            <span key={`ellipsis-${i}`} className="px-2 py-1 text-gray-400">…</span>
+                          ) : (
+                            <button
+                              key={p}
+                              onClick={() => setVisitsPage(p as number)}
+                              className={`px-2 py-1 rounded border text-sm ${visitsPage === p ? "bg-primary-600 text-white border-primary-600" : "border-gray-200 text-gray-600 hover:bg-gray-50"}`}
+                            >{p}</button>
+                          )
                         )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+                      <button
+                        onClick={() => setVisitsPage((p) => p + 1)}
+                        disabled={visitsPage === totalPages}
+                        className="px-2 py-1 rounded border border-gray-200 text-gray-600 disabled:opacity-40 hover:bg-gray-50"
+                      >›</button>
+                      <button
+                        onClick={() => setVisitsPage(totalPages)}
+                        disabled={visitsPage === totalPages}
+                        className="px-2 py-1 rounded border border-gray-200 text-gray-600 disabled:opacity-40 hover:bg-gray-50"
+                      >»</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           {/* Penalties */}
           {data.penalties.length > 0 && (
