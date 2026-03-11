@@ -31,7 +31,7 @@ function NewVisitInner() {
   const [newCustForm,  setNewCustForm]          = useState({ name: "", phone: "" });
 
   const [barberId,       setBarberId]       = useState(session?.user?.barberId ?? "");
-  const [visitAt,        setVisitAt]        = useState(() => new Date().toISOString().slice(0, 16));
+  const [visitAt,        setVisitAt]        = useState(() => { const n = new Date(); const p = (x: number) => String(x).padStart(2, "0"); return `${n.getFullYear()}-${p(n.getMonth()+1)}-${p(n.getDate())}T${p(n.getHours())}:${p(n.getMinutes())}`; });
   const [paymentMethod,  setPaymentMethod]  = useState<"CASH"|"CARD"|"MIXED">("CASH");
   const [discount,       setDiscount]       = useState(0);
   const [notes,          setNotes]          = useState("");

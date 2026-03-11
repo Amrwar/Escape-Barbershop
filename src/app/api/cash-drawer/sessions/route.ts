@@ -16,6 +16,7 @@ export async function GET() {
         openingCash: true,
         closingCashCounted: true,
         openedBy: { select: { name: true } },
+        _count: { select: { visits: true } },
       },
     });
 

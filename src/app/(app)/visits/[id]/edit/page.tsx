@@ -49,7 +49,7 @@ export default function EditVisitPage() {
     setBarbers(Array.isArray(brbs) ? brbs : []);
     setCustomer(visit.customer);
     setBarberId(visit.barberId);
-    setVisitAt(new Date(visit.visitAt).toISOString().slice(0, 16));
+    setVisitAt((() => { const d = new Date(visit.visitAt); const p = (x: number) => String(x).padStart(2, "0"); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`; })());
     setPaymentMethod(visit.paymentMethod);
     setDiscount(visit.discount);
     setNotes(visit.notes ?? "");

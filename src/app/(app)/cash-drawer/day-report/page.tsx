@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, Suspense } from "react";
 import { format } from "date-fns";
+import { useSearchParams } from "next/navigation";
 import { DateNavInput } from "@/components/ui/DateNavInput";
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -140,10 +141,11 @@ ${shop.receiptFooter ? `<div class="footer">${shop.receiptFooter}</div>` : ""}
   w.print();
 }
 
-export default function DayReportPage() {
+function DayReportContent() {
   const { t, fmtCurrency } = useTranslation();
+  const searchParams = useSearchParams();
   const today = format(new Date(), "yyyy-MM-dd");
-  const [date, setDate] = useState(today);
+  const [date, setDate] = useState(searchParams.get("date") ?? today);
   const [report, setReport] = useState<DayReport | null>(null);
   const [loading, setLoading] = useState(true);
   const [shop, setShop] = useState<ShopSettings>({ shopName: "Escape Barbershop", shopPhone: null, shopAddress: null, receiptFooter: null, shopLogo: null });
@@ -328,5 +330,13 @@ export default function DayReportPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function DayReportPage() {
+  return (
+    <Suspense>
+      <DayReportContent />
+    </Suspense>
   );
 }

@@ -44,6 +44,15 @@ interface RecentSession {
   openingCash: number;
   closingCashCounted: number | null;
   openedBy: { name: string };
+  _count: { visits: number };
+}
+
+interface DayGroup {
+  date: string; // yyyy-MM-dd
+  label: string;
+  sessions: RecentSession[];
+  totalVisits: number;
+  hasOpen: boolean;
 }
 
 export default function CashDrawerPage() {
@@ -94,7 +103,7 @@ export default function CashDrawerPage() {
   const fetchSessions = useCallback(async () => {
     const res = await fetch("/api/cash-drawer/sessions");
     const data = await res.json();
-    setRecentSessions(Array.isArray(data) ? data.slice(0, 5) : []);
+    setRecentSessions(Array.isArray(data) ? data : []);
   }, []);
 
   useEffect(() => {
@@ -228,6 +237,30 @@ export default function CashDrawerPage() {
       ? closingCash - session.visitSummary.expectedCash
       : null;
 
+  // Group closed sessions by calendar day (exclude the currently open session)
+  const recentDays: DayGroup[] = (() => {
+    const map = new Map<string, DayGroup>();
+    for (const s of recentSessions) {
+      if (s.status === "OPEN") continue; // open session shown in main view
+      const d = new Date(s.openedAt);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      if (!map.has(key)) {
+        map.set(key, {
+          date: key,
+          label: d.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short", year: "numeric" }),
+          sessions: [],
+          totalVisits: 0,
+          hasOpen: false,
+        });
+      }
+      const g = map.get(key)!;
+      g.sessions.push(s);
+      g.totalVisits += s._count.visits;
+      if (s.status === "OPEN") g.hasOpen = true;
+    }
+    return Array.from(map.values()).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 10);
+  })();
+
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <PageHeader
@@ -242,70 +275,12 @@ export default function CashDrawerPage() {
             <div className="text-4xl mb-3">🗃️</div>
             <p className="text-gray-500 mb-6">{t("cashDrawer.noOpenSession")}</p>
             {isOwner && (
-              <button
-                onClick={() => setOpenModal(true)}
-                className="btn-primary"
-              >
+              <button onClick={() => setOpenModal(true)} className="btn-primary">
                 {t("cashDrawer.openDrawer")}
               </button>
             )}
           </div>
-
-          {/* Recent sessions list */}
-          <div className="flex justify-end">
-            <Link href="/cash-drawer/day-report" className="btn-secondary text-sm">
-              {t("cashDrawer.viewDayReport")}
-            </Link>
-          </div>
-
-          {recentSessions.length > 0 && (
-            <div className="card p-5">
-              <h2 className="text-sm font-semibold text-gray-900 mb-4">
-                {t("cashDrawer.recentSession")}
-              </h2>
-              <div className="space-y-2">
-                {recentSessions.map((s) => (
-                  <div
-                    key={s.id}
-                    className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0"
-                  >
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">
-                        {new Date(s.openedAt).toLocaleDateString()} —{" "}
-                        {s.openedBy.name}
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        Opening: {fmtCurrency(s.openingCash)}
-                        {s.closingCashCounted !== null &&
-                          ` · Counted: ${fmtCurrency(s.closingCashCounted)}`}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Link
-                        href={`/cash-drawer/report/${s.id}`}
-                        className="btn-secondary text-xs"
-                      >
-                        {t("cashDrawer.viewReport")}
-                      </Link>
-                      {isOwner && (
-                        <button
-                          onClick={() => {
-                            setDeleteSessionId(s.id);
-                            setDeletePin("");
-                            setDeleteError("");
-                            setDeleteModal(true);
-                          }}
-                          className="text-xs text-red-400 hover:text-red-600"
-                        >
-                          {t("action.delete")}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          {recentDays.length > 0 && <RecentDays days={recentDays} isOwner={isOwner} onDelete={(id) => { setDeleteSessionId(id); setDeletePin(""); setDeleteError(""); setDeleteModal(true); }} viewDayLabel={t("cashDrawer.viewDayReport")} viewReportLabel={t("cashDrawer.viewReport")} deleteLabel={t("action.delete")} />}
         </div>
       )}
 
@@ -427,12 +402,8 @@ export default function CashDrawerPage() {
             )}
           </div>
 
-          {/* Day report link */}
-          <div className="flex justify-end">
-            <Link href="/cash-drawer/day-report" className="btn-secondary text-sm">
-              {t("cashDrawer.viewDayReport")}
-            </Link>
-          </div>
+          {/* Recent days */}
+          {recentDays.length > 0 && <RecentDays days={recentDays} isOwner={isOwner} onDelete={(id) => { setDeleteSessionId(id); setDeletePin(""); setDeleteError(""); setDeleteModal(true); }} viewDayLabel={t("cashDrawer.viewDayReport")} viewReportLabel={t("cashDrawer.viewReport")} deleteLabel={t("action.delete")} />}
 
           {/* Owner actions */}
           {isOwner && (
@@ -749,6 +720,82 @@ export default function CashDrawerPage() {
           </div>
         </div>
       </Modal>
+    </div>
+  );
+}
+
+function RecentDays({
+  days,
+  isOwner,
+  onDelete,
+  viewDayLabel,
+  viewReportLabel,
+  deleteLabel,
+}: {
+  days: DayGroup[];
+  isOwner: boolean;
+  onDelete: (id: string) => void;
+  viewDayLabel: string;
+  viewReportLabel: string;
+  deleteLabel: string;
+}) {
+  const [expanded, setExpanded] = useState<string | null>(null);
+  return (
+    <div className="card overflow-hidden">
+      <div className="px-5 py-4 border-b border-gray-100">
+        <h2 className="text-sm font-semibold text-gray-900">Recent Days</h2>
+      </div>
+      <div className="divide-y divide-gray-100">
+        {days.map((day) => (
+          <div key={day.date}>
+            <div className="flex items-center justify-between px-5 py-3">
+              <button
+                className="flex items-center gap-3 text-start flex-1"
+                onClick={() => setExpanded(expanded === day.date ? null : day.date)}
+              >
+                <span className="text-sm font-medium text-gray-900">{day.label}</span>
+                <span className="text-xs text-gray-400">{day.sessions.length} session{day.sessions.length !== 1 ? "s" : ""} · {day.totalVisits} visits</span>
+                <span className="text-gray-400 text-xs">{expanded === day.date ? "▲" : "▼"}</span>
+              </button>
+              <Link
+                href={`/cash-drawer/day-report?date=${day.date}`}
+                className="btn-secondary text-xs shrink-0"
+              >
+                {viewDayLabel}
+              </Link>
+            </div>
+            {expanded === day.date && (
+              <div className="px-5 pb-3 space-y-2 bg-gray-50">
+                {day.sessions.map((s) => (
+                  <div key={s.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
+                    <div>
+                      <div className="text-xs font-medium text-gray-900">
+                        {new Date(s.openedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                        {s.closedAt && ` — ${new Date(s.closedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`}
+                        <span className="text-gray-400 ms-2">by {s.openedBy.name}</span>
+                      </div>
+                      <div className="text-xs text-gray-400 mt-0.5">
+                        {s._count.visits} visits
+                        {s.closingCashCounted !== null && ` · Counted: ${s.closingCashCounted.toFixed(2)}`}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Link href={`/cash-drawer/report/${s.id}`} className="text-xs text-primary-600 hover:underline">
+                        {viewReportLabel}
+                      </Link>
+                      {isOwner && (
+                        <button onClick={() => onDelete(s.id)} className="text-xs text-red-400 hover:text-red-600">
+                          {deleteLabel}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
