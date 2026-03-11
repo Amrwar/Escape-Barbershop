@@ -249,7 +249,6 @@ export default function CashDrawerPage() {
           label: d.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short", year: "numeric" }),
           sessions: [],
           totalVisits: 0,
-          hasOpen: false,
         });
       }
       const g = map.get(key)!;
