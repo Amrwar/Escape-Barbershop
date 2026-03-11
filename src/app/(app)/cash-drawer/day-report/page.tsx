@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { format } from "date-fns";
+import { DateNavInput } from "@/components/ui/DateNavInput";
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { useTranslation } from "@/lib/i18n";
@@ -188,7 +189,7 @@ export default function DayReportPage() {
       <div className="print:hidden card p-4 mb-6 flex items-end gap-3">
         <div>
           <label className="label">{t("field.date")}</label>
-          <input type="date" className="input" value={date} onChange={(e) => setDate(e.target.value)} />
+          <DateNavInput value={date} onChange={setDate} />
         </div>
         <button onClick={load} className="btn-primary">{t("action.filter")}</button>
       </div>

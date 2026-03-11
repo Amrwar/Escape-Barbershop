@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { format, startOfMonth, startOfYear, endOfDay } from "date-fns";
+import { DateNavInput } from "@/components/ui/DateNavInput";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { useTranslation } from "@/lib/i18n";
 
@@ -81,11 +82,11 @@ export default function InventoryPage() {
           <div className="flex flex-wrap gap-3 items-end">
             <div>
               <label className="label">{t("field.from")}</label>
-              <input type="date" className="input" value={customFrom} onChange={(e) => setCustomFrom(e.target.value)} />
+              <DateNavInput value={customFrom} onChange={setCustomFrom} />
             </div>
             <div>
               <label className="label">{t("field.to")}</label>
-              <input type="date" className="input" value={customTo} onChange={(e) => setCustomTo(e.target.value)} />
+              <DateNavInput value={customTo} onChange={setCustomTo} />
             </div>
             <button onClick={load} className="btn-primary">{t("action.filter")}</button>
           </div>
@@ -113,7 +114,6 @@ export default function InventoryPage() {
               <tr className="bg-gray-50 border-b border-gray-200">
                 <th className="th-start px-4 py-3 font-medium text-gray-600">#</th>
                 <th className="th-start px-4 py-3 font-medium text-gray-600">{t("field.service")}</th>
-                <th className="text-end px-4 py-3 font-medium text-gray-600">{t("inventory.timesPerformed")}</th>
                 <th className="text-end px-4 py-3 font-medium text-gray-600">{t("field.quantity")}</th>
               </tr>
             </thead>
@@ -127,14 +127,13 @@ export default function InventoryPage() {
                       <span className="text-xs text-gray-400 ms-2">{item.arabicName}</span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-end text-gray-700">{item.count}</td>
                   <td className="px-4 py-3 text-end font-semibold text-primary-700">{item.totalQty}</td>
                 </tr>
               ))}
             </tbody>
             <tfoot>
               <tr className="bg-gray-50 border-t border-gray-200">
-                <td colSpan={3} className="px-4 py-3 font-semibold text-gray-700">{t("field.total")}</td>
+                <td colSpan={2} className="px-4 py-3 font-semibold text-gray-700">{t("field.total")}</td>
                 <td className="px-4 py-3 text-end font-bold text-primary-700">{total}</td>
               </tr>
             </tfoot>

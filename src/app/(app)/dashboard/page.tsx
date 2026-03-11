@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
+import { DateNavInput } from "@/components/ui/DateNavInput";
 import { StatCard } from "@/components/ui/StatCard";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { useTranslation } from "@/lib/i18n";
@@ -381,21 +382,11 @@ export default function DashboardPage() {
             <div className="flex flex-wrap gap-3 items-end mt-3">
               <div>
                 <label className="label">{t("reports.from")}</label>
-                <input
-                  type="date"
-                  className="input"
-                  value={customFrom}
-                  onChange={(e) => setCustomFrom(e.target.value)}
-                />
+                <DateNavInput value={customFrom} onChange={setCustomFrom} />
               </div>
               <div>
                 <label className="label">{t("reports.to")}</label>
-                <input
-                  type="date"
-                  className="input"
-                  value={customTo}
-                  onChange={(e) => setCustomTo(e.target.value)}
-                />
+                <DateNavInput value={customTo} onChange={setCustomTo} />
               </div>
               <button
                 onClick={handleCustomFetch}

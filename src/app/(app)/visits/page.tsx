@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { DateNavInput } from "@/components/ui/DateNavInput";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -86,11 +87,11 @@ export default function VisitsPage() {
       <div className="card p-4 mb-4 flex flex-wrap gap-3 items-end">
         <div>
           <label className="label">{t("field.from")}</label>
-          <input type="date" className="input" value={from} onChange={(e) => setFrom(e.target.value)} />
+          <DateNavInput value={from} onChange={setFrom} />
         </div>
         <div>
           <label className="label">{t("field.to")}</label>
-          <input type="date" className="input" value={to} onChange={(e) => setTo(e.target.value)} />
+          <DateNavInput value={to} onChange={setTo} />
         </div>
         {isOwner && (
           <div>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
+import { DateNavInput } from "@/components/ui/DateNavInput";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { useTranslation } from "@/lib/i18n";
 import { format, startOfDay, startOfWeek, startOfMonth } from "date-fns";
@@ -349,21 +350,11 @@ export default function ReportsPage() {
         <div className="flex flex-wrap gap-3 items-end">
           <div>
             <label className="label">{t("reports.from")}</label>
-            <input
-              type="date"
-              className="input"
-              value={from}
-              onChange={(e) => { setFrom(e.target.value); setPreset("custom"); }}
-            />
+            <DateNavInput value={from} onChange={(v) => { setFrom(v); setPreset("custom"); }} />
           </div>
           <div>
             <label className="label">{t("reports.to")}</label>
-            <input
-              type="date"
-              className="input"
-              value={to}
-              onChange={(e) => { setTo(e.target.value); setPreset("custom"); }}
-            />
+            <DateNavInput value={to} onChange={(v) => { setTo(v); setPreset("custom"); }} />
           </div>
           <button onClick={fetchReport} disabled={loading} className="btn-primary">
             {loading ? "…" : t("action.filter")}

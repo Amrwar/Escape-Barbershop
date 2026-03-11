@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { format } from "date-fns";
+import { DateNavInput } from "@/components/ui/DateNavInput";
 import { useSession } from "next-auth/react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EditPinModal } from "@/components/ui/EditPinModal";
@@ -171,11 +172,11 @@ export default function ExpensesPage() {
       <div className="card p-4 mb-4 flex flex-wrap gap-3 items-end">
         <div>
           <label className="label">{t("field.from")}</label>
-          <input type="date" className="input" value={from} onChange={(e) => setFrom(e.target.value)} />
+          <DateNavInput value={from} onChange={setFrom} />
         </div>
         <div>
           <label className="label">{t("field.to")}</label>
-          <input type="date" className="input" value={to} onChange={(e) => setTo(e.target.value)} />
+          <DateNavInput value={to} onChange={setTo} />
         </div>
         <button onClick={load} className="btn-primary">{t("action.filter")}</button>
       </div>
