@@ -262,20 +262,20 @@ export default function DashboardPage() {
                   <span className="text-base">💵</span>
                   <span className="text-xs font-medium text-green-700">{t("dashboard.todayRevenue")}</span>
                 </div>
-                <div className="text-2xl font-bold text-gray-900 mb-3">${fmtCurrency(data?.todayRevenue ?? 0)}</div>
+                <div className="text-2xl font-bold text-gray-900 mb-3">{fmtCurrency(data?.todayRevenue ?? 0)}</div>
                 <div className="space-y-1 border-t border-green-100 pt-2">
                   <div className="flex justify-between text-xs text-gray-500">
                     <span>{t("common.cash")}</span>
-                    <span className="font-medium text-gray-700">${fmtCurrency(data?.todayCash ?? 0)}</span>
+                    <span className="font-medium text-gray-700">{fmtCurrency(data?.todayCash ?? 0)}</span>
                   </div>
                   <div className="flex justify-between text-xs text-gray-500">
                     <span>{t("common.card")}</span>
-                    <span className="font-medium text-gray-700">${fmtCurrency(data?.todayCard ?? 0)}</span>
+                    <span className="font-medium text-gray-700">{fmtCurrency(data?.todayCard ?? 0)}</span>
                   </div>
                   {(data?.todayExpenses ?? 0) > 0 && (
                     <div className="flex justify-between text-xs text-red-500">
                       <span>{t("nav.expenses")}</span>
-                      <span className="font-medium">-${fmtCurrency(data?.todayExpenses ?? 0)}</span>
+                      <span className="font-medium">-{fmtCurrency(data?.todayExpenses ?? 0)}</span>
                     </div>
                   )}
                 </div>
@@ -287,20 +287,20 @@ export default function DashboardPage() {
                   <span className="text-base">📈</span>
                   <span className="text-xs font-medium text-purple-700">{t("dashboard.monthRevenue")}</span>
                 </div>
-                <div className="text-2xl font-bold text-gray-900 mb-3">${fmtCurrency(data?.monthRevenue ?? 0)}</div>
+                <div className="text-2xl font-bold text-gray-900 mb-3">{fmtCurrency(data?.monthRevenue ?? 0)}</div>
                 <div className="space-y-1 border-t border-purple-100 pt-2">
                   <div className="flex justify-between text-xs text-gray-500">
                     <span>{t("common.cash")}</span>
-                    <span className="font-medium text-gray-700">${fmtCurrency(data?.monthCash ?? 0)}</span>
+                    <span className="font-medium text-gray-700">{fmtCurrency(data?.monthCash ?? 0)}</span>
                   </div>
                   <div className="flex justify-between text-xs text-gray-500">
                     <span>{t("common.card")}</span>
-                    <span className="font-medium text-gray-700">${fmtCurrency(data?.monthCard ?? 0)}</span>
+                    <span className="font-medium text-gray-700">{fmtCurrency(data?.monthCard ?? 0)}</span>
                   </div>
                   {(data?.monthExpenses ?? 0) > 0 && (
                     <div className="flex justify-between text-xs text-red-500">
                       <span>{t("nav.expenses")}</span>
-                      <span className="font-medium">-${fmtCurrency(data?.monthExpenses ?? 0)}</span>
+                      <span className="font-medium">-{fmtCurrency(data?.monthExpenses ?? 0)}</span>
                     </div>
                   )}
                 </div>
@@ -343,7 +343,7 @@ export default function DashboardPage() {
                           <div className="text-sm font-medium text-gray-900">{b.name}</div>
                           <div className="text-xs text-gray-500">{b.visits} {b.visits === 1 ? t("common.visit") : t("common.visits")}</div>
                         </div>
-                        <span className="text-sm font-semibold text-green-600 shrink-0">${fmtCurrency(b.revenue)}</span>
+                        <span className="text-sm font-semibold text-green-600 shrink-0">{fmtCurrency(b.revenue)}</span>
                       </div>
                     ))}
                   </div>
@@ -472,11 +472,11 @@ export default function DashboardPage() {
                   {/* Summary cards */}
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                     <SummaryCard label={t("common.visits")}        value={String(stats.summary.visitCount)}              accent />
-                    <SummaryCard label={t("reports.totalRevenue")} value={`$${fmtCurrency(stats.summary.totalRevenue)}`} accent />
-                    <SummaryCard label={t("common.cash")}          value={`$${fmtCurrency(stats.summary.cashTotal)}`}     />
-                    <SummaryCard label={t("common.card")}          value={`$${fmtCurrency(stats.summary.cardTotal)}`}     />
-                    <SummaryCard label={t("common.mixed")}         value={`$${fmtCurrency(stats.summary.mixedTotal)}`}    />
-                    <SummaryCard label={t("reports.discounts")}    value={`$${fmtCurrency(stats.summary.discountsTotal)}`} />
+                    <SummaryCard label={t("reports.totalRevenue")} value={`${fmtCurrency(stats.summary.totalRevenue)}`} accent />
+                    <SummaryCard label={t("common.cash")}          value={`${fmtCurrency(stats.summary.cashTotal)}`}     />
+                    <SummaryCard label={t("common.card")}          value={`${fmtCurrency(stats.summary.cardTotal)}`}     />
+                    <SummaryCard label={t("common.mixed")}         value={`${fmtCurrency(stats.summary.mixedTotal)}`}    />
+                    <SummaryCard label={t("reports.discounts")}    value={`${fmtCurrency(stats.summary.discountsTotal)}`} />
                   </div>
 
                   {/* Top services */}
@@ -501,7 +501,7 @@ export default function DashboardPage() {
                               </td>
                               <td className="px-4 py-2 text-end text-gray-600">{s.count}</td>
                               <td className="px-4 py-2 text-end font-semibold text-green-600">
-                                ${fmtCurrency(s.revenue)}
+                                {fmtCurrency(s.revenue)}
                               </td>
                             </tr>
                           ))}
@@ -544,7 +544,7 @@ export default function DashboardPage() {
                                   : t("common.mixed")}
                               </td>
                               <td className="px-4 py-2 text-end font-semibold text-gray-900">
-                                ${fmtCurrency(v.total)}
+                                {fmtCurrency(v.total)}
                                 {v.discount > 0 && (
                                   <span className="block text-xs text-red-400 font-normal">-{v.discount}%</span>
                                 )}

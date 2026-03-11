@@ -137,7 +137,7 @@ export default function ServicesPage() {
                       <div className="text-xs text-gray-400 font-normal">{s.arabicName}</div>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-end text-gray-700">${fmtCurrency(s.defaultPrice)}</td>
+                  <td className="px-4 py-3 text-end text-gray-700">{fmtCurrency(s.defaultPrice)}</td>
                   <td className="px-4 py-3 text-center">
                     <div className="flex flex-col items-center gap-1">
                       <Badge variant={s.isActive ? "green" : "gray"}>

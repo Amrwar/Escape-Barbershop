@@ -275,9 +275,9 @@ export default function CashDrawerPage() {
                         {s.openedBy.name}
                       </div>
                       <div className="text-xs text-gray-500">
-                        Opening: ${fmtCurrency(s.openingCash)}
+                        Opening: {fmtCurrency(s.openingCash)}
                         {s.closingCashCounted !== null &&
-                          ` · Counted: $${fmtCurrency(s.closingCashCounted)}`}
+                          ` · Counted: ${fmtCurrency(s.closingCashCounted)}`}
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -334,7 +334,7 @@ export default function CashDrawerPage() {
             <div className="space-y-2 text-sm">
               <div className="flex justify-between text-gray-600">
                 <span>{t("cashDrawer.openingBalance")}</span>
-                <span>${fmtCurrency(session.openingCash)}</span>
+                <span>{fmtCurrency(session.openingCash)}</span>
               </div>
               <div className="flex justify-between text-gray-600">
                 <span>
@@ -342,14 +342,14 @@ export default function CashDrawerPage() {
                   visits)
                 </span>
                 <span className="text-green-700">
-                  +${fmtCurrency(session.visitSummary.cashSales)}
+                  +{fmtCurrency(session.visitSummary.cashSales)}
                 </span>
               </div>
               {session.visitSummary.cashIn > 0 && (
                 <div className="flex justify-between text-gray-600">
                   <span>{t("cashDrawer.cashIn")}</span>
                   <span className="text-green-700">
-                    +${fmtCurrency(session.visitSummary.cashIn)}
+                    +{fmtCurrency(session.visitSummary.cashIn)}
                   </span>
                 </div>
               )}
@@ -357,7 +357,7 @@ export default function CashDrawerPage() {
                 <div className="flex justify-between text-gray-600">
                   <span>{t("cashDrawer.cashOut")}</span>
                   <span className="text-red-600">
-                    -${fmtCurrency(session.visitSummary.cashOut)}
+                    -{fmtCurrency(session.visitSummary.cashOut)}
                   </span>
                 </div>
               )}
@@ -365,14 +365,14 @@ export default function CashDrawerPage() {
                 <div className="flex justify-between text-gray-600">
                   <span>{t("expenses.title")}</span>
                   <span className="text-red-600">
-                    -${fmtCurrency(session.visitSummary.expensesTotal)}
+                    -{fmtCurrency(session.visitSummary.expensesTotal)}
                   </span>
                 </div>
               )}
               <div className="flex justify-between font-bold text-base text-gray-900 pt-2 border-t border-green-200">
                 <span>{t("cashDrawer.expectedCash")}</span>
                 <span className="text-green-700">
-                  ${fmtCurrency(session.visitSummary.expectedCash)}
+                  {fmtCurrency(session.visitSummary.expectedCash)}
                 </span>
               </div>
             </div>
@@ -419,7 +419,7 @@ export default function CashDrawerPage() {
                         m.type === "IN" ? "text-green-600" : "text-red-600"
                       }`}
                     >
-                      {m.type === "IN" ? "+" : "-"}${fmtCurrency(m.amount)}
+                      {m.type === "IN" ? "+" : "-"}{fmtCurrency(m.amount)}
                     </span>
                   </div>
                 ))}
@@ -674,7 +674,7 @@ export default function CashDrawerPage() {
               <div className="flex justify-between text-gray-600">
                 <span>{t("cashDrawer.expectedCash")}</span>
                 <span className="font-semibold">
-                  ${fmtCurrency(session.visitSummary.expectedCash)}
+                  {fmtCurrency(session.visitSummary.expectedCash)}
                 </span>
               </div>
             </div>
@@ -701,7 +701,7 @@ export default function CashDrawerPage() {
               <span>{t("cashDrawer.difference")}</span>
               <span>
                 {difference !== null
-                  ? `${difference >= 0 ? "+" : ""}$${fmtCurrency(difference)}`
+                  ? `${difference >= 0 ? "+" : ""}${fmtCurrency(difference)}`
                   : "—"}
                 {difference !== null &&
                   ` (${

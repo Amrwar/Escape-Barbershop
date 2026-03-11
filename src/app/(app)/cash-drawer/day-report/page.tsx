@@ -61,7 +61,7 @@ function printReceipt(report: DayReport, shop: ShopSettings) {
 
   const diffLine =
     summary.difference !== null
-      ? `${summary.difference >= 0 ? "+" : ""}$${fmt(summary.difference)} (${summary.difference >= 0 ? "Over" : "Short"})`
+      ? `${summary.difference >= 0 ? "+" : ""}${fmt(summary.difference)} (${summary.difference >= 0 ? "Over" : "Short"})`
       : "—";
 
   const servicesHtml = topServices
@@ -108,19 +108,19 @@ ${shop.shopAddress ? `<p>${shop.shopAddress}</p>` : ""}
 <hr />
 <div class="bold">REVENUE</div>
 <div class="row"><span>Total Visits:</span><span>${summary.totalVisits}</span></div>
-<div class="row"><span>Cash Sales:</span><span>$${fmt(summary.cashSales)}</span></div>
-<div class="row"><span>Card Sales:</span><span>$${fmt(summary.cardTotal)}</span></div>
-${summary.discountsTotal > 0 ? `<div class="row"><span>Discounts:</span><span>-$${fmt(summary.discountsTotal)}</span></div>` : ""}
-<div class="row bold" style="border-top:1px solid #000;padding-top:4px;margin-top:2px"><span>Total Revenue:</span><span>$${fmt(summary.totalRevenue)}</span></div>
+<div class="row"><span>Cash Sales:</span><span>${fmt(summary.cashSales)}</span></div>
+<div class="row"><span>Card Sales:</span><span>${fmt(summary.cardTotal)}</span></div>
+${summary.discountsTotal > 0 ? `<div class="row"><span>Discounts:</span><span>-${fmt(summary.discountsTotal)}</span></div>` : ""}
+<div class="row bold" style="border-top:1px solid #000;padding-top:4px;margin-top:2px"><span>Total Revenue:</span><span>${fmt(summary.totalRevenue)}</span></div>
 <hr />
 <div class="bold">CASH RECONCILIATION</div>
-<div class="row"><span>Opening:</span><span>$${fmt(summary.totalOpeningCash)}</span></div>
-<div class="row"><span>+ Cash Sales:</span><span>$${fmt(summary.cashSales)}</span></div>
-${summary.cashIn > 0 ? `<div class="row"><span>+ Cash In:</span><span>$${fmt(summary.cashIn)}</span></div>` : ""}
-${summary.cashOut > 0 ? `<div class="row"><span>- Cash Out:</span><span>$${fmt(summary.cashOut)}</span></div>` : ""}
-${summary.expensesTotal > 0 ? `<div class="row"><span>- Expenses:</span><span>$${fmt(summary.expensesTotal)}</span></div>` : ""}
-<div class="row bold"><span>Expected:</span><span>$${fmt(summary.expectedCash)}</span></div>
-${summary.totalCountedCash !== null ? `<div class="row"><span>Counted:</span><span>$${fmt(summary.totalCountedCash)}</span></div>` : ""}
+<div class="row"><span>Opening:</span><span>${fmt(summary.totalOpeningCash)}</span></div>
+<div class="row"><span>+ Cash Sales:</span><span>${fmt(summary.cashSales)}</span></div>
+${summary.cashIn > 0 ? `<div class="row"><span>+ Cash In:</span><span>${fmt(summary.cashIn)}</span></div>` : ""}
+${summary.cashOut > 0 ? `<div class="row"><span>- Cash Out:</span><span>${fmt(summary.cashOut)}</span></div>` : ""}
+${summary.expensesTotal > 0 ? `<div class="row"><span>- Expenses:</span><span>${fmt(summary.expensesTotal)}</span></div>` : ""}
+<div class="row bold"><span>Expected:</span><span>${fmt(summary.expectedCash)}</span></div>
+${summary.totalCountedCash !== null ? `<div class="row"><span>Counted:</span><span>${fmt(summary.totalCountedCash)}</span></div>` : ""}
 ${summary.difference !== null ? `<div class="row bold"><span>Difference:</span><span>${diffLine}</span></div>` : ""}
 ${topServices.length > 0 ? `<hr /><div class="bold">TOP SERVICES</div><table>${servicesHtml}</table>` : ""}
 ${sessions.length > 1 ? `<hr /><div class="bold">SESSIONS</div><table>${sessionsHtml}</table>` : ""}
@@ -219,11 +219,11 @@ export default function DayReportPage() {
             </div>
             <div className="card p-4 text-center">
               <div className="text-xs text-gray-500">{t("cashDrawer.cashSales")}</div>
-              <div className="text-2xl font-bold text-green-700">${fmtCurrency(s!.cashSales)}</div>
+              <div className="text-2xl font-bold text-green-700">{fmtCurrency(s!.cashSales)}</div>
             </div>
             <div className="card p-4 text-center">
               <div className="text-xs text-gray-500">{t("cashDrawer.cardSales")}</div>
-              <div className="text-2xl font-bold text-blue-700">${fmtCurrency(s!.cardTotal)}</div>
+              <div className="text-2xl font-bold text-blue-700">{fmtCurrency(s!.cardTotal)}</div>
             </div>
           </div>
 
@@ -233,45 +233,45 @@ export default function DayReportPage() {
             <div className="space-y-2 text-sm max-w-sm">
               <div className="flex justify-between text-gray-600">
                 <span>{t("cashDrawer.openingBalance")}</span>
-                <span>${fmtCurrency(s!.totalOpeningCash)}</span>
+                <span>{fmtCurrency(s!.totalOpeningCash)}</span>
               </div>
               <div className="flex justify-between text-gray-600">
                 <span>{t("cashDrawer.cashSales")}</span>
-                <span className="text-green-700">+${fmtCurrency(s!.cashSales)}</span>
+                <span className="text-green-700">+{fmtCurrency(s!.cashSales)}</span>
               </div>
               {s!.cashIn > 0 && (
                 <div className="flex justify-between text-gray-600">
                   <span>{t("cashDrawer.cashIn")}</span>
-                  <span className="text-green-700">+${fmtCurrency(s!.cashIn)}</span>
+                  <span className="text-green-700">+{fmtCurrency(s!.cashIn)}</span>
                 </div>
               )}
               {s!.cashOut > 0 && (
                 <div className="flex justify-between text-gray-600">
                   <span>{t("cashDrawer.cashOut")}</span>
-                  <span className="text-red-600">-${fmtCurrency(s!.cashOut)}</span>
+                  <span className="text-red-600">-{fmtCurrency(s!.cashOut)}</span>
                 </div>
               )}
               {s!.expensesTotal > 0 && (
                 <div className="flex justify-between text-gray-600">
                   <span>{t("expenses.title")}</span>
-                  <span className="text-red-600">-${fmtCurrency(s!.expensesTotal)}</span>
+                  <span className="text-red-600">-{fmtCurrency(s!.expensesTotal)}</span>
                 </div>
               )}
               <div className="flex justify-between font-bold text-gray-900 pt-2 border-t border-gray-200">
                 <span>{t("cashDrawer.expectedCash")}</span>
-                <span>${fmtCurrency(s!.expectedCash)}</span>
+                <span>{fmtCurrency(s!.expectedCash)}</span>
               </div>
               {s!.totalCountedCash !== null && (
                 <>
                   <div className="flex justify-between text-gray-600">
                     <span>{t("cashDrawer.countedCash")}</span>
-                    <span>${fmtCurrency(s!.totalCountedCash)}</span>
+                    <span>{fmtCurrency(s!.totalCountedCash)}</span>
                   </div>
                   <div className={`flex justify-between font-bold pt-2 border-t border-gray-200 ${s!.difference !== null && s!.difference >= 0 ? "text-green-600" : "text-red-600"}`}>
                     <span>{t("cashDrawer.difference")}</span>
                     <span>
                       {s!.difference !== null
-                        ? `${s!.difference >= 0 ? "+" : ""}$${fmtCurrency(s!.difference)} (${s!.difference >= 0 ? t("cashDrawer.over") : t("cashDrawer.short")})`
+                        ? `${s!.difference >= 0 ? "+" : ""}${fmtCurrency(s!.difference)} (${s!.difference >= 0 ? t("cashDrawer.over") : t("cashDrawer.short")})`
                         : "—"}
                     </span>
                   </div>
@@ -320,8 +320,8 @@ export default function DayReportPage() {
                     </div>
                   </div>
                   <div className="text-xs text-gray-500">
-                    {sess.visitCount} visits · Opening: ${fmtCurrency(sess.openingCash)}
-                    {sess.closingCashCounted !== null && ` · Counted: $${fmtCurrency(sess.closingCashCounted)}`}
+                    {sess.visitCount} visits · Opening: {fmtCurrency(sess.openingCash)}
+                    {sess.closingCashCounted !== null && ` · Counted: ${fmtCurrency(sess.closingCashCounted)}`}
                   </div>
                 </div>
               ))}

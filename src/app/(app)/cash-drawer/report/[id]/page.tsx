@@ -22,7 +22,7 @@ function printSessionReceipt(report: ReportData, shop: ShopSettings) {
 
   const diffLine =
     summary.difference !== null
-      ? `${summary.difference >= 0 ? "+" : ""}$${fmt(summary.difference)} (${summary.difference >= 0 ? "Over" : "Short"})`
+      ? `${summary.difference >= 0 ? "+" : ""}${fmt(summary.difference)} (${summary.difference >= 0 ? "Over" : "Short"})`
       : "—";
 
   const movementsHtml = movements
@@ -30,7 +30,7 @@ function printSessionReceipt(report: ReportData, shop: ShopSettings) {
       (m) =>
         `<div style="display:flex;justify-content:space-between;padding:2px 0">` +
         `<span>[${m.type}] ${m.reason}</span>` +
-        `<span>${m.type === "IN" ? "+" : "-"}$${fmt(m.amount)}</span></div>`
+        `<span>${m.type === "IN" ? "+" : "-"}${fmt(m.amount)}</span></div>`
     )
     .join("");
 
@@ -68,18 +68,18 @@ ${session.closedBy ? `<div class="row"><span>Closed by:</span><span>${session.cl
 <hr />
 <div class="bold">REVENUE</div>
 <div class="row"><span>Visits:</span><span>${summary.visitCount}</span></div>
-<div class="row"><span>Cash Sales:</span><span>$${fmt(summary.cashSales)}</span></div>
-<div class="row"><span>Card Sales:</span><span>$${fmt(summary.cardTotal)}</span></div>
-${summary.discountsTotal > 0 ? `<div class="row"><span>Discounts:</span><span>-$${fmt(summary.discountsTotal)}</span></div>` : ""}
+<div class="row"><span>Cash Sales:</span><span>${fmt(summary.cashSales)}</span></div>
+<div class="row"><span>Card Sales:</span><span>${fmt(summary.cardTotal)}</span></div>
+${summary.discountsTotal > 0 ? `<div class="row"><span>Discounts:</span><span>-${fmt(summary.discountsTotal)}</span></div>` : ""}
 <hr />
 <div class="bold">CASH RECONCILIATION</div>
-<div class="row"><span>Opening:</span><span>$${fmt(session.openingCash)}</span></div>
-<div class="row"><span>+ Cash Sales:</span><span>$${fmt(summary.cashSales)}</span></div>
-${summary.cashIn > 0 ? `<div class="row"><span>+ Cash In:</span><span>$${fmt(summary.cashIn)}</span></div>` : ""}
-${summary.cashOut > 0 ? `<div class="row"><span>- Cash Out:</span><span>$${fmt(summary.cashOut)}</span></div>` : ""}
-${summary.expensesTotal > 0 ? `<div class="row"><span>- Expenses:</span><span>$${fmt(summary.expensesTotal)}</span></div>` : ""}
-<div class="row bold"><span>Expected:</span><span>$${fmt(summary.expectedCash)}</span></div>
-${summary.countedCash !== null ? `<div class="row"><span>Counted:</span><span>$${fmt(summary.countedCash)}</span></div>` : ""}
+<div class="row"><span>Opening:</span><span>${fmt(session.openingCash)}</span></div>
+<div class="row"><span>+ Cash Sales:</span><span>${fmt(summary.cashSales)}</span></div>
+${summary.cashIn > 0 ? `<div class="row"><span>+ Cash In:</span><span>${fmt(summary.cashIn)}</span></div>` : ""}
+${summary.cashOut > 0 ? `<div class="row"><span>- Cash Out:</span><span>${fmt(summary.cashOut)}</span></div>` : ""}
+${summary.expensesTotal > 0 ? `<div class="row"><span>- Expenses:</span><span>${fmt(summary.expensesTotal)}</span></div>` : ""}
+<div class="row bold"><span>Expected:</span><span>${fmt(summary.expectedCash)}</span></div>
+${summary.countedCash !== null ? `<div class="row"><span>Counted:</span><span>${fmt(summary.countedCash)}</span></div>` : ""}
 ${summary.difference !== null ? `<div class="row bold"><span>Difference:</span><span>${diffLine}</span></div>` : ""}
 ${movements.length > 0 ? `<hr /><div class="bold">MOVEMENTS</div>${movementsHtml}` : ""}
 ${topServices.length > 0 ? `<hr /><div class="bold">TOP SERVICES</div>${servicesHtml}` : ""}
@@ -309,19 +309,19 @@ export default function ReportPage() {
           </div>
           <div className="bg-green-50 rounded-lg p-3">
             <div className="text-gray-500 text-xs">{t("cashDrawer.cashSales")}</div>
-            <div className="text-xl font-bold text-green-700">${fmtCurrency(summary.cashTotal)}</div>
+            <div className="text-xl font-bold text-green-700">{fmtCurrency(summary.cashTotal)}</div>
           </div>
           <div className="bg-blue-50 rounded-lg p-3">
             <div className="text-gray-500 text-xs">{t("cashDrawer.cardSales")}</div>
-            <div className="text-xl font-bold text-blue-700">${fmtCurrency(summary.cardTotal)}</div>
+            <div className="text-xl font-bold text-blue-700">{fmtCurrency(summary.cardTotal)}</div>
           </div>
           <div className="bg-purple-50 rounded-lg p-3">
             <div className="text-gray-500 text-xs">{t("cashDrawer.mixedSales")} (cash part)</div>
-            <div className="text-xl font-bold text-purple-700">${fmtCurrency(summary.mixedCashAmount)}</div>
+            <div className="text-xl font-bold text-purple-700">{fmtCurrency(summary.mixedCashAmount)}</div>
           </div>
           <div className="bg-red-50 rounded-lg p-3">
             <div className="text-gray-500 text-xs">{t("field.discount")}s</div>
-            <div className="text-xl font-bold text-red-600">-${fmtCurrency(summary.discountsTotal)}</div>
+            <div className="text-xl font-bold text-red-600">-{fmtCurrency(summary.discountsTotal)}</div>
           </div>
         </div>
       </div>
@@ -332,45 +332,45 @@ export default function ReportPage() {
         <div className="space-y-2 text-sm max-w-sm">
           <div className="flex justify-between text-gray-600">
             <span>{t("cashDrawer.openingBalance")}</span>
-            <span>${fmtCurrency(session.openingCash)}</span>
+            <span>{fmtCurrency(session.openingCash)}</span>
           </div>
           <div className="flex justify-between text-gray-600">
             <span>{t("cashDrawer.cashSales")}</span>
-            <span className="text-green-700">+${fmtCurrency(summary.cashSales)}</span>
+            <span className="text-green-700">+{fmtCurrency(summary.cashSales)}</span>
           </div>
           {summary.cashIn > 0 && (
             <div className="flex justify-between text-gray-600">
               <span>{t("cashDrawer.cashIn")}</span>
-              <span className="text-green-700">+${fmtCurrency(summary.cashIn)}</span>
+              <span className="text-green-700">+{fmtCurrency(summary.cashIn)}</span>
             </div>
           )}
           {summary.cashOut > 0 && (
             <div className="flex justify-between text-gray-600">
               <span>{t("cashDrawer.cashOut")}</span>
-              <span className="text-red-600">-${fmtCurrency(summary.cashOut)}</span>
+              <span className="text-red-600">-{fmtCurrency(summary.cashOut)}</span>
             </div>
           )}
           {summary.expensesTotal > 0 && (
             <div className="flex justify-between text-gray-600">
               <span>{t("expenses.title")}</span>
-              <span className="text-red-600">-${fmtCurrency(summary.expensesTotal)}</span>
+              <span className="text-red-600">-{fmtCurrency(summary.expensesTotal)}</span>
             </div>
           )}
           <div className="flex justify-between font-bold text-gray-900 pt-2 border-t border-gray-200">
             <span>{t("cashDrawer.expectedCash")}</span>
-            <span>${fmtCurrency(summary.expectedCash)}</span>
+            <span>{fmtCurrency(summary.expectedCash)}</span>
           </div>
           {summary.countedCash !== null && (
             <>
               <div className="flex justify-between text-gray-600">
                 <span>{t("cashDrawer.countedCash")}</span>
-                <span>${fmtCurrency(summary.countedCash)}</span>
+                <span>{fmtCurrency(summary.countedCash)}</span>
               </div>
               <div className={`flex justify-between font-bold pt-2 border-t border-gray-200 ${summary.difference !== null && summary.difference >= 0 ? "text-green-600" : "text-red-600"}`}>
                 <span>{t("cashDrawer.difference")}</span>
                 <span>
                   {summary.difference !== null
-                    ? `${summary.difference >= 0 ? "+" : ""}$${fmtCurrency(summary.difference)} (${summary.difference >= 0 ? t("cashDrawer.over") : t("cashDrawer.short")})`
+                    ? `${summary.difference >= 0 ? "+" : ""}${fmtCurrency(summary.difference)} (${summary.difference >= 0 ? t("cashDrawer.over") : t("cashDrawer.short")})`
                     : "—"}
                 </span>
               </div>
@@ -396,7 +396,7 @@ export default function ReportPage() {
                 <tr key={b.barberId}>
                   <td className="px-3 py-2 font-medium text-gray-900">{b.name}</td>
                   <td className="px-3 py-2 text-center text-gray-600">{b.visits}</td>
-                  <td className="px-3 py-2 text-end font-semibold text-green-600">${fmtCurrency(b.revenue)}</td>
+                  <td className="px-3 py-2 text-end font-semibold text-green-600">{fmtCurrency(b.revenue)}</td>
                 </tr>
               ))}
             </tbody>
@@ -455,7 +455,7 @@ export default function ReportPage() {
                         {v.paymentMethod}
                       </span>
                     </td>
-                    <td className="px-3 py-2 text-end font-semibold text-gray-900">${fmtCurrency(v.total)}</td>
+                    <td className="px-3 py-2 text-end font-semibold text-gray-900">{fmtCurrency(v.total)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -488,7 +488,7 @@ export default function ReportPage() {
                   <td className="px-3 py-2 text-gray-900">{m.reason}</td>
                   <td className="px-3 py-2 text-gray-500 text-xs">{m.createdBy.name} · {new Date(m.createdAt).toLocaleTimeString()}</td>
                   <td className={`px-3 py-2 text-end font-semibold ${m.type === "IN" ? "text-green-600" : "text-red-600"}`}>
-                    {m.type === "IN" ? "+" : "-"}${fmtCurrency(m.amount)}
+                    {m.type === "IN" ? "+" : "-"}{fmtCurrency(m.amount)}
                   </td>
                 </tr>
               ))}

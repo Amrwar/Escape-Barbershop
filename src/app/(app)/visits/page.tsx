@@ -78,7 +78,7 @@ export default function VisitsPage() {
     <div className="p-6 max-w-5xl mx-auto">
       <PageHeader
         title={t("visits.title")}
-        subtitle={`${visits.length} ${t("common.visits")} — ${t("field.total")}: $${fmtCurrency(totalRevenue)}`}
+        subtitle={`${visits.length} ${t("common.visits")} — ${t("field.total")}: ${fmtCurrency(totalRevenue)}`}
         action={<Link href="/visits/new" className="btn-primary">{t("action.newVisit")}</Link>}
       />
 
@@ -140,7 +140,7 @@ export default function VisitsPage() {
                   </div>
                 </div>
                 <div className="shrink-0 text-end space-y-1">
-                  <div className="text-lg font-bold text-gray-900">${fmtCurrency(v.total)}</div>
+                  <div className="text-lg font-bold text-gray-900">{fmtCurrency(v.total)}</div>
                   {v.discount > 0 && (
                     <div className="text-xs text-red-500">-{v.discount}% {t("common.off")}</div>
                   )}

@@ -30,7 +30,7 @@ function printReportReceipt(
   const topServicesHtml = summary.topServices.length > 0
     ? `<hr /><div class="bold">TOP SERVICES</div><table>
         ${summary.topServices.slice(0, 8).map((s, i) =>
-          `<tr><td>${i + 1}. ${s.name}</td><td style="text-align:right">${s.count}× $${fmt(s.revenue)}</td></tr>`
+          `<tr><td>${i + 1}. ${s.name}</td><td style="text-align:right">${s.count}× ${fmt(s.revenue)}</td></tr>`
         ).join("")}
       </table>`
     : "";
@@ -38,7 +38,7 @@ function printReportReceipt(
   const perBarberHtml = isOwner && perBarber.length > 0
     ? `<hr /><div class="bold">PER BARBER</div><table>
         ${perBarber.map((b) =>
-          `<tr><td>${b.barberName}</td><td style="text-align:right">${b.visitCount}v $${fmt(b.revenue)}</td></tr>`
+          `<tr><td>${b.barberName}</td><td style="text-align:right">${b.visitCount}v ${fmt(b.revenue)}</td></tr>`
         ).join("")}
       </table>`
     : "";
@@ -46,7 +46,7 @@ function printReportReceipt(
   const expensesHtml = isOwner && expenses.length > 0
     ? `<hr /><div class="bold">EXPENSES</div><table>
         ${expenses.map((e) =>
-          `<tr><td>${e.reason}</td><td style="text-align:right">-$${fmt(e.amount)}</td></tr>`
+          `<tr><td>${e.reason}</td><td style="text-align:right">-${fmt(e.amount)}</td></tr>`
         ).join("")}
       </table>`
     : "";
@@ -79,13 +79,13 @@ ${shop.shopAddress ? `<p>${shop.shopAddress}</p>` : ""}
 <hr />
 <div class="bold">REVENUE</div>
 <div class="row"><span>Total Visits:</span><span>${summary.visitCount}</span></div>
-<div class="row"><span>Cash:</span><span>$${fmt(summary.cashTotal)}</span></div>
-<div class="row"><span>Card:</span><span>$${fmt(summary.cardTotal)}</span></div>
-${summary.mixedTotal > 0 ? `<div class="row"><span>Mixed:</span><span>$${fmt(summary.mixedTotal)}</span></div>` : ""}
-${summary.discountsTotal > 0 ? `<div class="row"><span>Discounts:</span><span>-$${fmt(summary.discountsTotal)}</span></div>` : ""}
-<div class="row bold" style="border-top:1px solid #000;padding-top:4px;margin-top:2px"><span>Total Revenue:</span><span>$${fmt(summary.totalRevenue)}</span></div>
-${isOwner && summary.expensesTotal > 0 ? `<div class="row"><span>Expenses:</span><span>-$${fmt(summary.expensesTotal)}</span></div>` : ""}
-${isOwner ? `<div class="row bold"><span>Net Revenue:</span><span>$${fmt(summary.netRevenue)}</span></div>` : ""}
+<div class="row"><span>Cash:</span><span>${fmt(summary.cashTotal)}</span></div>
+<div class="row"><span>Card:</span><span>${fmt(summary.cardTotal)}</span></div>
+${summary.mixedTotal > 0 ? `<div class="row"><span>Mixed:</span><span>${fmt(summary.mixedTotal)}</span></div>` : ""}
+${summary.discountsTotal > 0 ? `<div class="row"><span>Discounts:</span><span>-${fmt(summary.discountsTotal)}</span></div>` : ""}
+<div class="row bold" style="border-top:1px solid #000;padding-top:4px;margin-top:2px"><span>Total Revenue:</span><span>${fmt(summary.totalRevenue)}</span></div>
+${isOwner && summary.expensesTotal > 0 ? `<div class="row"><span>Expenses:</span><span>-${fmt(summary.expensesTotal)}</span></div>` : ""}
+${isOwner ? `<div class="row bold"><span>Net Revenue:</span><span>${fmt(summary.netRevenue)}</span></div>` : ""}
 ${topServicesHtml}
 ${perBarberHtml}
 ${expensesHtml}
@@ -402,15 +402,15 @@ export default function ReportsPage() {
         <div className="space-y-6">
           {/* Summary cards */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-            <SummaryCard label={t("reports.totalRevenue")} value={`$${fmtCurrency(data.summary.totalRevenue)}`} />
-            <SummaryCard label={t("expenses.totalExpenses")} value={`-$${fmtCurrency(data.summary.expensesTotal)}`} danger />
-            <SummaryCard label={t("expenses.netRevenue")} value={`$${fmtCurrency(data.summary.netRevenue)}`} accent />
+            <SummaryCard label={t("reports.totalRevenue")} value={`${fmtCurrency(data.summary.totalRevenue)}`} />
+            <SummaryCard label={t("expenses.totalExpenses")} value={`-${fmtCurrency(data.summary.expensesTotal)}`} danger />
+            <SummaryCard label={t("expenses.netRevenue")} value={`${fmtCurrency(data.summary.netRevenue)}`} accent />
             <SummaryCard label={t("common.visits")} value={String(data.summary.visitCount)} />
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            <SummaryCard label={t("reports.cashRevenue")} value={`$${fmtCurrency(data.summary.cashTotal)}`} />
-            <SummaryCard label={t("reports.cardRevenue")} value={`$${fmtCurrency(data.summary.cardTotal)}`} />
-            <SummaryCard label={t("reports.mixedRevenue")} value={`$${fmtCurrency(data.summary.mixedTotal)}`} />
+            <SummaryCard label={t("reports.cashRevenue")} value={`${fmtCurrency(data.summary.cashTotal)}`} />
+            <SummaryCard label={t("reports.cardRevenue")} value={`${fmtCurrency(data.summary.cardTotal)}`} />
+            <SummaryCard label={t("reports.mixedRevenue")} value={`${fmtCurrency(data.summary.mixedTotal)}`} />
           </div>
 
           {/* Top services */}
@@ -432,7 +432,7 @@ export default function ReportsPage() {
                     <tr key={i} className="hover:bg-gray-50">
                       <td className="px-4 py-2">{lang === "ar" && s.arabicName ? s.arabicName : s.name}</td>
                       <td className="px-4 py-2 text-end text-gray-600">{s.count}</td>
-                      <td className="px-4 py-2 text-end font-medium">${fmtCurrency(s.revenue)}</td>
+                      <td className="px-4 py-2 text-end font-medium">{fmtCurrency(s.revenue)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -459,7 +459,7 @@ export default function ReportsPage() {
                     <tr key={b.barberId} className="hover:bg-gray-50">
                       <td className="px-4 py-2 font-medium">{b.barberName}</td>
                       <td className="px-4 py-2 text-end text-gray-600">{b.visitCount}</td>
-                      <td className="px-4 py-2 text-end font-medium">${fmtCurrency(b.revenue)}</td>
+                      <td className="px-4 py-2 text-end font-medium">{fmtCurrency(b.revenue)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -499,7 +499,7 @@ export default function ReportsPage() {
                           : t("common.mixed")}
                       </td>
                       <td className="px-4 py-2 text-end font-semibold">
-                        ${fmtCurrency(v.total)}
+                        {fmtCurrency(v.total)}
                         {v.discount > 0 && (
                           <span className="block text-xs text-red-400 font-normal">-{v.discount}%</span>
                         )}
@@ -531,7 +531,7 @@ export default function ReportsPage() {
                     <tr key={p.id} className="hover:bg-gray-50">
                       <td className="px-4 py-2 text-gray-500 text-xs">{fmtDate(p.date)}</td>
                       {isOwner && <td className="px-4 py-2">{p.barberName}</td>}
-                      <td className="px-4 py-2 text-end font-medium text-red-600">${fmtCurrency(p.amount)}</td>
+                      <td className="px-4 py-2 text-end font-medium text-red-600">{fmtCurrency(p.amount)}</td>
                       <td className="px-4 py-2 text-gray-600">{p.reason}</td>
                     </tr>
                   ))}
@@ -564,7 +564,7 @@ export default function ReportsPage() {
                     <tr key={e.id} className="hover:bg-gray-50">
                       <td className="px-4 py-2 text-gray-500 text-xs whitespace-nowrap">{fmtDate(e.date)}</td>
                       <td className="px-4 py-2 text-gray-900">{e.reason}</td>
-                      <td className="px-4 py-2 text-end font-semibold text-red-600">-${fmtCurrency(e.amount)}</td>
+                      <td className="px-4 py-2 text-end font-semibold text-red-600">-{fmtCurrency(e.amount)}</td>
                     </tr>
                   ))}
                 </tbody>

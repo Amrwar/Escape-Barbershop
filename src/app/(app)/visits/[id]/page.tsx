@@ -222,8 +222,8 @@ export default function VisitDetailPage() {
             </Badge>
             {visit.paymentMethod === "MIXED" && (
               <div className="text-xs text-gray-500 mt-1">
-                {t("common.cash")}: ${fmtCurrency(visit.cashAmount ?? 0)}<br />
-                {t("common.card")}: ${fmtCurrency(visit.cardAmount ?? 0)}
+                {t("common.cash")}: {fmtCurrency(visit.cashAmount ?? 0)}<br />
+                {t("common.card")}: {fmtCurrency(visit.cardAmount ?? 0)}
               </div>
             )}
           </div>
@@ -256,9 +256,9 @@ export default function VisitDetailPage() {
                     : item.service.name}
                 </td>
                 <td className="px-4 py-3 text-center text-gray-600">{item.quantity}</td>
-                <td className="px-4 py-3 text-end text-gray-600">${fmtCurrency(item.priceAtTime)}</td>
+                <td className="px-4 py-3 text-end text-gray-600">{fmtCurrency(item.priceAtTime)}</td>
                 <td className="px-4 py-3 text-end font-medium text-gray-900">
-                  ${fmtCurrency(item.priceAtTime * item.quantity)}
+                  {fmtCurrency(item.priceAtTime * item.quantity)}
                 </td>
               </tr>
             ))}
@@ -269,17 +269,17 @@ export default function VisitDetailPage() {
         <div className="border-t border-gray-200 px-4 py-3 space-y-1 bg-gray-50">
           <div className="flex justify-between text-sm text-gray-600">
             <span>{t("field.subtotal")}</span>
-            <span>${fmtCurrency(subtotal)}</span>
+            <span>{fmtCurrency(subtotal)}</span>
           </div>
           {visit.discount > 0 && (
             <div className="flex justify-between text-sm text-red-500">
               <span>{t("field.discount")} ({visit.discount}%)</span>
-              <span>-${fmtCurrency(discountAmount)}</span>
+              <span>-{fmtCurrency(discountAmount)}</span>
             </div>
           )}
           <div className="flex justify-between text-base font-bold text-gray-900 pt-1 border-t border-gray-200 mt-1">
             <span>{t("field.total")}</span>
-            <span>${fmtCurrency(visit.total)}</span>
+            <span>{fmtCurrency(visit.total)}</span>
           </div>
         </div>
       </div>

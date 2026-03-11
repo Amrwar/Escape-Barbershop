@@ -209,7 +209,7 @@ export default function ExpensesPage() {
                   <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{fmtDate(e.date)}</td>
                   <td className="px-4 py-3 text-gray-900">{e.reason}</td>
                   <td className="px-4 py-3 text-end font-semibold text-red-600">
-                    -${fmtCurrency(e.amount)}
+                    -{fmtCurrency(e.amount)}
                   </td>
                   <td className="px-4 py-3 text-end">
                     <button
@@ -229,7 +229,7 @@ export default function ExpensesPage() {
                   {t("expenses.totalExpenses")}
                 </td>
                 <td className="px-4 py-3 text-end font-bold text-red-600 text-base">
-                  -${fmtCurrency(total)}
+                  -{fmtCurrency(total)}
                 </td>
                 <td />
               </tr>

@@ -334,7 +334,7 @@ function NewVisitInner() {
                 <button key={s.id} type="button" onClick={() => addToCart(s)}
                   className={`text-start px-3 py-2 rounded-lg border text-xs font-medium transition-colors ${className}`}>
                   <div className="truncate">{lang === "ar" && s.arabicName ? s.arabicName : s.name}</div>
-                  <div className={`font-normal ${priceColor}`}>${fmtCurrency(s.defaultPrice)}</div>
+                  <div className={`font-normal ${priceColor}`}>{fmtCurrency(s.defaultPrice)}</div>
                 </button>
               );
             })}
@@ -366,7 +366,7 @@ function NewVisitInner() {
                           value={item.priceAtTime}
                           onChange={(e) => updateItem(item.serviceId, "priceAtTime", parseFloat(e.target.value) || 0)} />
                       </td>
-                      <td className="px-3 py-2 text-end font-medium">${fmtCurrency(item.priceAtTime * item.quantity)}</td>
+                      <td className="px-3 py-2 text-end font-medium">{fmtCurrency(item.priceAtTime * item.quantity)}</td>
                       <td className="px-3 py-2 text-end">
                         <button type="button" onClick={() => removeFromCart(item.serviceId)} className="text-red-400 hover:text-red-600 text-xs">✕</button>
                       </td>
@@ -403,17 +403,17 @@ function NewVisitInner() {
           <div className="mt-4 pt-4 border-t border-gray-200 space-y-1">
             <div className="flex justify-between text-sm text-gray-600">
               <span>{t("field.subtotal")}</span>
-              <span>${fmtCurrency(subtotal)}</span>
+              <span>{fmtCurrency(subtotal)}</span>
             </div>
             {discount > 0 && (
               <div className="flex justify-between text-sm text-red-500">
                 <span>{t("field.discount")} ({discount}%)</span>
-                <span>-${fmtCurrency(discountAmount)}</span>
+                <span>-{fmtCurrency(discountAmount)}</span>
               </div>
             )}
             <div className="flex justify-between text-base font-bold text-gray-900 pt-1">
               <span>{t("field.total")}</span>
-              <span>${fmtCurrency(total)}</span>
+              <span>{fmtCurrency(total)}</span>
             </div>
           </div>
         </div>
@@ -425,7 +425,7 @@ function NewVisitInner() {
         <div className="flex gap-3">
           <button type="button" onClick={() => router.back()} className="btn-secondary flex-1">{t("action.cancel")}</button>
           <button type="submit" disabled={submitting || cart.length === 0} className="btn-primary flex-1">
-            {submitting ? t("action.saving") : `${t("newVisit.saveVisit")} — $${fmtCurrency(total)}`}
+            {submitting ? t("action.saving") : `${t("newVisit.saveVisit")} — ${fmtCurrency(total)}`}
           </button>
         </div>
       </form>

@@ -144,11 +144,11 @@ export default function AttendancePage() {
                   </span>
                   <span className="text-gray-500">
                     {t("attendance.dailyRate")}:{" "}
-                    <span className="text-gray-700">${fmtCurrency(dailyRate)}</span>
+                    <span className="text-gray-700">{fmtCurrency(dailyRate)}</span>
                   </span>
                   {absentDays > 0 && (
                     <span className="text-amber-600 font-semibold">
-                      {t("attendance.deduction")}: -${fmtCurrency(deduction)}
+                      {t("attendance.deduction")}: -{fmtCurrency(deduction)}
                     </span>
                   )}
                 </div>

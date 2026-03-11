@@ -97,7 +97,7 @@ export default function CustomerDetailPage() {
         </div>
         <div className="card p-4">
           <p className="text-xs text-gray-500">{t("customers.totalSpent")}</p>
-          <p className="font-medium text-gray-900 mt-0.5">${fmtCurrency(totalSpent)}</p>
+          <p className="font-medium text-gray-900 mt-0.5">{fmtCurrency(totalSpent)}</p>
         </div>
       </div>
 
@@ -133,7 +133,7 @@ export default function CustomerDetailPage() {
                   <Badge variant={paymentBadge[v.paymentMethod] ?? "gray"}>
                     {v.paymentMethod === "CASH" ? t("common.cash") : v.paymentMethod === "CARD" ? t("common.card") : t("common.mixed")}
                   </Badge>
-                  <span className="font-bold text-gray-900">${fmtCurrency(v.total)}</span>
+                  <span className="font-bold text-gray-900">{fmtCurrency(v.total)}</span>
                 </div>
               </div>
               <div className="space-y-1">
@@ -143,7 +143,7 @@ export default function CustomerDetailPage() {
                       {item.service.name}
                       {item.quantity > 1 && <span className="text-gray-400"> {t("common.x")}{item.quantity}</span>}
                     </span>
-                    <span className="text-gray-700">${fmtCurrency(item.priceAtTime * item.quantity)}</span>
+                    <span className="text-gray-700">{fmtCurrency(item.priceAtTime * item.quantity)}</span>
                   </div>
                 ))}
               </div>
@@ -151,7 +151,7 @@ export default function CustomerDetailPage() {
                 <div className="flex justify-between text-sm mt-2 pt-2 border-t border-gray-100">
                   <span className="text-gray-500">{t("field.discount")} ({v.discount}%)</span>
                   <span className="text-red-500">
-                    -${fmtCurrency(
+                    -{fmtCurrency(
                       (v.items.reduce((s, i) => s + i.priceAtTime * i.quantity, 0) * v.discount) / 100
                     )}
                   </span>

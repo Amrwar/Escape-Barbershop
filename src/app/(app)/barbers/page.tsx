@@ -154,10 +154,10 @@ export default function BarbersPage() {
                     <div className="font-medium text-gray-900">{b.name}</div>
                     {b.salarySettings && (
                       <div className="text-xs text-gray-400">
-                        {t("field.baseSalary").replace(" ($)", "")}: ${fmtCurrency(b.salarySettings.baseSalary)} |{" "}
+                        {t("field.baseSalary").replace(" ($)", "")}: {fmtCurrency(b.salarySettings.baseSalary)} |{" "}
                         {b.salarySettings.commissionType === "PERCENT"
                           ? `${b.salarySettings.commissionValue}% ${t("barbers.commission")}`
-                          : `$${fmtCurrency(b.salarySettings.commissionValue)}${t("barbers.perVisit")}`}
+                          : `${fmtCurrency(b.salarySettings.commissionValue)}${t("barbers.perVisit")}`}
                       </div>
                     )}
                   </td>

@@ -311,7 +311,7 @@ export default function BarberStatsPage() {
         <div className="space-y-6">
           {/* Summary cards */}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            <SummaryCard label={t("reports.totalRevenue")} value={`$${fmtCurrency(data.summary.totalRevenue)}`} accent />
+            <SummaryCard label={t("reports.totalRevenue")} value={`${fmtCurrency(data.summary.totalRevenue)}`} accent />
             <SummaryCard label={t("common.visits")} value={String(data.summary.visitCount)} />
             {topService && <SummaryCard label="Top Service" value={topService.name} />}
           </div>
@@ -323,26 +323,26 @@ export default function BarberStatsPage() {
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
                 <div>
                   <div className="text-gray-500 text-xs mb-1">{t("salaries.base")}</div>
-                  <div className="font-semibold">${fmtCurrency(salaryEstimate.baseSalary)}</div>
+                  <div className="font-semibold">{fmtCurrency(salaryEstimate.baseSalary)}</div>
                 </div>
                 <div>
                   <div className="text-gray-500 text-xs mb-1">{t("salaries.commission")}</div>
-                  <div className="font-semibold">${fmtCurrency(salaryEstimate.commission)}</div>
+                  <div className="font-semibold">{fmtCurrency(salaryEstimate.commission)}</div>
                 </div>
                 <div>
                   <div className="text-gray-500 text-xs mb-1">{t("salaries.gross")}</div>
-                  <div className="font-semibold">${fmtCurrency(salaryEstimate.gross)}</div>
+                  <div className="font-semibold">{fmtCurrency(salaryEstimate.gross)}</div>
                 </div>
                 <div>
                   <div className="text-gray-500 text-xs mb-1">{t("salaries.net")}</div>
                   <div className={`font-bold text-lg ${salaryEstimate.net >= 0 ? "text-green-600" : "text-red-600"}`}>
-                    ${fmtCurrency(salaryEstimate.net)}
+                    {fmtCurrency(salaryEstimate.net)}
                   </div>
                 </div>
               </div>
               {salaryEstimate.penaltiesTotal > 0 && (
                 <div className="mt-2 text-xs text-red-500">
-                  {t("salaries.penalties")}: -${fmtCurrency(salaryEstimate.penaltiesTotal)}
+                  {t("salaries.penalties")}: -{fmtCurrency(salaryEstimate.penaltiesTotal)}
                 </div>
               )}
             </div>
@@ -378,7 +378,7 @@ export default function BarberStatsPage() {
                           : t("common.mixed")}
                       </td>
                       <td className="px-4 py-2 text-end font-semibold">
-                        ${fmtCurrency(v.total)}
+                        {fmtCurrency(v.total)}
                         {v.discount > 0 && (
                           <span className="block text-xs text-red-400 font-normal">-{v.discount}%</span>
                         )}
@@ -408,7 +408,7 @@ export default function BarberStatsPage() {
                   {data.penalties.map((p) => (
                     <tr key={p.id} className="hover:bg-gray-50">
                       <td className="px-4 py-2 text-gray-500 text-xs">{fmtDate(p.date)}</td>
-                      <td className="px-4 py-2 text-end font-medium text-red-600">${fmtCurrency(p.amount)}</td>
+                      <td className="px-4 py-2 text-end font-medium text-red-600">{fmtCurrency(p.amount)}</td>
                       <td className="px-4 py-2 text-gray-600">{p.reason}</td>
                     </tr>
                   ))}

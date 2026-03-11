@@ -71,12 +71,12 @@ function buildReceiptBlock(
       const lineTotal = item.priceAtTime * item.quantity;
       const qtyPart =
         item.quantity > 1
-          ? `<span style="color:#000;font-size:10px;"> x${item.quantity} = $${fmtMoney(lineTotal)}</span>`
+          ? `<span style="color:#000;font-size:10px;"> x${item.quantity} = ${fmtMoney(lineTotal)}</span>`
           : "";
       return `
       <tr>
         <td style="padding:3px 0;font-size:12px;color:#000;">${name}${qtyPart}</td>
-        <td style="padding:3px 0;font-size:12px;text-align:right;color:#000;">$${fmtMoney(item.priceAtTime)}</td>
+        <td style="padding:3px 0;font-size:12px;text-align:right;color:#000;">${fmtMoney(item.priceAtTime)}</td>
       </tr>`;
     })
     .join("");
@@ -90,16 +90,16 @@ function buildReceiptBlock(
       <table style="width:100%;font-size:12px;">
         <tr>
           <td style="padding:2px 0;color:#000;">Subtotal</td>
-          <td style="padding:2px 0;text-align:right;color:#000;">$${fmtMoney(fullSubtotal)}</td>
+          <td style="padding:2px 0;text-align:right;color:#000;">${fmtMoney(fullSubtotal)}</td>
         </tr>
         ${visit.discount > 0 ? `
         <tr>
           <td style="padding:2px 0;color:#000;">Discount (${visit.discount}%)</td>
-          <td style="padding:2px 0;text-align:right;color:#000;">-$${fmtMoney(discAmt)}</td>
+          <td style="padding:2px 0;text-align:right;color:#000;">-${fmtMoney(discAmt)}</td>
         </tr>` : ""}
         <tr>
           <td style="padding:4px 0;font-weight:bold;font-size:14px;color:#000;">TOTAL</td>
-          <td style="padding:4px 0;text-align:right;font-weight:bold;font-size:14px;color:#000;">$${fmtMoney(visit.total)}</td>
+          <td style="padding:4px 0;text-align:right;font-weight:bold;font-size:14px;color:#000;">${fmtMoney(visit.total)}</td>
         </tr>
       </table>
       ${SEP}
@@ -114,8 +114,8 @@ function buildReceiptBlock(
         ${
           visit.paymentMethod === "MIXED"
             ? `<div style="padding-left:8px;color:#000;">
-                Cash: $${fmtMoney(visit.cashAmount ?? 0)}<br/>
-                Card: $${fmtMoney(visit.cardAmount ?? 0)}
+                Cash: ${fmtMoney(visit.cashAmount ?? 0)}<br/>
+                Card: ${fmtMoney(visit.cardAmount ?? 0)}
               </div>`
             : ""
         }
@@ -126,7 +126,7 @@ function buildReceiptBlock(
       <table style="width:100%;font-size:12px;">
         <tr>
           <td style="padding:4px 0;font-weight:bold;color:#000;">TOTAL</td>
-          <td style="padding:4px 0;text-align:right;font-weight:bold;color:#000;">$${fmtMoney(displayTotal)}</td>
+          <td style="padding:4px 0;text-align:right;font-weight:bold;color:#000;">${fmtMoney(displayTotal)}</td>
         </tr>
       </table>`;
   }
@@ -174,7 +174,7 @@ export function buildWhatsAppText(
   const serviceLines = visit.items
     .map((i) => {
       const qty = i.quantity > 1 ? ` ×${i.quantity}` : "";
-      return `  • ${i.service.name}${qty} — $${fmtMoney(i.priceAtTime * i.quantity)}`;
+      return `  • ${i.service.name}${qty} — ${fmtMoney(i.priceAtTime * i.quantity)}`;
     })
     .join("\n");
 
@@ -195,10 +195,10 @@ export function buildWhatsAppText(
   ];
 
   if (visit.discount > 0) {
-    parts.push(`Subtotal: $${fmtMoney(subtotal)}`);
-    parts.push(`Discount (${visit.discount}%): -$${fmtMoney(discAmt)}`);
+    parts.push(`Subtotal: ${fmtMoney(subtotal)}`);
+    parts.push(`Discount (${visit.discount}%): -${fmtMoney(discAmt)}`);
   }
-  parts.push(`*Total: $${fmtMoney(visit.total)}*`);
+  parts.push(`*Total: ${fmtMoney(visit.total)}*`);
   parts.push(`Payment: ${payStr}`);
 
   if (shop.receiptFooter) {
@@ -286,7 +286,7 @@ export async function downloadReceiptPdf(
     const name = item.service.name + (item.quantity > 1 ? ` ×${item.quantity}` : "");
     const nameLines: string[] = doc.splitTextToSize(name, contentW - 90);
     doc.text(nameLines[0], margin, y);
-    doc.text(`$${fmtMoney(item.priceAtTime * item.quantity)}`, col2, y, { align: "right" });
+    doc.text(`${fmtMoney(item.priceAtTime * item.quantity)}`, col2, y, { align: "right" });
     y += lh;
     for (let i = 1; i < nameLines.length; i++) {
       doc.text(nameLines[i], margin + 10, y);
@@ -301,17 +301,17 @@ export async function downloadReceiptPdf(
   if (visit.discount > 0) {
     const discAmt = (subtotal * visit.discount) / 100;
     doc.text("Subtotal", margin, y);
-    doc.text(`$${fmtMoney(subtotal)}`, col2, y, { align: "right" });
+    doc.text(`${fmtMoney(subtotal)}`, col2, y, { align: "right" });
     y += lh;
     doc.text(`Discount (${visit.discount}%)`, margin, y);
-    doc.text(`-$${fmtMoney(discAmt)}`, col2, y, { align: "right" });
+    doc.text(`-${fmtMoney(discAmt)}`, col2, y, { align: "right" });
     y += lh;
   }
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(14);
   doc.text("TOTAL", margin, y);
-  doc.text(`$${fmtMoney(visit.total)}`, col2, y, { align: "right" });
+  doc.text(`${fmtMoney(visit.total)}`, col2, y, { align: "right" });
   y += lh;
 
   doc.setFont("helvetica", "normal");

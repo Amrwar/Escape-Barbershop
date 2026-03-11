@@ -110,13 +110,13 @@ export default function SalariesPage() {
       `📅 ${monthLabel} ${year}`,
       `👤 ${b.name}`,
       ``,
-      `Base Salary: $${fmtCurrency(b.baseSalary)}`,
-      `Commission: $${fmtCurrency(b.commission)}`,
-      `*Gross: $${fmtCurrency(b.gross)}*`,
-      ...(b.penaltiesTotal > 0 ? [`Penalties: -$${fmtCurrency(b.penaltiesTotal)}`] : []),
-      ...(b.absentDays > 0 ? [`Absence (${b.absentDays} days): -$${fmtCurrency(b.attendanceDeduction)}`] : []),
+      `Base Salary: ${fmtCurrency(b.baseSalary)}`,
+      `Commission: ${fmtCurrency(b.commission)}`,
+      `*Gross: ${fmtCurrency(b.gross)}*`,
+      ...(b.penaltiesTotal > 0 ? [`Penalties: -${fmtCurrency(b.penaltiesTotal)}`] : []),
+      ...(b.absentDays > 0 ? [`Absence (${b.absentDays} days): -${fmtCurrency(b.attendanceDeduction)}`] : []),
       ``,
-      `*Net Pay: $${fmtCurrency(b.net)}*`,
+      `*Net Pay: ${fmtCurrency(b.net)}*`,
     ];
     const phone = b.barberPhone.replace(/\D/g, "");
     window.open(`https://wa.me/${phone}?text=${encodeURIComponent(lines.join("\n"))}`, "_blank");
@@ -198,31 +198,31 @@ export default function SalariesPage() {
                     <div className="text-xs text-gray-400">
                       {b.commissionType === "PERCENT"
                         ? `${b.commissionValue}% ${t("barbers.commission")}`
-                        : `$${fmtCurrency(b.commissionValue)}${t("barbers.perVisit")}`}
+                        : `${fmtCurrency(b.commissionValue)}${t("barbers.perVisit")}`}
                     </div>
                   </td>
                   <td className="px-4 py-3 text-end text-gray-600 hidden md:table-cell">{b.visitCount}</td>
-                  <td className="px-4 py-3 text-end text-gray-600 hidden md:table-cell">${fmtCurrency(b.visitTotal)}</td>
-                  <td className="px-4 py-3 text-end text-gray-700">${fmtCurrency(b.baseSalary)}</td>
-                  <td className="px-4 py-3 text-end text-gray-700">${fmtCurrency(b.commission)}</td>
-                  <td className="px-4 py-3 text-end font-semibold text-gray-900">${fmtCurrency(b.gross)}</td>
+                  <td className="px-4 py-3 text-end text-gray-600 hidden md:table-cell">{fmtCurrency(b.visitTotal)}</td>
+                  <td className="px-4 py-3 text-end text-gray-700">{fmtCurrency(b.baseSalary)}</td>
+                  <td className="px-4 py-3 text-end text-gray-700">{fmtCurrency(b.commission)}</td>
+                  <td className="px-4 py-3 text-end font-semibold text-gray-900">{fmtCurrency(b.gross)}</td>
                   <td className="px-4 py-3 text-end hidden sm:table-cell">
                     {b.penaltiesTotal > 0 ? (
                       <button onClick={() => setDetailBarber(b)} className="text-red-600 hover:underline">
-                        -${fmtCurrency(b.penaltiesTotal)}
+                        -{fmtCurrency(b.penaltiesTotal)}
                       </button>
                     ) : <span className="text-gray-400">—</span>}
                   </td>
                   <td className="px-4 py-3 text-end hidden md:table-cell">
                     {b.absentDays > 0 ? (
                       <span className="text-amber-600 font-medium">
-                        {b.absentDays}d / -${fmtCurrency(b.attendanceDeduction)}
+                        {b.absentDays}d / -{fmtCurrency(b.attendanceDeduction)}
                       </span>
                     ) : <span className="text-gray-400">—</span>}
                   </td>
                   <td className="px-4 py-3 text-end">
                     <span className={`font-bold ${b.net < 0 ? "text-red-600" : "text-green-700"}`}>
-                      ${fmtCurrency(b.net)}
+                      {fmtCurrency(b.net)}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-end">
@@ -236,9 +236,9 @@ export default function SalariesPage() {
                 <td className="px-4 py-3 text-gray-900">{t("salaries.totals")}</td>
                 <td colSpan={4} className="hidden md:table-cell" />
                 <td className="hidden md:table-cell" />
-                <td className="px-4 py-3 text-end text-gray-900">${fmtCurrency(totalGross)}</td>
-                <td className="px-4 py-3 text-end text-red-600 hidden sm:table-cell">-${fmtCurrency(totalPenalties)}</td>
-                <td className="px-4 py-3 text-end text-green-700">${fmtCurrency(totalNet)}</td>
+                <td className="px-4 py-3 text-end text-gray-900">{fmtCurrency(totalGross)}</td>
+                <td className="px-4 py-3 text-end text-red-600 hidden sm:table-cell">-{fmtCurrency(totalPenalties)}</td>
+                <td className="px-4 py-3 text-end text-green-700">{fmtCurrency(totalNet)}</td>
                 <td />
               </tr>
             </tfoot>
@@ -292,13 +292,13 @@ export default function SalariesPage() {
             <div className="grid grid-cols-2 gap-3">
               {[
                 [t("salaries.visitCount"),          detailBarber.visitCount],
-                [t("salaries.visitRevenue"),         `$${fmtCurrency(detailBarber.visitTotal)}`],
-                [t("salaries.commissionableRevenue"), `$${fmtCurrency(detailBarber.commissionableTotal)}`],
-                [t("field.baseSalary"),              `$${fmtCurrency(detailBarber.baseSalary)}`],
-                [t("salaries.commission"),           `$${fmtCurrency(detailBarber.commission)}`],
-                [t("salaries.gross"),                `$${fmtCurrency(detailBarber.gross)}`],
-                [t("salaries.penalties"),            `-$${fmtCurrency(detailBarber.penaltiesTotal)}`],
-                [t("salaries.attendanceDeduction"),  detailBarber.absentDays > 0 ? `-$${fmtCurrency(detailBarber.attendanceDeduction)} (${detailBarber.absentDays}d)` : "—"],
+                [t("salaries.visitRevenue"),         `${fmtCurrency(detailBarber.visitTotal)}`],
+                [t("salaries.commissionableRevenue"), `${fmtCurrency(detailBarber.commissionableTotal)}`],
+                [t("field.baseSalary"),              `${fmtCurrency(detailBarber.baseSalary)}`],
+                [t("salaries.commission"),           `${fmtCurrency(detailBarber.commission)}`],
+                [t("salaries.gross"),                `${fmtCurrency(detailBarber.gross)}`],
+                [t("salaries.penalties"),            `-${fmtCurrency(detailBarber.penaltiesTotal)}`],
+                [t("salaries.attendanceDeduction"),  detailBarber.absentDays > 0 ? `-${fmtCurrency(detailBarber.attendanceDeduction)} (${detailBarber.absentDays}d)` : "—"],
               ].map(([label, value]) => (
                 <div key={String(label)} className="bg-gray-50 rounded-lg px-3 py-2">
                   <p className="text-xs text-gray-500">{label}</p>
@@ -308,7 +308,7 @@ export default function SalariesPage() {
             </div>
             <div className="bg-primary-50 border border-primary-200 rounded-lg px-4 py-3 flex justify-between items-center">
               <span className="font-semibold text-primary-700">{t("salaries.netPay")}</span>
-              <span className="text-xl font-bold text-primary-700">${fmtCurrency(detailBarber.net)}</span>
+              <span className="text-xl font-bold text-primary-700">{fmtCurrency(detailBarber.net)}</span>
             </div>
             {detailBarber.barberPhone && (
               <button
@@ -328,7 +328,7 @@ export default function SalariesPage() {
                         <div className="text-sm text-gray-900">{p.reason}</div>
                         <div className="text-xs text-gray-400">{fmtDate(p.date)}</div>
                       </div>
-                      <Badge variant="red">${fmtCurrency(p.amount)}</Badge>
+                      <Badge variant="red">{fmtCurrency(p.amount)}</Badge>
                       <button onClick={() => deletePenalty(p.id)} className="text-red-400 hover:text-red-600 text-xs">✕</button>
                     </div>
                   ))}
