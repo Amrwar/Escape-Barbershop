@@ -173,7 +173,7 @@ function NewVisitInner() {
         body: JSON.stringify({
           customerId: selectedCustomer.id,
           barberId,
-          visitAt,
+          visitAt: new Date(visitAt).toISOString(),
           paymentMethod,
           discount,
           notes,

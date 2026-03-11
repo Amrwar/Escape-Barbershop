@@ -97,7 +97,7 @@ export default function EditVisitPage() {
         body: JSON.stringify({
           customerId: customer!.id,
           barberId,
-          visitAt,
+          visitAt: new Date(visitAt).toISOString(),
           paymentMethod,
           discount,
           notes,
