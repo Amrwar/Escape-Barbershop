@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Modal } from "@/components/ui/Modal";
@@ -51,7 +50,6 @@ export default function CashDrawerPage() {
   const { data: authSession } = useSession();
   const isOwner = authSession?.user?.role === "OWNER";
   const { t, fmtCurrency } = useTranslation();
-  const router = useRouter();
 
   const [session, setSession] = useState<SessionData | null | undefined>(undefined);
   const [recentSessions, setRecentSessions] = useState<RecentSession[]>([]);
@@ -169,15 +167,17 @@ export default function CashDrawerPage() {
         }),
       });
       if (res.ok) {
-        const closed = await res.json();
         setCloseModal(false);
-        setClosingCash(0);
         setCloseNotes("");
-        if (closeTarget === "day") {
-          router.push(`/cash-drawer/day-report`);
-        } else {
-          router.push(`/cash-drawer/report/${closed.id}`);
-        }
+        // Auto-open a new session: carry closing cash for session handover, start at 0 for a new day
+        const newOpeningCash = closeTarget === "session" ? closingCash : 0;
+        setClosingCash(0);
+        await fetch("/api/cash-drawer", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ openingCash: newOpeningCash, notes: "" }),
+        });
+        await Promise.all([fetchSession(), fetchSessions()]);
       } else {
         const d = await res.json();
         setCloseError(d.error ?? "Failed");
