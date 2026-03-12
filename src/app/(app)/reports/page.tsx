@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { DateNavInput } from "@/components/ui/DateNavInput";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { useTranslation } from "@/lib/i18n";
-import { format, startOfDay, startOfWeek, startOfMonth } from "date-fns";
+import { format, startOfWeek, startOfMonth } from "date-fns";
 
 interface ShopSettings {
   shopName: string;
@@ -84,7 +84,6 @@ ${shop.shopAddress ? `<p>${shop.shopAddress}</p>` : ""}
 <div class="row"><span>Total Visits:</span><span>${summary.visitCount}</span></div>
 <div class="row"><span>Cash:</span><span>${fmt(summary.cashTotal)}</span></div>
 <div class="row"><span>Card:</span><span>${fmt(summary.cardTotal)}</span></div>
-${summary.mixedTotal > 0 ? `<div class="row"><span>Mixed:</span><span>${fmt(summary.mixedTotal)}</span></div>` : ""}
 ${summary.discountsTotal > 0 ? `<div class="row"><span>Discounts:</span><span>-${fmt(summary.discountsTotal)}</span></div>` : ""}
 <div class="row bold" style="border-top:1px solid #000;padding-top:4px;margin-top:2px"><span>Total Revenue:</span><span>${fmt(summary.totalRevenue)}</span></div>
 ${isOwner && summary.expensesTotal > 0 ? `<div class="row"><span>Expenses:</span><span>-${fmt(summary.expensesTotal)}</span></div>` : ""}
@@ -156,7 +155,6 @@ interface Summary {
   totalRevenue: number;
   cashTotal: number;
   cardTotal: number;
-  mixedTotal: number;
   discountsTotal: number;
   expensesTotal: number;
   netRevenue: number;
@@ -219,7 +217,7 @@ export default function ReportsPage() {
     setLoading(true);
     try {
       const params = new URLSearchParams({
-        from: startOfDay(new Date(fromDate)).toISOString(),
+        from: new Date(fromDate + "T00:00:00").toISOString(),
         to: new Date(toDate + "T23:59:59").toISOString(),
       });
       const res = await fetch(`/api/reports?${params}`);
@@ -258,7 +256,6 @@ export default function ReportsPage() {
       { Field: t("reports.totalRevenue"), Value: data.summary.totalRevenue },
       { Field: t("reports.cashRevenue"), Value: data.summary.cashTotal },
       { Field: t("reports.cardRevenue"), Value: data.summary.cardTotal },
-      { Field: t("reports.mixedRevenue"), Value: data.summary.mixedTotal },
       { Field: t("reports.discounts"), Value: data.summary.discountsTotal },
       { Field: t("expenses.totalExpenses"), Value: data.summary.expensesTotal },
       { Field: t("expenses.netRevenue"), Value: data.summary.netRevenue },
@@ -406,7 +403,6 @@ export default function ReportsPage() {
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <SummaryCard label={t("reports.cashRevenue")} value={`${fmtCurrency(data.summary.cashTotal)}`} />
             <SummaryCard label={t("reports.cardRevenue")} value={`${fmtCurrency(data.summary.cardTotal)}`} />
-            <SummaryCard label={t("reports.mixedRevenue")} value={`${fmtCurrency(data.summary.mixedTotal)}`} />
           </div>
 
           {/* Top services */}
