@@ -16,13 +16,19 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// PATCH — set the edit PIN (owner only)
+// PATCH — set the edit PIN (owner only, requires current PIN)
 export async function PATCH(req: NextRequest) {
   try {
     await requireOwner();
-    const { pin } = await req.json();
+    const { pin, currentPin } = await req.json();
     if (!pin || String(pin).trim().length < 4) {
       return NextResponse.json({ error: "PIN must be at least 4 characters" }, { status: 400 });
+    }
+    const existing = await prisma.setting.findUnique({ where: { key: "edit_pin" } });
+    if (existing?.value) {
+      if (!currentPin || existing.value !== String(currentPin)) {
+        return NextResponse.json({ error: "current_pin_wrong" }, { status: 403 });
+      }
     }
     await prisma.setting.upsert({
       where: { key: "edit_pin" },
