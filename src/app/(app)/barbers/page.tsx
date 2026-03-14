@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
@@ -42,6 +42,18 @@ export default function BarbersPage() {
   const [salaryForm, setSalaryForm] = useState(defaultSalary);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
+  const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setOpenMenu(null);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
   const [deleteModal, setDeleteModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Barber | null>(null);
   const [deletePin, setDeletePin] = useState("");
@@ -210,16 +222,40 @@ export default function BarbersPage() {
                   </td>
                   <td className="px-4 py-3 text-end text-gray-600 hidden md:table-cell">{b._count.visits}</td>
                   <td className="px-4 py-3">
-                    <div className="flex items-center justify-end gap-2">
+                    <div className="flex items-center justify-end gap-2" ref={openMenu === b.id ? menuRef : null}>
                       <Link href={`/barbers/${b.id}/stats`} className="btn-ghost text-xs px-2 py-1">{t("action.stats")}</Link>
-                      <button onClick={() => openSalary(b)} className="btn-ghost text-xs px-2 py-1">{t("barbers.salarySettings").replace(" —", "")}</button>
                       <button onClick={() => openEdit(b)} className="btn-secondary text-xs px-2 py-1">{t("action.edit")}</button>
-                      <button onClick={() => toggleActive(b)} className="btn-ghost text-xs px-2 py-1">
-                        {b.isActive ? t("action.deactivate") : t("action.activate")}
-                      </button>
-                      <button onClick={() => openDelete(b)} title={t("action.delete")} className="text-red-400 hover:text-red-600 px-1.5 py-1 rounded hover:bg-red-50 transition-colors text-base leading-none">
-                        ✕
-                      </button>
+                      <div className="relative">
+                        <button
+                          onClick={() => setOpenMenu(openMenu === b.id ? null : b.id)}
+                          className="btn-ghost text-xs px-2 py-1 font-bold tracking-widest"
+                        >
+                          ⋮
+                        </button>
+                        {openMenu === b.id && (
+                          <div className="absolute right-0 top-full mt-1 w-44 bg-white border border-gray-200 rounded-lg shadow-lg z-20 py-1">
+                            <button
+                              onClick={() => { openSalary(b); setOpenMenu(null); }}
+                              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                            >
+                              {t("barbers.salarySettings").replace(" —", "")}
+                            </button>
+                            <button
+                              onClick={() => { toggleActive(b); setOpenMenu(null); }}
+                              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                            >
+                              {b.isActive ? t("action.deactivate") : t("action.activate")}
+                            </button>
+                            <div className="border-t border-gray-100 my-1" />
+                            <button
+                              onClick={() => { openDelete(b); setOpenMenu(null); }}
+                              className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50"
+                            >
+                              {t("action.delete")}
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </td>
                 </tr>
