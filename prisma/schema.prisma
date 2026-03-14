@@ -96,6 +96,7 @@ model Visit {
   updatedAt     DateTime           @updatedAt
   cardAmount       Float?
   cashAmount       Float?
+  tip              Float              @default(0)
   sessionId        String?
   sessionSequence  Int?
   barber        Barber             @relation(fields: [barberId], references: [id])

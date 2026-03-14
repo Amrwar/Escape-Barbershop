@@ -42,6 +42,8 @@ export async function PATCH(
     const discountAmount = (subtotal * (data.discount ?? 0)) / 100;
     const total = subtotal - discountAmount;
 
+    const tip = data.tip ?? 0;
+
     let cashAmount: number;
     let cardAmount: number;
     if (data.paymentMethod === "CASH") {
@@ -69,6 +71,7 @@ export async function PATCH(
         total,
         cashAmount,
         cardAmount,
+        tip,
         notes: data.notes || null,
         items: {
           create: data.items.map((item) => ({

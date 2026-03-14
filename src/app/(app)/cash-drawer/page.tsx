@@ -241,12 +241,13 @@ export default function CashDrawerPage() {
     const map = new Map<string, DayGroup>();
     for (const s of recentSessions) {
       if (s.status === "OPEN") continue; // open session shown in main view
-      const d = new Date(s.openedAt);
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      // Business day starts at 3AM: shift back 3 hours to find which business day the session belongs to
+      const bd = new Date(new Date(s.openedAt).getTime() - 3 * 60 * 60 * 1000);
+      const key = `${bd.getFullYear()}-${String(bd.getMonth() + 1).padStart(2, "0")}-${String(bd.getDate()).padStart(2, "0")}`;
       if (!map.has(key)) {
         map.set(key, {
           date: key,
-          label: d.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short", year: "numeric" }),
+          label: bd.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short", year: "numeric" }),
           sessions: [],
           totalVisits: 0,
         });

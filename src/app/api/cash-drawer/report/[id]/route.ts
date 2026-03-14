@@ -33,10 +33,10 @@ export async function GET(
       return NextResponse.json({ error: "Session not found" }, { status: 404 });
     }
 
-    // Revenue totals
+    // Revenue totals — cash tips (CASH/MIXED) flow into drawer; card tips are deducted as CashMovement OUT
     const cashTotal = session.visits
       .filter((v) => v.paymentMethod === "CASH")
-      .reduce((s, v) => s + (v.cashAmount ?? v.total), 0);
+      .reduce((s, v) => s + (v.cashAmount ?? v.total) + (v.tip ?? 0), 0);
 
     const cardTotal = session.visits
       .filter((v) => v.paymentMethod === "CARD")
@@ -44,7 +44,7 @@ export async function GET(
 
     const mixedCashAmount = session.visits
       .filter((v) => v.paymentMethod === "MIXED")
-      .reduce((s, v) => s + (v.cashAmount ?? 0), 0);
+      .reduce((s, v) => s + (v.cashAmount ?? 0) + (v.tip ?? 0), 0);
 
     const discountsTotal = session.visits.reduce((s, v) => {
       const subtotal = v.items.reduce(

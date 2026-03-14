@@ -178,6 +178,8 @@ const ar: Record<TranslationKey, string> = {
   "newVisit.wrongPin": "رمز خاطئ — يرجى المحاولة مرة أخرى",
   "newVisit.unlockDiscount": "تفعيل الخصم",
   "newVisit.walkIn": "زائر بلا حجز",
+  "newVisit.tip": "بقشيش",
+  "newVisit.cardTipNote": "بقشيش الكارت سيُخصم تلقائياً من صندوق النقد",
 
   // Barbers
   "barbers.title": "الحلاقون",

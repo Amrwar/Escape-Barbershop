@@ -41,6 +41,7 @@ export const visitSchema = z.object({
   items: z.array(visitItemSchema).min(1, "At least one service is required"),
   cashAmount: z.number().min(0).optional(),
   cardAmount: z.number().min(0).optional(),
+  tip: z.number().min(0).optional().default(0),
 });
 
 export const openDrawerSchema = z.object({

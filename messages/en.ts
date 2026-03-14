@@ -176,6 +176,8 @@ const en = {
   "newVisit.wrongPin": "Incorrect PIN — please try again",
   "newVisit.unlockDiscount": "Unlock Discount",
   "newVisit.walkIn": "Walk-in",
+  "newVisit.tip": "Tip",
+  "newVisit.cardTipNote": "Card tip will be auto-deducted from cash drawer",
 
   // Barbers
   "barbers.title": "Barbers",

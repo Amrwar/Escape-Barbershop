@@ -15,9 +15,10 @@ export async function GET(req: NextRequest) {
       from = new Date(fromParam);
       to = new Date(toParam);
     } else {
-      const date = dateParam ? new Date(dateParam) : new Date();
-      from = new Date(date); from.setHours(0, 0, 0, 0);
-      to = new Date(date); to.setHours(23, 59, 59, 999);
+      // Business day runs from 3AM to 3AM next day
+      const date = dateParam ? new Date(dateParam + "T03:00:00") : (() => { const d = new Date(); d.setHours(3, 0, 0, 0); return d; })();
+      from = date;
+      to = new Date(date); to.setDate(to.getDate() + 1);
     }
 
     const sessions = await prisma.cashDrawerSession.findMany({
@@ -64,9 +65,10 @@ export async function GET(req: NextRequest) {
       }
 
       for (const v of s.visits) {
-        if (v.paymentMethod === "CASH") cashTotal += v.cashAmount ?? v.total;
+        // Cash/MIXED tips flow into cash drawer; card tips are deducted as CashMovement OUT
+        if (v.paymentMethod === "CASH") cashTotal += (v.cashAmount ?? v.total) + (v.tip ?? 0);
         else if (v.paymentMethod === "CARD") cardTotal += v.cardAmount ?? v.total;
-        else if (v.paymentMethod === "MIXED") mixedCashAmount += v.cashAmount ?? 0;
+        else if (v.paymentMethod === "MIXED") mixedCashAmount += (v.cashAmount ?? 0) + (v.tip ?? 0);
 
         const subtotal = v.items.reduce((sum, i) => sum + i.priceAtTime * i.quantity, 0);
         discountsTotal += (subtotal * v.discount) / 100;

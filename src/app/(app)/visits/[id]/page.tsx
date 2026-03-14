@@ -18,6 +18,7 @@ interface VisitDetail {
   total: number;
   cashAmount: number | null;
   cardAmount: number | null;
+  tip: number;
   notes: string | null;
   sessionSequence: number | null;
   customer: { name: string; phone: string | null };
@@ -281,6 +282,12 @@ export default function VisitDetailPage() {
             <span>{t("field.total")}</span>
             <span>{fmtCurrency(visit.total)}</span>
           </div>
+          {visit.tip > 0 && (
+            <div className="flex justify-between text-sm text-gray-600 pt-1">
+              <span>{t("newVisit.tip")}</span>
+              <span>{fmtCurrency(visit.tip)}</span>
+            </div>
+          )}
         </div>
       </div>
 

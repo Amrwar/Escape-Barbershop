@@ -21,6 +21,7 @@ export async function GET() {
             total: true,
             cashAmount: true,
             cardAmount: true,
+            tip: true,
             paymentMethod: true,
           },
         },
@@ -29,9 +30,10 @@ export async function GET() {
 
     if (!session) return NextResponse.json(null);
 
+    // Cash tips (CASH/MIXED) flow directly into the drawer; card tips are auto-deducted as CashMovement OUT
     const cashTotal = session.visits
       .filter((v) => v.paymentMethod === "CASH")
-      .reduce((s, v) => s + (v.cashAmount ?? v.total), 0);
+      .reduce((s, v) => s + (v.cashAmount ?? v.total) + (v.tip ?? 0), 0);
 
     const cardTotal = session.visits
       .filter((v) => v.paymentMethod === "CARD")
@@ -39,7 +41,7 @@ export async function GET() {
 
     const mixedCash = session.visits
       .filter((v) => v.paymentMethod === "MIXED")
-      .reduce((s, v) => s + (v.cashAmount ?? 0), 0);
+      .reduce((s, v) => s + (v.cashAmount ?? 0) + (v.tip ?? 0), 0);
 
     const cashSales = cashTotal + mixedCash;
 

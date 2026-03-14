@@ -40,6 +40,7 @@ function NewVisitInner() {
   const [error,          setError]          = useState("");
   const [cashAmount,     setCashAmount]     = useState(0);
   const [cardAmount,     setCardAmount]     = useState(0);
+  const [tip,            setTip]            = useState(0);
 
   // Discount PIN gate
   const [discountUnlocked, setDiscountUnlocked] = useState(false);
@@ -177,6 +178,7 @@ function NewVisitInner() {
           paymentMethod,
           discount,
           notes,
+          tip,
           items: cart.map((i) => ({ serviceId: i.serviceId, quantity: i.quantity, priceAtTime: i.priceAtTime })),
           ...(paymentMethod === "MIXED" ? { cashAmount, cardAmount } : {}),
         }),
@@ -415,6 +417,20 @@ function NewVisitInner() {
               <span>{t("field.total")}</span>
               <span>{fmtCurrency(total)}</span>
             </div>
+            <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+              <label className="text-sm text-gray-600">{t("newVisit.tip")}</label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                className="input w-28 text-end"
+                value={tip}
+                onChange={(e) => setTip(parseFloat(e.target.value) || 0)}
+              />
+            </div>
+            {paymentMethod === "CARD" && tip > 0 && (
+              <p className="text-xs text-amber-600">{t("newVisit.cardTipNote")}</p>
+            )}
           </div>
         </div>
 

@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    await requireAuth();
+    const authSession = await requireAuth();
     const body = await req.json();
     const data = visitSchema.parse(body);
 
@@ -52,7 +52,9 @@ export async function POST(req: NextRequest) {
     const discountAmount = (subtotal * (data.discount ?? 0)) / 100;
     const total = subtotal - discountAmount;
 
-    // Derive cash/card amounts
+    const tip = data.tip ?? 0;
+
+    // Derive cash/card amounts (tip is stored separately, not included in cashAmount/cardAmount)
     let cashAmount: number;
     let cardAmount: number;
     if (data.paymentMethod === "CASH") {
@@ -83,7 +85,7 @@ export async function POST(req: NextRequest) {
         sessionSequence = count + 1;
       }
 
-      return tx.visit.create({
+      const newVisit = await tx.visit.create({
         data: {
           customerId: data.customerId,
           barberId: data.barberId,
@@ -93,6 +95,7 @@ export async function POST(req: NextRequest) {
           total,
           cashAmount,
           cardAmount,
+          tip,
           notes: data.notes || null,
           ...(sessionId ? { sessionId, sessionSequence } : {}),
           items: {
@@ -109,6 +112,21 @@ export async function POST(req: NextRequest) {
           items: { include: { service: true } },
         },
       });
+
+      // Card tip: auto-deduct from cash drawer (barber gets paid tip in cash)
+      if (data.paymentMethod === "CARD" && tip > 0 && sessionId) {
+        await tx.cashMovement.create({
+          data: {
+            sessionId,
+            type: "OUT",
+            amount: tip,
+            reason: `Card tip — ${newVisit.barber.name}`,
+            createdByUserId: authSession.user.id,
+          },
+        });
+      }
+
+      return newVisit;
     });
     return NextResponse.json(visit, { status: 201 });
   } catch (err: unknown) {
