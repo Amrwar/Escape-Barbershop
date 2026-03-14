@@ -235,7 +235,7 @@ export default function CashDrawerPage() {
     setDeleteMovementSubmitting(true);
     setDeleteMovementError("");
     try {
-      const verifyRes = await fetch("/api/settings/discount-pin", {
+      const verifyRes = await fetch("/api/settings/edit-pin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ pin: deleteMovementPin }),

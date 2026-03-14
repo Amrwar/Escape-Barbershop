@@ -87,7 +87,7 @@ export default function VisitsPage() {
     setDeletePinError("");
     setDeletePinVerifying(true);
     try {
-      const res = await fetch("/api/settings/discount-pin", {
+      const res = await fetch("/api/settings/edit-pin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ pin: deletePin }),

@@ -146,7 +146,7 @@ function buildReceiptBlock(
       : "";
 
   return `
-    <div style="font-family:monospace,sans-serif;width:380px;padding:16px;background:#fff;color:#000;">
+    <div style="font-family:monospace,sans-serif;width:100%;max-width:380px;padding:8px;box-sizing:border-box;background:#fff;color:#000;">
       <div style="text-align:center;margin-bottom:8px;">
         ${logoHtml}
         <div style="font-weight:bold;font-size:20px;color:#000;">${shop.shopName}</div>
@@ -372,10 +372,13 @@ export function printReceipt(
   <meta charset="utf-8" />
   <title>Receipt</title>
   <style>
-    * { color: #000 !important; background: transparent; font-weight: bold !important; }
-    body { margin: 0; background: #fff !important; display: flex; flex-direction: column; align-items: center; }
-    img { background: transparent !important; }
-    @media print { body { margin: 0; } }
+    @page { margin: 4mm; size: auto; }
+    * { color: #000 !important; background: transparent; font-weight: bold !important; box-sizing: border-box; }
+    body { margin: 0; padding: 0; background: #fff !important; }
+    img { background: transparent !important; max-width: 100% !important; }
+    div { max-width: 100% !important; overflow-wrap: break-word; word-break: break-word; }
+    table { width: 100% !important; table-layout: fixed; }
+    td { word-break: break-word; overflow-wrap: break-word; }
   </style>
 </head>
 <body>

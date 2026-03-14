@@ -10,7 +10,7 @@ export async function DELETE(
     await requireOwner();
 
     const { pin } = await req.json();
-    const setting = await prisma.setting.findUnique({ where: { key: "discount_pin" } });
+    const setting = await prisma.setting.findUnique({ where: { key: "edit_pin" } });
     if (!setting || setting.value !== String(pin ?? "")) {
       return NextResponse.json({ error: "Incorrect PIN" }, { status: 403 });
     }
