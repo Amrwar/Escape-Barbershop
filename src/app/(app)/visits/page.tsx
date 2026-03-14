@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Modal } from "@/components/ui/Modal";
+import { Pagination } from "@/components/ui/Pagination";
 import { useSession } from "next-auth/react";
 import { useTranslation } from "@/lib/i18n";
 import { format } from "date-fns";
@@ -50,7 +51,7 @@ export default function VisitsPage() {
     if (barberId) params.set("barberId", barberId);
     fetch(`/api/visits?${params}`)
       .then((r) => r.json())
-      .then((data) => setVisits(Array.isArray(data) ? data : []))
+      .then((data) => { setVisits(Array.isArray(data) ? data : []); setVisitsPage(1); })
       .finally(() => setLoading(false));
   };
 
@@ -63,6 +64,9 @@ export default function VisitsPage() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOwner]);
+
+  const [visitsPage, setVisitsPage] = useState(1);
+  const PAGE_SIZE = 15;
 
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteModal, setDeleteModal] = useState(false);
@@ -144,7 +148,7 @@ export default function VisitsPage() {
         />
       ) : (
         <div className="space-y-3">
-          {visits.map((v) => (
+          {visits.slice((visitsPage - 1) * PAGE_SIZE, visitsPage * PAGE_SIZE).map((v) => (
             <div key={v.id} className="card p-4 hover:shadow-md transition-shadow">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
@@ -195,6 +199,7 @@ export default function VisitsPage() {
               </div>
             </div>
           ))}
+          <Pagination page={visitsPage} totalPages={Math.ceil(visits.length / PAGE_SIZE)} onPage={setVisitsPage} />
         </div>
       )}
 

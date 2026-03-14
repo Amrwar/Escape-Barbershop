@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { useTranslation } from "@/lib/i18n";
+import { Pagination } from "@/components/ui/Pagination";
 import { format, startOfDay, startOfWeek, startOfMonth } from "date-fns";
 
 interface VisitItem {
@@ -98,6 +99,8 @@ export default function BarberStatsPage() {
   const [data, setData] = useState<ReportData | null>(null);
   const [loading, setLoading] = useState(false);
   const [fetched, setFetched] = useState(false);
+  const [visitsPage, setVisitsPage] = useState(1);
+  const PAGE_SIZE = 15;
 
   // Load barber info once
   useEffect(() => {
@@ -118,7 +121,7 @@ export default function BarberStatsPage() {
         barberId,
       });
       const res = await fetch(`/api/reports?${params}`);
-      if (res.ok) setData(await res.json());
+      if (res.ok) { setData(await res.json()); setVisitsPage(1); }
     } finally {
       setLoading(false);
       setFetched(true);
@@ -365,7 +368,7 @@ export default function BarberStatsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  {data.visits.map((v) => (
+                  {data.visits.slice((visitsPage - 1) * PAGE_SIZE, visitsPage * PAGE_SIZE).map((v) => (
                     <tr key={v.id} className="hover:bg-gray-50">
                       <td className="px-4 py-2 text-gray-500 text-xs whitespace-nowrap">{fmtDateTime(v.visitAt)}</td>
                       <td className="px-4 py-2 font-medium">{fmtCustomerName(v.customer.name)}</td>
@@ -387,6 +390,7 @@ export default function BarberStatsPage() {
                   ))}
                 </tbody>
               </table>
+              <Pagination page={visitsPage} totalPages={Math.ceil(data.visits.length / PAGE_SIZE)} onPage={setVisitsPage} />
             </div>
           </div>
 

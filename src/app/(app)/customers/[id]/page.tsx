@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/Badge";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useTranslation } from "@/lib/i18n";
+import { Pagination } from "@/components/ui/Pagination";
 
 interface VisitItem {
   id: string;
@@ -45,6 +46,8 @@ export default function CustomerDetailPage() {
   const { t, fmtCurrency, fmtDate, fmtDateTime, dir, fmtCustomerName } = useTranslation();
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [loading, setLoading] = useState(true);
+  const [visitsPage, setVisitsPage] = useState(1);
+  const PAGE_SIZE = 15;
 
   useEffect(() => {
     fetch(`/api/customers/${id}`)
@@ -122,7 +125,8 @@ export default function CustomerDetailPage() {
         />
       ) : (
         <div className="space-y-3">
-          {customer.visits.map((v) => (
+          {customer.visits.slice((visitsPage - 1) * PAGE_SIZE, visitsPage * PAGE_SIZE).map((v) => (
+
             <div key={v.id} className="card p-4">
               <div className="flex items-start justify-between gap-4 mb-3">
                 <div>
@@ -160,6 +164,7 @@ export default function CustomerDetailPage() {
               {v.notes && <p className="text-xs text-gray-400 mt-2 italic">{v.notes}</p>}
             </div>
           ))}
+          <Pagination page={visitsPage} totalPages={Math.ceil(customer.visits.length / PAGE_SIZE)} onPage={setVisitsPage} />
         </div>
       )}
     </div>

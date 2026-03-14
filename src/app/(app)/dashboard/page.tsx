@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { DateNavInput } from "@/components/ui/DateNavInput";
 import { StatCard } from "@/components/ui/StatCard";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { useTranslation } from "@/lib/i18n";
+import { Pagination } from "@/components/ui/Pagination";
 import { format, startOfDay, startOfWeek, startOfMonth } from "date-fns";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -99,6 +100,10 @@ export default function DashboardPage() {
   const [statsLoading, setStatsLoading] = useState(false);
   const [stats, setStats] = useState<BarberStats | null>(null);
   const [exporting, setExporting] = useState(false);
+  const [visitsPage, setVisitsPage] = useState(1);
+  const PAGE_SIZE = 15;
+  const prevStatsRef = useRef<BarberStats | null>(null);
+  useEffect(() => { if (stats !== prevStatsRef.current) { prevStatsRef.current = stats; setVisitsPage(1); } }, [stats]);
 
   const now = new Date();
   const monthName = now.toLocaleString("default", { month: "long", year: "numeric" });
@@ -519,7 +524,7 @@ export default function DashboardPage() {
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50">
-                          {stats.visits.map((v) => (
+                          {stats.visits.slice((visitsPage - 1) * PAGE_SIZE, visitsPage * PAGE_SIZE).map((v) => (
                             <tr key={v.id} className="hover:bg-gray-50">
                               <td className="px-4 py-2 text-xs text-gray-500 whitespace-nowrap">
                                 {fmtDateTime(v.visitAt)}
@@ -546,6 +551,7 @@ export default function DashboardPage() {
                         </tbody>
                       </table>
                     </div>
+                    <Pagination page={visitsPage} totalPages={Math.ceil(stats.visits.length / PAGE_SIZE)} onPage={setVisitsPage} />
                   </div>
                 </div>
               )}
