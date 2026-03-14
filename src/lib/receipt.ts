@@ -62,12 +62,12 @@ function buildReceiptBlock(
   const displayTotal = showTotals ? visit.total : items.reduce((s, i) => s + i.priceAtTime * i.quantity, 0);
 
   const logoHtml = shop.shopLogo
-    ? `<img src="${shop.shopLogo}" alt="logo" style="width:240px;height:auto;max-height:200px;object-fit:contain;display:block;margin:0 auto 10px;" />`
+    ? `<img src="${shop.shopLogo}" alt="logo" style="width:240px;height:auto;max-height:200px;object-fit:contain;display:block;margin:0 auto 10px;background:transparent;" />`
     : "";
 
   const contactParts = [shop.shopPhone, shop.shopAddress].filter(Boolean);
   const contactHtml = contactParts.length
-    ? `<div style="font-size:11px;color:#000;margin-top:2px;">${contactParts.join(" | ")}</div>`
+    ? `<div style="font-size:18px;font-style:italic;color:#000;margin-top:4px;">${contactParts.join(" | ")}</div>`
     : "";
 
   const itemRows = items
@@ -76,12 +76,12 @@ function buildReceiptBlock(
       const lineTotal = item.priceAtTime * item.quantity;
       const qtyPart =
         item.quantity > 1
-          ? `<span style="color:#000;font-size:10px;"> x${item.quantity} = ${fmtMoney(lineTotal)}</span>`
+          ? `<span style="color:#000;font-size:18px;"> x${item.quantity} = ${fmtMoney(lineTotal)}</span>`
           : "";
       return `
       <tr>
-        <td style="padding:3px 0;font-size:12px;color:#000;">${name}${qtyPart}</td>
-        <td style="padding:3px 0;font-size:12px;text-align:right;color:#000;">${fmtMoney(item.priceAtTime)}</td>
+        <td style="padding:4px 0;font-size:20px;color:#000;">${name}${qtyPart}</td>
+        <td style="padding:4px 0;font-size:20px;text-align:right;color:#000;">${fmtMoney(item.priceAtTime)}</td>
       </tr>`;
     })
     .join("");
@@ -92,23 +92,23 @@ function buildReceiptBlock(
     const discAmt = (fullSubtotal * visit.discount) / 100;
     totalsHtml = `
       ${SEP}
-      <table style="width:100%;font-size:12px;">
+      <table style="width:100%;font-size:20px;">
         <tr>
-          <td style="padding:2px 0;color:#000;">Subtotal</td>
-          <td style="padding:2px 0;text-align:right;color:#000;">${fmtMoney(fullSubtotal)}</td>
+          <td style="padding:3px 0;color:#000;">Subtotal</td>
+          <td style="padding:3px 0;text-align:right;color:#000;">${fmtMoney(fullSubtotal)}</td>
         </tr>
         ${visit.discount > 0 ? `
         <tr>
-          <td style="padding:2px 0;color:#000;">Discount (${visit.discount}%)</td>
-          <td style="padding:2px 0;text-align:right;color:#000;">-${fmtMoney(discAmt)}</td>
+          <td style="padding:3px 0;color:#000;">Discount (${visit.discount}%)</td>
+          <td style="padding:3px 0;text-align:right;color:#000;">-${fmtMoney(discAmt)}</td>
         </tr>` : ""}
         <tr>
-          <td style="padding:4px 0;font-weight:bold;font-size:14px;color:#000;">TOTAL</td>
-          <td style="padding:4px 0;text-align:right;font-weight:bold;font-size:14px;color:#000;">${fmtMoney(visit.total)}</td>
+          <td style="padding:5px 0;font-weight:bold;font-size:20px;color:#000;">TOTAL</td>
+          <td style="padding:5px 0;text-align:right;font-weight:bold;font-size:20px;color:#000;">${fmtMoney(visit.total)}</td>
         </tr>
       </table>
       ${SEP}
-      <div style="font-size:12px;margin:4px 0;color:#000;">
+      <div style="font-size:20px;margin:5px 0;color:#000;">
         <strong>Payment:</strong> ${
           visit.paymentMethod === "CASH"
             ? "Cash"
@@ -118,7 +118,7 @@ function buildReceiptBlock(
         }
         ${
           visit.paymentMethod === "MIXED"
-            ? `<div style="padding-left:8px;color:#000;">
+            ? `<div style="padding-left:12px;color:#000;">
                 Cash: ${fmtMoney(visit.cashAmount ?? 0)}<br/>
                 Card: ${fmtMoney(visit.cardAmount ?? 0)}
               </div>`
@@ -128,35 +128,35 @@ function buildReceiptBlock(
   } else {
     totalsHtml = `
       ${SEP}
-      <table style="width:100%;font-size:12px;">
+      <table style="width:100%;font-size:20px;">
         <tr>
-          <td style="padding:4px 0;font-weight:bold;color:#000;">TOTAL</td>
-          <td style="padding:4px 0;text-align:right;font-weight:bold;color:#000;">${fmtMoney(displayTotal)}</td>
+          <td style="padding:5px 0;font-weight:bold;color:#000;">TOTAL</td>
+          <td style="padding:5px 0;text-align:right;font-weight:bold;color:#000;">${fmtMoney(displayTotal)}</td>
         </tr>
       </table>`;
   }
 
   const footerHtml = shop.receiptFooter
-    ? `${SEP}<div style="text-align:center;font-size:12px;color:#000;font-style:italic;">${shop.receiptFooter}</div>`
+    ? `${SEP}<div style="text-align:center;font-size:20px;color:#000;font-style:italic;">${shop.receiptFooter}</div>`
     : "";
 
   const notesHtml =
     showTotals && visit.notes
-      ? `<div style="font-size:11px;color:#000;margin:4px 0;">Note: ${visit.notes}</div>`
+      ? `<div style="font-size:20px;color:#000;margin:5px 0;">Note: ${visit.notes}</div>`
       : "";
 
   return `
-    <div style="font-family:monospace,sans-serif;width:300px;padding:16px;background:#fff;color:#000;">
+    <div style="font-family:monospace,sans-serif;width:380px;padding:16px;background:#fff;color:#000;">
       <div style="text-align:center;margin-bottom:8px;">
         ${logoHtml}
-        <div style="font-weight:bold;font-size:16px;color:#000;">${shop.shopName}</div>
+        <div style="font-weight:bold;font-size:20px;color:#000;">${shop.shopName}</div>
         ${contactHtml}
       </div>
       ${SEP}
-      <div style="font-size:11px;color:#000;margin:4px 0;">Receipt #: ${receiptNo}</div>
-      <div style="font-size:11px;color:#000;margin:4px 0;">Date: ${fmtDate(visit.visitAt)}</div>
-      <div style="font-size:11px;color:#000;margin:4px 0;">Barber: ${visit.barber.name}</div>
-      <div style="font-size:11px;color:#000;margin:4px 0;">Customer: ${customerDisplayName(visit.customer.name, lang)}${visit.customer.phone ? `<br/>&nbsp;&nbsp;${visit.customer.phone}` : ""}</div>
+      <div style="font-size:20px;color:#000;margin:5px 0;">Receipt #: ${receiptNo}</div>
+      <div style="font-size:20px;color:#000;margin:5px 0;">Date: ${fmtDate(visit.visitAt)}</div>
+      <div style="font-size:20px;color:#000;margin:5px 0;">Barber: ${visit.barber.name}</div>
+      <div style="font-size:20px;color:#000;margin:5px 0;">Customer: ${customerDisplayName(visit.customer.name, lang)}${visit.customer.phone ? `<br/>&nbsp;&nbsp;${visit.customer.phone}` : ""}</div>
       ${SEP}
       <table style="width:100%;">
         ${itemRows}
@@ -228,7 +228,7 @@ export async function downloadReceiptPdf(
   const margin = 60;
   const contentW = pageW - margin * 2;            // ~475 pt
   const col2 = pageW - margin;                    // right-align anchor
-  const lh = 18;
+  const lh = 26;
   let y = 30;
 
   const sep = () => {
@@ -258,14 +258,14 @@ export async function downloadReceiptPdf(
 
   // Shop name
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(18);
+  doc.setFontSize(20);
   doc.text(shop.shopName, pageW / 2, y, { align: "center" });
   y += lh + 4;
 
-  // Contact — split using same doc instance so font metrics are accurate
+  // Contact
   if (shop.shopPhone || shop.shopAddress) {
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(18);
     const contact = [shop.shopPhone, shop.shopAddress].filter(Boolean).join("  |  ");
     const contactLines: string[] = doc.splitTextToSize(contact, contentW);
     for (const line of contactLines) {
@@ -278,7 +278,7 @@ export async function downloadReceiptPdf(
 
   const receiptNo = visit.id.slice(-8).toUpperCase();
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(11);
+  doc.setFontSize(20);
   doc.text(`Receipt #: ${receiptNo}`, margin, y); y += lh;
   doc.text(`Date: ${fmtDate(visit.visitAt)}`, margin, y); y += lh;
   doc.text(`Barber: ${visit.barber.name}`, margin, y); y += lh;
@@ -288,7 +288,7 @@ export async function downloadReceiptPdf(
 
   // Items
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(11);
+  doc.setFontSize(20);
   for (const item of visit.items) {
     const name = item.service.name + (item.quantity > 1 ? ` ×${item.quantity}` : "");
     const nameLines: string[] = doc.splitTextToSize(name, contentW - 90);
@@ -304,7 +304,7 @@ export async function downloadReceiptPdf(
   sep();
 
   const subtotal = visit.items.reduce((s, i) => s + i.priceAtTime * i.quantity, 0);
-  doc.setFontSize(11);
+  doc.setFontSize(20);
   if (visit.discount > 0) {
     const discAmt = (subtotal * visit.discount) / 100;
     doc.text("Subtotal", margin, y);
@@ -316,13 +316,13 @@ export async function downloadReceiptPdf(
   }
 
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(14);
+  doc.setFontSize(20);
   doc.text("TOTAL", margin, y);
   doc.text(`${fmtMoney(visit.total)}`, col2, y, { align: "right" });
   y += lh;
 
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(11);
+  doc.setFontSize(20);
   const payStr =
     visit.paymentMethod === "CASH" ? "Cash"
     : visit.paymentMethod === "CARD" ? "Card"
@@ -332,7 +332,8 @@ export async function downloadReceiptPdf(
 
   if (shop.receiptFooter) {
     sep();
-    doc.setFontSize(10);
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(20);
     const footerLines: string[] = doc.splitTextToSize(shop.receiptFooter, contentW);
     for (const line of footerLines) {
       doc.text(line, pageW / 2, y, { align: "center" });
@@ -371,8 +372,9 @@ export function printReceipt(
   <meta charset="utf-8" />
   <title>Receipt</title>
   <style>
-    * { color: #000 !important; }
-    body { margin: 0; background: #fff; display: flex; flex-direction: column; align-items: center; }
+    * { color: #000 !important; background: transparent; }
+    body { margin: 0; background: #fff !important; display: flex; flex-direction: column; align-items: center; }
+    img { background: transparent !important; }
     @media print { body { margin: 0; } }
   </style>
 </head>
@@ -386,7 +388,7 @@ export function printReceipt(
 </body>
 </html>`;
 
-  const win = window.open("", "_blank", "width=420,height=700");
+  const win = window.open("", "_blank", "width=480,height=800");
   if (win) {
     win.document.write(html);
     win.document.close();
