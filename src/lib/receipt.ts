@@ -264,7 +264,7 @@ export async function downloadReceiptPdf(
 
   // Contact
   if (shop.shopPhone || shop.shopAddress) {
-    doc.setFont("helvetica", "italic");
+    doc.setFont("helvetica", "bolditalic");
     doc.setFontSize(18);
     const contact = [shop.shopPhone, shop.shopAddress].filter(Boolean).join("  |  ");
     const contactLines: string[] = doc.splitTextToSize(contact, contentW);
@@ -277,7 +277,7 @@ export async function downloadReceiptPdf(
   sep();
 
   const receiptNo = visit.id.slice(-8).toUpperCase();
-  doc.setFont("helvetica", "normal");
+  doc.setFont("helvetica", "bold");
   doc.setFontSize(20);
   doc.text(`Receipt #: ${receiptNo}`, margin, y); y += lh;
   doc.text(`Date: ${fmtDate(visit.visitAt)}`, margin, y); y += lh;
@@ -287,7 +287,7 @@ export async function downloadReceiptPdf(
   sep();
 
   // Items
-  doc.setFont("helvetica", "normal");
+  doc.setFont("helvetica", "bold");
   doc.setFontSize(20);
   for (const item of visit.items) {
     const name = item.service.name + (item.quantity > 1 ? ` ×${item.quantity}` : "");
@@ -321,7 +321,7 @@ export async function downloadReceiptPdf(
   doc.text(`${fmtMoney(visit.total)}`, col2, y, { align: "right" });
   y += lh;
 
-  doc.setFont("helvetica", "normal");
+  doc.setFont("helvetica", "bold");
   doc.setFontSize(20);
   const payStr =
     visit.paymentMethod === "CASH" ? "Cash"
@@ -332,7 +332,7 @@ export async function downloadReceiptPdf(
 
   if (shop.receiptFooter) {
     sep();
-    doc.setFont("helvetica", "italic");
+    doc.setFont("helvetica", "bolditalic");
     doc.setFontSize(20);
     const footerLines: string[] = doc.splitTextToSize(shop.receiptFooter, contentW);
     for (const line of footerLines) {
@@ -372,7 +372,7 @@ export function printReceipt(
   <meta charset="utf-8" />
   <title>Receipt</title>
   <style>
-    * { color: #000 !important; background: transparent; }
+    * { color: #000 !important; background: transparent; font-weight: bold !important; }
     body { margin: 0; background: #fff !important; display: flex; flex-direction: column; align-items: center; }
     img { background: transparent !important; }
     @media print { body { margin: 0; } }
