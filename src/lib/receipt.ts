@@ -67,7 +67,7 @@ function buildReceiptBlock(
 
   const contactParts = [shop.shopPhone, shop.shopAddress].filter(Boolean);
   const contactHtml = contactParts.length
-    ? `<div style="font-size:18px;font-style:italic;color:#000;margin-top:4px;">${contactParts.join(" | ")}</div>`
+    ? `<div style="font-size:13px;font-style:italic;color:#000;margin-top:4px;">${contactParts.join(" | ")}</div>`
     : "";
 
   const itemRows = items
@@ -76,12 +76,12 @@ function buildReceiptBlock(
       const lineTotal = item.priceAtTime * item.quantity;
       const qtyPart =
         item.quantity > 1
-          ? `<span style="color:#000;font-size:18px;"> x${item.quantity} = ${fmtMoney(lineTotal)}</span>`
+          ? `<span style="color:#000;font-size:13px;"> x${item.quantity} = ${fmtMoney(lineTotal)}</span>`
           : "";
       return `
       <tr>
-        <td style="padding:4px 0;font-size:20px;color:#000;">${name}${qtyPart}</td>
-        <td style="padding:4px 0;font-size:20px;text-align:right;color:#000;">${fmtMoney(item.priceAtTime)}</td>
+        <td style="padding:4px 0;font-size:15px;color:#000;">${name}${qtyPart}</td>
+        <td style="padding:4px 0;font-size:15px;text-align:right;color:#000;">${fmtMoney(item.priceAtTime)}</td>
       </tr>`;
     })
     .join("");
@@ -92,7 +92,7 @@ function buildReceiptBlock(
     const discAmt = (fullSubtotal * visit.discount) / 100;
     totalsHtml = `
       ${SEP}
-      <table style="width:100%;font-size:20px;">
+      <table style="width:100%;font-size:15px;">
         <tr>
           <td style="padding:3px 0;color:#000;">Subtotal</td>
           <td style="padding:3px 0;text-align:right;color:#000;">${fmtMoney(fullSubtotal)}</td>
@@ -103,12 +103,12 @@ function buildReceiptBlock(
           <td style="padding:3px 0;text-align:right;color:#000;">-${fmtMoney(discAmt)}</td>
         </tr>` : ""}
         <tr>
-          <td style="padding:5px 0;font-weight:bold;font-size:20px;color:#000;">TOTAL</td>
-          <td style="padding:5px 0;text-align:right;font-weight:bold;font-size:20px;color:#000;">${fmtMoney(visit.total)}</td>
+          <td style="padding:5px 0;font-weight:bold;font-size:15px;color:#000;">TOTAL</td>
+          <td style="padding:5px 0;text-align:right;font-weight:bold;font-size:15px;color:#000;">${fmtMoney(visit.total)}</td>
         </tr>
       </table>
       ${SEP}
-      <div style="font-size:20px;margin:5px 0;color:#000;">
+      <div style="font-size:15px;margin:5px 0;color:#000;">
         <strong>Payment:</strong> ${
           visit.paymentMethod === "CASH"
             ? "Cash"
@@ -128,7 +128,7 @@ function buildReceiptBlock(
   } else {
     totalsHtml = `
       ${SEP}
-      <table style="width:100%;font-size:20px;">
+      <table style="width:100%;font-size:15px;">
         <tr>
           <td style="padding:5px 0;font-weight:bold;color:#000;">TOTAL</td>
           <td style="padding:5px 0;text-align:right;font-weight:bold;color:#000;">${fmtMoney(displayTotal)}</td>
@@ -137,26 +137,26 @@ function buildReceiptBlock(
   }
 
   const footerHtml = shop.receiptFooter
-    ? `${SEP}<div style="text-align:center;font-size:20px;color:#000;font-style:italic;">${shop.receiptFooter}</div>`
+    ? `${SEP}<div style="text-align:center;font-size:15px;color:#000;font-style:italic;">${shop.receiptFooter}</div>`
     : "";
 
   const notesHtml =
     showTotals && visit.notes
-      ? `<div style="font-size:20px;color:#000;margin:5px 0;">Note: ${visit.notes}</div>`
+      ? `<div style="font-size:15px;color:#000;margin:5px 0;">Note: ${visit.notes}</div>`
       : "";
 
   return `
     <div style="font-family:monospace,sans-serif;width:100%;max-width:380px;padding:8px;box-sizing:border-box;background:#fff;color:#000;">
       <div style="text-align:center;margin-bottom:8px;">
         ${logoHtml}
-        <div style="font-weight:bold;font-size:20px;color:#000;">${shop.shopName}</div>
+        <div style="font-weight:bold;font-size:15px;color:#000;">${shop.shopName}</div>
         ${contactHtml}
       </div>
       ${SEP}
-      <div style="font-size:20px;color:#000;margin:5px 0;">Receipt #: ${receiptNo}</div>
-      <div style="font-size:20px;color:#000;margin:5px 0;">Date: ${fmtDate(visit.visitAt)}</div>
-      <div style="font-size:20px;color:#000;margin:5px 0;">Barber: ${visit.barber.name}</div>
-      <div style="font-size:20px;color:#000;margin:5px 0;">Customer: ${customerDisplayName(visit.customer.name, lang)}${visit.customer.phone ? `<br/>&nbsp;&nbsp;${visit.customer.phone}` : ""}</div>
+      <div style="font-size:15px;color:#000;margin:5px 0;">Receipt #: ${receiptNo}</div>
+      <div style="font-size:15px;color:#000;margin:5px 0;">Date: ${fmtDate(visit.visitAt)}</div>
+      <div style="font-size:15px;color:#000;margin:5px 0;">Barber: ${visit.barber.name}</div>
+      <div style="font-size:15px;color:#000;margin:5px 0;">Customer: ${customerDisplayName(visit.customer.name, lang)}${visit.customer.phone ? `<br/>&nbsp;&nbsp;${visit.customer.phone}` : ""}</div>
       ${SEP}
       <table style="width:100%;">
         ${itemRows}
@@ -258,14 +258,14 @@ export async function downloadReceiptPdf(
 
   // Shop name
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(20);
+  doc.setFontSize(15);
   doc.text(shop.shopName, pageW / 2, y, { align: "center" });
   y += lh + 4;
 
   // Contact
   if (shop.shopPhone || shop.shopAddress) {
     doc.setFont("helvetica", "bolditalic");
-    doc.setFontSize(18);
+    doc.setFontSize(13);
     const contact = [shop.shopPhone, shop.shopAddress].filter(Boolean).join("  |  ");
     const contactLines: string[] = doc.splitTextToSize(contact, contentW);
     for (const line of contactLines) {
@@ -278,7 +278,7 @@ export async function downloadReceiptPdf(
 
   const receiptNo = visit.id.slice(-8).toUpperCase();
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(20);
+  doc.setFontSize(15);
   doc.text(`Receipt #: ${receiptNo}`, margin, y); y += lh;
   doc.text(`Date: ${fmtDate(visit.visitAt)}`, margin, y); y += lh;
   doc.text(`Barber: ${visit.barber.name}`, margin, y); y += lh;
@@ -288,7 +288,7 @@ export async function downloadReceiptPdf(
 
   // Items
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(20);
+  doc.setFontSize(15);
   for (const item of visit.items) {
     const name = item.service.name + (item.quantity > 1 ? ` ×${item.quantity}` : "");
     const nameLines: string[] = doc.splitTextToSize(name, contentW - 90);
@@ -304,7 +304,7 @@ export async function downloadReceiptPdf(
   sep();
 
   const subtotal = visit.items.reduce((s, i) => s + i.priceAtTime * i.quantity, 0);
-  doc.setFontSize(20);
+  doc.setFontSize(15);
   if (visit.discount > 0) {
     const discAmt = (subtotal * visit.discount) / 100;
     doc.text("Subtotal", margin, y);
@@ -316,13 +316,13 @@ export async function downloadReceiptPdf(
   }
 
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(20);
+  doc.setFontSize(15);
   doc.text("TOTAL", margin, y);
   doc.text(`${fmtMoney(visit.total)}`, col2, y, { align: "right" });
   y += lh;
 
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(20);
+  doc.setFontSize(15);
   const payStr =
     visit.paymentMethod === "CASH" ? "Cash"
     : visit.paymentMethod === "CARD" ? "Card"
@@ -333,7 +333,7 @@ export async function downloadReceiptPdf(
   if (shop.receiptFooter) {
     sep();
     doc.setFont("helvetica", "bolditalic");
-    doc.setFontSize(20);
+    doc.setFontSize(15);
     const footerLines: string[] = doc.splitTextToSize(shop.receiptFooter, contentW);
     for (const line of footerLines) {
       doc.text(line, pageW / 2, y, { align: "center" });
