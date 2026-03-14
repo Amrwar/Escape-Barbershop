@@ -85,6 +85,7 @@ export async function GET(
       { barberId: string; name: string; revenue: number; visits: number }
     >();
     for (const v of session.visits) {
+      if (!v.barberId) continue;
       const existing = barberMap.get(v.barberId);
       if (existing) {
         existing.revenue += v.total;
@@ -92,7 +93,7 @@ export async function GET(
       } else {
         barberMap.set(v.barberId, {
           barberId: v.barberId,
-          name: v.barber.name,
+          name: v.barber?.name ?? "Unknown",
           revenue: v.total,
           visits: 1,
         });

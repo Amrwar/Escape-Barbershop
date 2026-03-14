@@ -101,12 +101,12 @@ export async function GET(req: NextRequest) {
     >();
 
     for (const v of visits) {
-      const key = v.barberId;
+      const key = v.barberId ?? "unknown";
       let entry = barberMap.get(key);
       if (!entry) {
         entry = {
-          barberId: v.barberId,
-          barberName: v.barber.name,
+          barberId: v.barberId ?? "unknown",
+          barberName: v.barber?.name ?? "Unknown",
           visitCount: 0,
           revenue: 0,
           commissionableRevenue: 0,
@@ -114,8 +114,9 @@ export async function GET(req: NextRequest) {
         };
         barberMap.set(key, entry);
       }
-      entry.visitCount++;
-      entry.revenue += v.total;
+      const e = barberMap.get(key)!;
+      e.visitCount++;
+      e.revenue += v.total;
 
       // Commissionable portion of this visit
       const allSubtotal = v.items.reduce((s, i) => s + i.priceAtTime * i.quantity, 0);
@@ -123,14 +124,14 @@ export async function GET(req: NextRequest) {
         .filter((i) => !i.service.excludeFromCommission)
         .reduce((s, i) => s + i.priceAtTime * i.quantity, 0);
       const factor = allSubtotal > 0 ? v.total / allSubtotal : 1;
-      entry.commissionableRevenue += commSubtotal * factor;
+      e.commissionableRevenue += commSubtotal * factor;
 
       for (const item of v.items) {
-        const svc = entry.services.get(item.serviceId);
+        const svc = e.services.get(item.serviceId);
         if (svc) {
           svc.count += item.quantity;
         } else {
-          entry.services.set(item.serviceId, { name: item.service.name, count: item.quantity });
+          e.services.set(item.serviceId, { name: item.service.name, count: item.quantity });
         }
       }
     }

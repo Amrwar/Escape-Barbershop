@@ -120,7 +120,7 @@ export async function POST(req: NextRequest) {
             sessionId,
             type: "OUT",
             amount: tip,
-            reason: `Card tip — ${newVisit.barber.name}`,
+            reason: `Card tip — ${newVisit.barber?.name ?? ""}`,
             createdByUserId: authSession.user.id,
             visitId: newVisit.id,
           },

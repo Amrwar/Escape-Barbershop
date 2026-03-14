@@ -99,7 +99,7 @@ export async function PATCH(
             sessionId: updated.sessionId,
             type: "OUT",
             amount: tip,
-            reason: `Card tip — ${updated.barber.name}`,
+            reason: `Card tip — ${updated.barber?.name ?? ""}`,
             createdByUserId: authSession.user.id,
             visitId: updated.id,
           },
@@ -143,7 +143,7 @@ export async function DELETE(
                   sessionId: visit.sessionId,
                   visitId: null,
                   amount: visit.tip,
-                  reason: `Card tip — ${visit.barber.name}`,
+                  reason: `Card tip — ${visit.barber?.name ?? ""}`,
                 }]
               : []),
           ],
