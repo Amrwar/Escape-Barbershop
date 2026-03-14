@@ -86,7 +86,7 @@ model Customer {
 model Visit {
   id            String             @id @default(cuid())
   customerId    String
-  barberId      String
+  barberId      String?
   visitAt       DateTime           @default(now())
   paymentMethod PaymentMethod      @default(CASH)
   discount      Float              @default(0)
@@ -99,7 +99,7 @@ model Visit {
   tip              Float              @default(0)
   sessionId        String?
   sessionSequence  Int?
-  barber        Barber             @relation(fields: [barberId], references: [id])
+  barber        Barber?            @relation(fields: [barberId], references: [id])
   customer      Customer           @relation(fields: [customerId], references: [id])
   session       CashDrawerSession? @relation(fields: [sessionId], references: [id])
   items         VisitItem[]
