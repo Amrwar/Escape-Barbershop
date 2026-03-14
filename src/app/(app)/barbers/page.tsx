@@ -217,8 +217,8 @@ export default function BarbersPage() {
                       <button onClick={() => toggleActive(b)} className="btn-ghost text-xs px-2 py-1">
                         {b.isActive ? t("action.deactivate") : t("action.activate")}
                       </button>
-                      <button onClick={() => openDelete(b)} className="text-xs text-red-500 hover:text-red-700 px-2 py-1 rounded hover:bg-red-50 transition-colors">
-                        {t("action.delete")}
+                      <button onClick={() => openDelete(b)} title={t("action.delete")} className="text-red-400 hover:text-red-600 px-1.5 py-1 rounded hover:bg-red-50 transition-colors text-base leading-none">
+                        ✕
                       </button>
                     </div>
                   </td>
