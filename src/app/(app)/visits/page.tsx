@@ -6,6 +6,7 @@ import { DateNavInput } from "@/components/ui/DateNavInput";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { Modal } from "@/components/ui/Modal";
 import { useSession } from "next-auth/react";
 import { useTranslation } from "@/lib/i18n";
 import { format } from "date-fns";
@@ -64,13 +65,39 @@ export default function VisitsPage() {
   }, [isOwner]);
 
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteModal, setDeleteModal] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [deletePin, setDeletePin] = useState("");
+  const [deletePinError, setDeletePinError] = useState("");
+  const [deletePinVerifying, setDeletePinVerifying] = useState(false);
 
-  const handleDelete = async (id: string) => {
-    if (!confirm(t("action.delete") + "?")) return;
-    setDeletingId(id);
-    await fetch(`/api/visits/${id}`, { method: "DELETE" });
-    setDeletingId(null);
-    load();
+  const handleDelete = (id: string) => {
+    setDeleteTargetId(id);
+    setDeletePin("");
+    setDeletePinError("");
+    setDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTargetId) return;
+    setDeletePinError("");
+    setDeletePinVerifying(true);
+    try {
+      const res = await fetch("/api/settings/discount-pin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pin: deletePin }),
+      });
+      const data = await res.json();
+      if (!data.valid) { setDeletePinError(t("newVisit.wrongPin")); return; }
+      setDeleteModal(false);
+      setDeletingId(deleteTargetId);
+      await fetch(`/api/visits/${deleteTargetId}`, { method: "DELETE" });
+      setDeletingId(null);
+      load();
+    } finally {
+      setDeletePinVerifying(false);
+    }
   };
 
   const totalRevenue = visits.reduce((s, v) => s + v.total, 0);
@@ -170,6 +197,33 @@ export default function VisitsPage() {
           ))}
         </div>
       )}
+
+      <Modal open={deleteModal} onClose={() => setDeleteModal(false)} title={t("action.delete")} size="sm">
+        <div className="space-y-4">
+          <p className="text-sm text-gray-600">{t("settings.securityPinVerify")}</p>
+          <input
+            type="password"
+            className="input text-center text-xl tracking-widest"
+            placeholder="••••"
+            value={deletePin}
+            onChange={(e) => setDeletePin(e.target.value)}
+            autoFocus
+            maxLength={20}
+          />
+          {deletePinError && <p className="text-red-500 text-sm text-center">{deletePinError}</p>}
+          <div className="flex gap-3">
+            <button type="button" onClick={() => setDeleteModal(false)} className="btn-secondary flex-1">{t("action.cancel")}</button>
+            <button
+              type="button"
+              onClick={confirmDelete}
+              disabled={deletePinVerifying || !deletePin}
+              className="flex-1 py-2 px-4 rounded-lg text-sm font-medium bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
+            >
+              {deletePinVerifying ? "…" : t("action.delete")}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
