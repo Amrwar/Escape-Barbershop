@@ -85,11 +85,7 @@ export default function BarbersPage() {
         load();
       } else {
         const d = await res.json();
-        if (d.error === "has_visits") {
-          setDeletePinError(t("barbers.hasVisitsError"));
-        } else {
-          setDeletePinError(d.error ?? "Failed");
-        }
+        setDeletePinError(d.error ?? "Failed");
       }
     } finally {
       setDeletePinVerifying(false);
@@ -246,16 +242,16 @@ export default function BarbersPage() {
                             >
                               {b.isActive ? t("action.deactivate") : t("action.activate")}
                             </button>
-                            <div className="border-t border-gray-100 my-1" />
-                            <button
-                              onClick={() => { openDelete(b); setOpenMenu(null); }}
-                              className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50"
-                            >
-                              {t("action.delete")}
-                            </button>
                           </div>
                         )}
                       </div>
+                      <button
+                        onClick={() => openDelete(b)}
+                        className="w-7 h-7 flex items-center justify-center rounded-lg border border-red-200 bg-white hover:bg-red-50 text-red-500 font-bold text-base shrink-0"
+                        title={t("action.delete")}
+                      >
+                        ✕
+                      </button>
                     </div>
                   </td>
                 </tr>
