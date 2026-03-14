@@ -336,6 +336,7 @@ const en = {
   "settings.editPinSaved": "PIN saved",
   "settings.securityPin": "Security PIN",
   "settings.securityPinHint": "Required for discounts, deleting visits, movements, and sessions",
+  "settings.currentSecurityPinLabel": "Current Security PIN",
   "settings.securityPinLabel": "New Security PIN",
   "settings.securityPinSaved": "Security PIN saved",
   "settings.securityPinVerify": "Enter Security PIN to confirm",

@@ -35,6 +35,7 @@ export default function ReceiptSettingsPage() {
   const [pinMsg, setPinMsg] = useState<{ text: string; ok: boolean } | null>(null);
 
   // Security PIN (discount_pin — used for discounts & all deletions)
+  const [currentSecurityPin, setCurrentSecurityPin] = useState("");
   const [securityPin, setSecurityPin] = useState("");
   const [securityPinSaving, setSecurityPinSaving] = useState(false);
   const [securityPinMsg, setSecurityPinMsg] = useState<{ text: string; ok: boolean } | null>(null);
@@ -47,20 +48,22 @@ export default function ReceiptSettingsPage() {
       const res = await fetch("/api/settings/discount-pin", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pin: securityPin }),
+        body: JSON.stringify({ pin: securityPin, currentPin: currentSecurityPin }),
       });
       if (res.ok) {
+        setCurrentSecurityPin("");
         setSecurityPin("");
         setSecurityPinMsg({ text: t("settings.securityPinSaved"), ok: true });
         setTimeout(() => setSecurityPinMsg(null), 3000);
       } else {
         const d = await res.json();
-        setSecurityPinMsg({ text: d.error ?? "Failed", ok: false });
+        const msg = d.error === "current_pin_wrong" ? t("newVisit.wrongPin") : (d.error ?? "Failed");
+        setSecurityPinMsg({ text: msg, ok: false });
       }
     } finally {
       setSecurityPinSaving(false);
     }
-  }, [securityPin, t]);
+  }, [currentSecurityPin, securityPin, t]);
 
   const handlePinSave = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
@@ -257,8 +260,20 @@ export default function ReceiptSettingsPage() {
       <div className="card p-5 mt-6">
         <h2 className="text-sm font-semibold text-gray-900 mb-1">{t("settings.securityPin")}</h2>
         <p className="text-xs text-gray-400 mb-4">{t("settings.securityPinHint")}</p>
-        <form onSubmit={handleSecurityPinSave} className="flex gap-3 items-end">
-          <div className="flex-1 max-w-xs">
+        <form onSubmit={handleSecurityPinSave} className="flex gap-3 items-end flex-wrap">
+          <div className="max-w-xs">
+            <label className="label">{t("settings.currentSecurityPinLabel")}</label>
+            <input
+              type="password"
+              className="input"
+              placeholder="••••"
+              value={currentSecurityPin}
+              onChange={(e) => setCurrentSecurityPin(e.target.value)}
+              minLength={4}
+              required
+            />
+          </div>
+          <div className="max-w-xs">
             <label className="label">{t("settings.securityPinLabel")}</label>
             <input
               type="password"
@@ -270,7 +285,7 @@ export default function ReceiptSettingsPage() {
               required
             />
           </div>
-          <button type="submit" disabled={securityPinSaving || !securityPin} className="btn-primary">
+          <button type="submit" disabled={securityPinSaving || !securityPin || !currentSecurityPin} className="btn-primary">
             {securityPinSaving ? t("action.saving") : t("action.save")}
           </button>
         </form>

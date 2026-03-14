@@ -338,6 +338,7 @@ const ar: Record<TranslationKey, string> = {
   "settings.editPinSaved": "تم حفظ الرمز",
   "settings.securityPin": "رمز الأمان",
   "settings.securityPinHint": "مطلوب للخصومات وحذف الزيارات والحركات والجلسات",
+  "settings.currentSecurityPinLabel": "رمز الأمان الحالي",
   "settings.securityPinLabel": "رمز الأمان الجديد",
   "settings.securityPinSaved": "تم حفظ رمز الأمان",
   "settings.securityPinVerify": "أدخل رمز الأمان للتأكيد",
