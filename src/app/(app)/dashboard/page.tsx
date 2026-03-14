@@ -15,10 +15,12 @@ interface DashboardData {
   todayRevenue: number;
   todayCash: number;
   todayCard: number;
+  todayTips: number;
   todayExpenses: number;
   monthRevenue: number;
   monthCash: number;
   monthCard: number;
+  monthTips: number;
   monthExpenses: number;
   visitsToday: number;
   visitsThisMonth: number;
@@ -279,6 +281,12 @@ export default function DashboardPage() {
                     <span>{t("common.card")}</span>
                     <span className="font-medium text-gray-700">{fmtCurrency(data?.todayCard ?? 0)}</span>
                   </div>
+                  {(data?.todayTips ?? 0) > 0 && (
+                    <div className="flex justify-between text-xs text-red-500">
+                      <span>{t("newVisit.tip")}</span>
+                      <span className="font-medium">-{fmtCurrency(data?.todayTips ?? 0)}</span>
+                    </div>
+                  )}
                   {(data?.todayExpenses ?? 0) > 0 && (
                     <div className="flex justify-between text-xs text-red-500">
                       <span>{t("nav.expenses")}</span>
@@ -304,6 +312,12 @@ export default function DashboardPage() {
                     <span>{t("common.card")}</span>
                     <span className="font-medium text-gray-700">{fmtCurrency(data?.monthCard ?? 0)}</span>
                   </div>
+                  {(data?.monthTips ?? 0) > 0 && (
+                    <div className="flex justify-between text-xs text-red-500">
+                      <span>{t("newVisit.tip")}</span>
+                      <span className="font-medium">-{fmtCurrency(data?.monthTips ?? 0)}</span>
+                    </div>
+                  )}
                   {(data?.monthExpenses ?? 0) > 0 && (
                     <div className="flex justify-between text-xs text-red-500">
                       <span>{t("nav.expenses")}</span>

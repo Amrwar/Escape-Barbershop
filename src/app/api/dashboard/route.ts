@@ -24,14 +24,14 @@ export async function GET(req: NextRequest) {
       await Promise.all([
         prisma.visit.findMany({
           where: { visitAt: { gte: todayStart }, ...barberFilter },
-          select: { total: true, cashAmount: true, cardAmount: true, paymentMethod: true },
+          select: { total: true, cashAmount: true, cardAmount: true, paymentMethod: true, tip: true },
         }),
         prisma.visit.findMany({
           where: {
             visitAt: { gte: monthStart, lte: monthEnd },
             ...barberFilter,
           },
-          select: { total: true, cashAmount: true, cardAmount: true, paymentMethod: true },
+          select: { total: true, cashAmount: true, cardAmount: true, paymentMethod: true, tip: true },
         }),
         prisma.visitItem.groupBy({
           by: ["serviceId"],
@@ -130,26 +130,29 @@ export async function GET(req: NextRequest) {
     const monthExpensesTotal = (monthExpenses as { amount: number }[]).reduce((s, e) => s + e.amount, 0);
 
     // Compute cash/card breakdown
-    const computeBreakdown = (visits: { total: number; cashAmount: number | null; cardAmount: number | null; paymentMethod: string }[]) => {
-      let cash = 0, card = 0;
+    const computeBreakdown = (visits: { total: number; cashAmount: number | null; cardAmount: number | null; paymentMethod: string; tip: number }[]) => {
+      let cash = 0, card = 0, tips = 0;
       for (const v of visits) {
         if (v.paymentMethod === "CASH") cash += v.total;
         else if (v.paymentMethod === "CARD") card += v.total;
         else if (v.paymentMethod === "MIXED") { cash += v.cashAmount ?? 0; card += v.cardAmount ?? 0; }
+        tips += v.tip ?? 0;
       }
-      return { cash, card };
+      return { cash: cash - tips, card, tips };
     };
-    const { cash: todayCash, card: todayCard } = computeBreakdown(todayVisits);
-    const { cash: monthCash, card: monthCard } = computeBreakdown(monthVisits);
+    const { cash: todayCash, card: todayCard, tips: todayTips } = computeBreakdown(todayVisits);
+    const { cash: monthCash, card: monthCard, tips: monthTips } = computeBreakdown(monthVisits);
 
     return NextResponse.json({
       todayRevenue: todayVisits.reduce((s, v) => s + v.total, 0) - todayExpensesTotal,
       monthRevenue: monthVisits.reduce((s, v) => s + v.total, 0) - monthExpensesTotal,
       todayCash,
       todayCard,
+      todayTips,
       todayExpenses: todayExpensesTotal,
       monthCash,
       monthCard,
+      monthTips,
       monthExpenses: monthExpensesTotal,
       visitsToday: todayVisits.length,
       visitsThisMonth: monthVisits.length,

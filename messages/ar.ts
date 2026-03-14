@@ -241,6 +241,9 @@ const ar: Record<TranslationKey, string> = {
   "cashDrawer.deleteSession": "حذف الجلسة",
   "cashDrawer.deleteSessionHint": "سيتم حذف الجلسة وحركاتها نهائياً. ستُفصل الزيارات عن الجلسة. أدخل رمز الخصم للتأكيد.",
   "cashDrawer.enterPin": "رمز الخصم",
+  "cashDrawer.addTips": "إضافة إكراميات",
+  "cashDrawer.tipsReason": "إكراميات",
+  "cashDrawer.tipsHint": "أدخل إجمالي مبلغ الإكراميات لخصمها من الصندوق.",
 
   // Report
   "report.title": "تقرير الجلسة",

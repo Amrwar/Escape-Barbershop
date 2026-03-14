@@ -239,6 +239,9 @@ const en = {
   "cashDrawer.deleteSession": "Delete Session",
   "cashDrawer.deleteSessionHint": "This will permanently delete the session and its movements. Visits will be unlinked. Enter the discount PIN to confirm.",
   "cashDrawer.enterPin": "Discount PIN",
+  "cashDrawer.addTips": "Add Tips",
+  "cashDrawer.tipsReason": "Tips",
+  "cashDrawer.tipsHint": "Enter the total tip amount to deduct from the cash drawer.",
 
   // Report
   "report.title": "Session Report",

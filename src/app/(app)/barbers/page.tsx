@@ -228,7 +228,7 @@ export default function BarbersPage() {
                       <div className="relative">
                         <button
                           onClick={() => setOpenMenu(openMenu === b.id ? null : b.id)}
-                          className="btn-ghost text-xs px-2 py-1 font-bold tracking-widest"
+                          className="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-200 bg-white hover:bg-gray-50 text-gray-600 font-bold text-base shrink-0"
                         >
                           ⋮
                         </button>

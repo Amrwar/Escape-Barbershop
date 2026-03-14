@@ -93,6 +93,12 @@ export default function CashDrawerPage() {
   const [deleteSubmitting, setDeleteSubmitting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
 
+  // Tip state
+  const [tipModal, setTipModal] = useState(false);
+  const [tipAmount, setTipAmount] = useState(0);
+  const [tipSubmitting, setTipSubmitting] = useState(false);
+  const [tipError, setTipError] = useState("");
+
   // Delete movement state
   const [deleteMovementModal, setDeleteMovementModal] = useState(false);
   const [deleteMovementId, setDeleteMovementId] = useState<string | null>(null);
@@ -199,6 +205,28 @@ export default function CashDrawerPage() {
       }
     } finally {
       setCloseSubmitting(false);
+    }
+  };
+
+  const handleAddTip = async () => {
+    setTipSubmitting(true);
+    setTipError("");
+    try {
+      const res = await fetch("/api/cash-drawer/movements", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "OUT", amount: tipAmount, reason: t("cashDrawer.tipsReason") }),
+      });
+      if (res.ok) {
+        setTipModal(false);
+        setTipAmount(0);
+        await fetchSession();
+      } else {
+        const d = await res.json();
+        setTipError(d.error ?? "Failed");
+      }
+    } finally {
+      setTipSubmitting(false);
     }
   };
 
@@ -463,6 +491,12 @@ export default function CashDrawerPage() {
               >
                 {t("cashDrawer.addCashOut")}
               </button>
+              <button
+                onClick={() => { setTipAmount(0); setTipError(""); setTipModal(true); }}
+                className="btn-secondary text-sm text-yellow-700 border-yellow-300"
+              >
+                💰 {t("cashDrawer.addTips")}
+              </button>
               <div className="flex-1" />
               <button
                 onClick={() => {
@@ -492,6 +526,37 @@ export default function CashDrawerPage() {
           )}
         </div>
       )}
+
+      {/* Tips Modal */}
+      <Modal open={tipModal} onClose={() => setTipModal(false)} title={t("cashDrawer.addTips")} size="sm">
+        <div className="space-y-4">
+          <p className="text-sm text-gray-500">{t("cashDrawer.tipsHint")}</p>
+          <div>
+            <label className="label">{t("field.amount")}</label>
+            <input
+              type="number"
+              min="0.01"
+              step="0.01"
+              className="input"
+              value={tipAmount}
+              onChange={(e) => setTipAmount(parseFloat(e.target.value) || 0)}
+              autoFocus
+            />
+          </div>
+          {tipError && <p className="text-sm text-red-600">{tipError}</p>}
+          <div className="flex gap-3">
+            <button type="button" onClick={() => setTipModal(false)} className="btn-secondary flex-1">{t("action.cancel")}</button>
+            <button
+              type="button"
+              onClick={handleAddTip}
+              disabled={tipSubmitting || tipAmount <= 0}
+              className="btn-primary flex-1"
+            >
+              {tipSubmitting ? t("action.saving") : t("action.add")}
+            </button>
+          </div>
+        </div>
+      </Modal>
 
       {/* Open Drawer Modal */}
       <Modal

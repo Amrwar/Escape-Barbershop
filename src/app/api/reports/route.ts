@@ -54,6 +54,7 @@ export async function GET(req: NextRequest) {
     let cashTotal = 0;
     let cardTotal = 0;
     let discountsTotal = 0;
+    let tipsTotal = 0;
     const serviceCountMap = new Map<string, { name: string; arabicName: string | null; count: number; revenue: number }>();
 
     for (const v of visits) {
@@ -64,6 +65,8 @@ export async function GET(req: NextRequest) {
         cashTotal += v.cashAmount ?? 0;
         cardTotal += v.cardAmount ?? 0;
       }
+
+      tipsTotal += (v as { tip?: number }).tip ?? 0;
 
       // Compute subtotal to derive discount amount
       const subtotal = v.items.reduce((s, i) => s + i.priceAtTime * i.quantity, 0);
@@ -163,8 +166,9 @@ export async function GET(req: NextRequest) {
       summary: {
         visitCount,
         totalRevenue,
-        cashTotal,
+        cashTotal: cashTotal - tipsTotal,
         cardTotal,
+        tipsTotal,
         discountsTotal,
         expensesTotal,
         netRevenue: totalRevenue - expensesTotal,

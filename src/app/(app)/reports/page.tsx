@@ -84,6 +84,7 @@ ${shop.shopAddress ? `<p>${shop.shopAddress}</p>` : ""}
 <div class="row"><span>Total Visits:</span><span>${summary.visitCount}</span></div>
 <div class="row"><span>Cash:</span><span>${fmt(summary.cashTotal)}</span></div>
 <div class="row"><span>Card:</span><span>${fmt(summary.cardTotal)}</span></div>
+${(summary.tipsTotal ?? 0) > 0 ? `<div class="row"><span>Tips (deducted):</span><span>-${fmt(summary.tipsTotal)}</span></div>` : ""}
 ${summary.discountsTotal > 0 ? `<div class="row"><span>Discounts:</span><span>-${fmt(summary.discountsTotal)}</span></div>` : ""}
 <div class="row bold" style="border-top:1px solid #000;padding-top:4px;margin-top:2px"><span>Total Revenue:</span><span>${fmt(summary.totalRevenue)}</span></div>
 ${isOwner && summary.expensesTotal > 0 ? `<div class="row"><span>Expenses:</span><span>-${fmt(summary.expensesTotal)}</span></div>` : ""}
@@ -155,6 +156,7 @@ interface Summary {
   totalRevenue: number;
   cashTotal: number;
   cardTotal: number;
+  tipsTotal: number;
   discountsTotal: number;
   expensesTotal: number;
   netRevenue: number;
@@ -403,6 +405,9 @@ export default function ReportsPage() {
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <SummaryCard label={t("reports.cashRevenue")} value={`${fmtCurrency(data.summary.cashTotal)}`} />
             <SummaryCard label={t("reports.cardRevenue")} value={`${fmtCurrency(data.summary.cardTotal)}`} />
+            {(data.summary.tipsTotal ?? 0) > 0 && (
+              <SummaryCard label={t("newVisit.tip")} value={`-${fmtCurrency(data.summary.tipsTotal)}`} danger />
+            )}
           </div>
 
           {/* Top services */}
