@@ -29,10 +29,38 @@ export default function ReceiptSettingsPage() {
   const [uploading, setUploading] = useState(false);
   const [logoMsg, setLogoMsg] = useState("");
 
-  // Edit PIN
+  // Authorization PIN (edit_pin)
   const [editPin, setEditPin] = useState("");
   const [pinSaving, setPinSaving] = useState(false);
   const [pinMsg, setPinMsg] = useState<{ text: string; ok: boolean } | null>(null);
+
+  // Security PIN (discount_pin — used for discounts & all deletions)
+  const [securityPin, setSecurityPin] = useState("");
+  const [securityPinSaving, setSecurityPinSaving] = useState(false);
+  const [securityPinMsg, setSecurityPinMsg] = useState<{ text: string; ok: boolean } | null>(null);
+
+  const handleSecurityPinSave = useCallback(async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSecurityPinMsg(null);
+    setSecurityPinSaving(true);
+    try {
+      const res = await fetch("/api/settings/discount-pin", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pin: securityPin }),
+      });
+      if (res.ok) {
+        setSecurityPin("");
+        setSecurityPinMsg({ text: t("settings.securityPinSaved"), ok: true });
+        setTimeout(() => setSecurityPinMsg(null), 3000);
+      } else {
+        const d = await res.json();
+        setSecurityPinMsg({ text: d.error ?? "Failed", ok: false });
+      }
+    } finally {
+      setSecurityPinSaving(false);
+    }
+  }, [securityPin, t]);
 
   const handlePinSave = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
@@ -224,6 +252,34 @@ export default function ReceiptSettingsPage() {
           )}
         </div>
       </form>
+
+      {/* Security PIN (discount & deletions) */}
+      <div className="card p-5 mt-6">
+        <h2 className="text-sm font-semibold text-gray-900 mb-1">{t("settings.securityPin")}</h2>
+        <p className="text-xs text-gray-400 mb-4">{t("settings.securityPinHint")}</p>
+        <form onSubmit={handleSecurityPinSave} className="flex gap-3 items-end">
+          <div className="flex-1 max-w-xs">
+            <label className="label">{t("settings.securityPinLabel")}</label>
+            <input
+              type="password"
+              className="input"
+              placeholder={t("settings.editPinPlaceholder")}
+              value={securityPin}
+              onChange={(e) => setSecurityPin(e.target.value)}
+              minLength={4}
+              required
+            />
+          </div>
+          <button type="submit" disabled={securityPinSaving || !securityPin} className="btn-primary">
+            {securityPinSaving ? t("action.saving") : t("action.save")}
+          </button>
+        </form>
+        {securityPinMsg && (
+          <p className={`text-sm mt-2 ${securityPinMsg.ok ? "text-green-600" : "text-red-600"}`}>
+            {securityPinMsg.text}
+          </p>
+        )}
+      </div>
 
       {/* Edit PIN */}
       <div className="card p-5 mt-6">

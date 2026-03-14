@@ -158,10 +158,11 @@ function DayReportContent() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    // Business day runs from 3AM to 3AM next day
-    const from = new Date(date + "T03:00:00").toISOString();
-    const nextDay = new Date(date + "T03:00:00");
+    // Business day: midnight of date → 3AM of next day
+    const from = new Date(date + "T00:00:00").toISOString();
+    const nextDay = new Date(date + "T00:00:00");
     nextDay.setDate(nextDay.getDate() + 1);
+    nextDay.setHours(3, 0, 0, 0);
     const to = nextDay.toISOString();
     const data = await fetch(`/api/cash-drawer/day-report?from=${from}&to=${to}`).then((r) => r.json());
     setReport(data.error ? null : data);

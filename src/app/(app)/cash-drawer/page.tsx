@@ -93,6 +93,13 @@ export default function CashDrawerPage() {
   const [deleteSubmitting, setDeleteSubmitting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
 
+  // Delete movement state
+  const [deleteMovementModal, setDeleteMovementModal] = useState(false);
+  const [deleteMovementId, setDeleteMovementId] = useState<string | null>(null);
+  const [deleteMovementPin, setDeleteMovementPin] = useState("");
+  const [deleteMovementSubmitting, setDeleteMovementSubmitting] = useState(false);
+  const [deleteMovementError, setDeleteMovementError] = useState("");
+
   const fetchSession = useCallback(async () => {
     const res = await fetch("/api/cash-drawer");
     const data = await res.json();
@@ -195,6 +202,29 @@ export default function CashDrawerPage() {
     }
   };
 
+  const handleDeleteMovement = async () => {
+    if (!deleteMovementId) return;
+    setDeleteMovementSubmitting(true);
+    setDeleteMovementError("");
+    try {
+      const verifyRes = await fetch("/api/settings/discount-pin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pin: deleteMovementPin }),
+      });
+      const { valid } = await verifyRes.json();
+      if (!valid) { setDeleteMovementError(t("newVisit.wrongPin")); return; }
+
+      await fetch(`/api/cash-drawer/movements/${deleteMovementId}`, { method: "DELETE" });
+      setDeleteMovementModal(false);
+      setDeleteMovementId(null);
+      setDeleteMovementPin("");
+      await fetchSession();
+    } finally {
+      setDeleteMovementSubmitting(false);
+    }
+  };
+
   const handleDeleteSession = async () => {
     if (!deleteSessionId) return;
     setDeleteSubmitting(true);
@@ -241,13 +271,12 @@ export default function CashDrawerPage() {
     const map = new Map<string, DayGroup>();
     for (const s of recentSessions) {
       if (s.status === "OPEN") continue; // open session shown in main view
-      // Business day starts at 3AM: shift back 3 hours to find which business day the session belongs to
-      const bd = new Date(new Date(s.openedAt).getTime() - 3 * 60 * 60 * 1000);
-      const key = `${bd.getFullYear()}-${String(bd.getMonth() + 1).padStart(2, "0")}-${String(bd.getDate()).padStart(2, "0")}`;
+      const d = new Date(s.openedAt);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
       if (!map.has(key)) {
         map.set(key, {
           date: key,
-          label: bd.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short", year: "numeric" }),
+          label: d.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short", year: "numeric" }),
           sessions: [],
           totalVisits: 0,
         });
@@ -397,10 +426,7 @@ export default function CashDrawerPage() {
                       </span>
                       {isOwner && (
                         <button
-                          onClick={async () => {
-                            await fetch(`/api/cash-drawer/movements/${m.id}`, { method: "DELETE" });
-                            await fetchSession();
-                          }}
+                          onClick={() => { setDeleteMovementId(m.id); setDeleteMovementPin(""); setDeleteMovementError(""); setDeleteMovementModal(true); }}
                           className="text-xs text-red-400 hover:text-red-600"
                         >
                           ✕
@@ -597,6 +623,38 @@ export default function CashDrawerPage() {
               className="btn-primary flex-1"
             >
               {movementSubmitting ? t("action.saving") : t("action.add")}
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Delete Movement Modal */}
+      <Modal
+        open={deleteMovementModal}
+        onClose={() => setDeleteMovementModal(false)}
+        title={t("action.delete")}
+        size="sm"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-gray-600">{t("settings.securityPinVerify")}</p>
+          <input
+            type="password"
+            className="input text-center tracking-widest text-lg"
+            placeholder="••••"
+            value={deleteMovementPin}
+            onChange={(e) => setDeleteMovementPin(e.target.value)}
+            autoFocus
+          />
+          {deleteMovementError && <p className="text-sm text-red-600 text-center">{deleteMovementError}</p>}
+          <div className="flex gap-3">
+            <button type="button" onClick={() => setDeleteMovementModal(false)} className="btn-secondary flex-1">{t("action.cancel")}</button>
+            <button
+              type="button"
+              onClick={handleDeleteMovement}
+              disabled={deleteMovementSubmitting || !deleteMovementPin}
+              className="flex-1 py-2 px-4 rounded-lg text-sm font-medium bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
+            >
+              {deleteMovementSubmitting ? t("action.saving") : t("action.delete")}
             </button>
           </div>
         </div>

@@ -50,6 +50,10 @@ export default function VisitDetailPage() {
   const [printModal, setPrintModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
+  const [deleteModal, setDeleteModal] = useState(false);
+  const [deletePin, setDeletePin] = useState("");
+  const [deletePinError, setDeletePinError] = useState("");
+  const [deletePinVerifying, setDeletePinVerifying] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -62,10 +66,23 @@ export default function VisitDetailPage() {
   }, [id]);
 
   const handleDelete = async () => {
-    if (!confirm(t("action.delete") + "?")) return;
-    setDeleting(true);
-    await fetch(`/api/visits/${id}`, { method: "DELETE" });
-    router.push("/visits");
+    setDeletePinError("");
+    setDeletePinVerifying(true);
+    try {
+      const res = await fetch("/api/settings/discount-pin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pin: deletePin }),
+      });
+      const data = await res.json();
+      if (!data.valid) { setDeletePinError(t("newVisit.wrongPin")); return; }
+      setDeleting(true);
+      setDeleteModal(false);
+      await fetch(`/api/visits/${id}`, { method: "DELETE" });
+      router.push("/visits");
+    } finally {
+      setDeletePinVerifying(false);
+    }
   };
 
   const handleWhatsApp = () => {
@@ -158,7 +175,7 @@ export default function VisitDetailPage() {
                 {t("action.edit")}
               </Link>
               <button
-                onClick={handleDelete}
+                onClick={() => { setDeletePin(""); setDeletePinError(""); setDeleteModal(true); }}
                 disabled={deleting}
                 className="text-sm text-red-500 hover:text-red-700 px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors"
               >
@@ -290,6 +307,34 @@ export default function VisitDetailPage() {
           )}
         </div>
       </div>
+
+      {/* Delete confirmation modal */}
+      <Modal open={deleteModal} onClose={() => setDeleteModal(false)} title={t("action.delete")} size="sm">
+        <div className="space-y-4">
+          <p className="text-sm text-gray-600">{t("settings.securityPinVerify")}</p>
+          <input
+            type="password"
+            className="input text-center text-xl tracking-widest"
+            placeholder="••••"
+            value={deletePin}
+            onChange={(e) => setDeletePin(e.target.value)}
+            autoFocus
+            maxLength={20}
+          />
+          {deletePinError && <p className="text-red-500 text-sm text-center">{deletePinError}</p>}
+          <div className="flex gap-3">
+            <button type="button" onClick={() => setDeleteModal(false)} className="btn-secondary flex-1">{t("action.cancel")}</button>
+            <button
+              type="button"
+              onClick={handleDelete}
+              disabled={deletePinVerifying || !deletePin}
+              className="flex-1 py-2 px-4 rounded-lg text-sm font-medium bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
+            >
+              {deletePinVerifying ? "…" : t("action.delete")}
+            </button>
+          </div>
+        </div>
+      </Modal>
 
       {/* Print Modal */}
       <Modal

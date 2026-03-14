@@ -15,10 +15,11 @@ export async function GET(req: NextRequest) {
       from = new Date(fromParam);
       to = new Date(toParam);
     } else {
-      // Business day runs from 3AM to 3AM next day
-      const date = dateParam ? new Date(dateParam + "T03:00:00") : (() => { const d = new Date(); d.setHours(3, 0, 0, 0); return d; })();
+      // Business day: midnight of date → 3AM of next day
+      const date = dateParam ? new Date(dateParam + "T00:00:00") : new Date();
+      date.setHours(0, 0, 0, 0);
       from = date;
-      to = new Date(date); to.setDate(to.getDate() + 1);
+      to = new Date(date); to.setDate(to.getDate() + 1); to.setHours(3, 0, 0, 0);
     }
 
     const sessions = await prisma.cashDrawerSession.findMany({

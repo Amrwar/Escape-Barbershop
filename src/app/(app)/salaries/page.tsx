@@ -40,10 +40,6 @@ export default function SalariesPage() {
   const [penaltyErrors, setPenaltyErrors] = useState<Record<string, string>>({});
   const [savingPenalty, setSavingPenalty] = useState(false);
   const [detailBarber, setDetailBarber] = useState<BarberPayroll | null>(null);
-  const [pinModal, setPinModal] = useState(false);
-  const [pinForm, setPinForm] = useState({ newPin: "", confirm: "" });
-  const [pinError, setPinError] = useState("");
-  const [savingPin, setSavingPin] = useState(false);
 
   const months = lang === "ar" ? MONTHS_AR : MONTHS_EN;
   const years = Array.from({ length: 5 }, (_, i) => now.getFullYear() - i);
@@ -86,22 +82,6 @@ export default function SalariesPage() {
     } finally { setSavingPenalty(false); }
   };
 
-  const savePin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setPinError("");
-    if (pinForm.newPin.length < 4) { setPinError(t("salaries.pinTooShort")); return; }
-    if (pinForm.newPin !== pinForm.confirm) { setPinError(t("salaries.pinMismatch")); return; }
-    setSavingPin(true);
-    try {
-      const res = await fetch("/api/settings/discount-pin", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pin: pinForm.newPin }),
-      });
-      if (res.ok) { setPinModal(false); setPinForm({ newPin: "", confirm: "" }); }
-    } finally { setSavingPin(false); }
-  };
-
   const shareSalaryWhatsApp = (b: BarberPayroll) => {
     if (!b.barberPhone) return;
     const monthLabel = months[month - 1];
@@ -139,10 +119,7 @@ export default function SalariesPage() {
         title={t("salaries.title")}
         subtitle={t("salaries.subtitle")}
         action={
-          <div className="flex gap-2">
-            <button onClick={() => { setPinForm({ newPin: "", confirm: "" }); setPinError(""); setPinModal(true); }} className="btn-ghost text-xs px-3 py-1.5">🔒 {t("salaries.changePin")}</button>
-            <button onClick={openPenaltyModal} className="btn-secondary">{t("action.addPenalty")}</button>
-          </div>
+          <button onClick={openPenaltyModal} className="btn-secondary">{t("action.addPenalty")}</button>
         }
       />
 
@@ -339,30 +316,6 @@ export default function SalariesPage() {
         </Modal>
       )}
 
-      {/* Change Discount PIN modal */}
-      <Modal open={pinModal} onClose={() => setPinModal(false)} title={t("salaries.changePin")} size="sm">
-        <form onSubmit={savePin} className="space-y-4">
-          <div>
-            <label className="label">{t("salaries.newPin")}</label>
-            <input type="password" className="input" value={pinForm.newPin}
-              onChange={(e) => setPinForm({ ...pinForm, newPin: e.target.value })}
-              placeholder="••••" minLength={4} />
-          </div>
-          <div>
-            <label className="label">{t("salaries.confirmPin")}</label>
-            <input type="password" className="input" value={pinForm.confirm}
-              onChange={(e) => setPinForm({ ...pinForm, confirm: e.target.value })}
-              placeholder="••••" minLength={4} />
-          </div>
-          {pinError && <p className="text-red-500 text-sm">{pinError}</p>}
-          <div className="flex gap-3 pt-2">
-            <button type="button" onClick={() => setPinModal(false)} className="btn-secondary flex-1">{t("action.cancel")}</button>
-            <button type="submit" disabled={savingPin} className="btn-primary flex-1">
-              {savingPin ? t("action.saving") : t("action.save")}
-            </button>
-          </div>
-        </form>
-      </Modal>
     </div>
   );
 }
