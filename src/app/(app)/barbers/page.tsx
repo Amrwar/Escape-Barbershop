@@ -74,7 +74,7 @@ export default function BarbersPage() {
       } else {
         const d = await res.json();
         if (d.error === "has_visits") {
-          setDeletePinError(t("barbers.hasVisitsError", { count: d.count }));
+          setDeletePinError(t("barbers.hasVisitsError"));
         } else {
           setDeletePinError(d.error ?? "Failed");
         }
