@@ -122,6 +122,7 @@ export async function POST(req: NextRequest) {
             amount: tip,
             reason: `Card tip — ${newVisit.barber.name}`,
             createdByUserId: authSession.user.id,
+            visitId: newVisit.id,
           },
         });
       }

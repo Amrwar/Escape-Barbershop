@@ -31,7 +31,7 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
-    await requireOwner();
+    const authSession = await requireOwner();
     const body = await req.json();
     const data = visitSchema.parse(body);
 
@@ -57,35 +57,56 @@ export async function PATCH(
       cardAmount = data.cardAmount ?? total - cashAmount;
     }
 
-    // Delete existing items and recreate
-    await prisma.visitItem.deleteMany({ where: { visitId: params.id } });
+    const visit = await prisma.$transaction(async (tx) => {
+      // Delete existing items and recreate
+      await tx.visitItem.deleteMany({ where: { visitId: params.id } });
 
-    const visit = await prisma.visit.update({
-      where: { id: params.id },
-      data: {
-        customerId: data.customerId,
-        barberId: data.barberId,
-        visitAt: data.visitAt ? new Date(data.visitAt) : undefined,
-        paymentMethod: data.paymentMethod,
-        discount: data.discount ?? 0,
-        total,
-        cashAmount,
-        cardAmount,
-        tip,
-        notes: data.notes || null,
-        items: {
-          create: data.items.map((item) => ({
-            serviceId: item.serviceId,
-            quantity: item.quantity,
-            priceAtTime: item.priceAtTime,
-          })),
+      // Remove any previously auto-created tip movement for this visit
+      await tx.cashMovement.deleteMany({ where: { visitId: params.id } });
+
+      const updated = await tx.visit.update({
+        where: { id: params.id },
+        data: {
+          customerId: data.customerId,
+          barberId: data.barberId,
+          visitAt: data.visitAt ? new Date(data.visitAt) : undefined,
+          paymentMethod: data.paymentMethod,
+          discount: data.discount ?? 0,
+          total,
+          cashAmount,
+          cardAmount,
+          tip,
+          notes: data.notes || null,
+          items: {
+            create: data.items.map((item) => ({
+              serviceId: item.serviceId,
+              quantity: item.quantity,
+              priceAtTime: item.priceAtTime,
+            })),
+          },
         },
-      },
-      include: {
-        customer: true,
-        barber: true,
-        items: { include: { service: true } },
-      },
+        include: {
+          customer: true,
+          barber: true,
+          items: { include: { service: true } },
+        },
+      });
+
+      // Re-create card tip movement if applicable
+      if (data.paymentMethod === "CARD" && tip > 0 && updated.sessionId) {
+        await tx.cashMovement.create({
+          data: {
+            sessionId: updated.sessionId,
+            type: "OUT",
+            amount: tip,
+            reason: `Card tip — ${updated.barber.name}`,
+            createdByUserId: authSession.user.id,
+            visitId: updated.id,
+          },
+        });
+      }
+
+      return updated;
     });
 
     return NextResponse.json(visit);
@@ -104,6 +125,8 @@ export async function DELETE(
 ) {
   try {
     await requireOwner();
+    // Remove any auto-created tip movements linked to this visit before deleting
+    await prisma.cashMovement.deleteMany({ where: { visitId: params.id } });
     await prisma.visit.delete({ where: { id: params.id } });
     return NextResponse.json({ success: true });
   } catch (err: unknown) {

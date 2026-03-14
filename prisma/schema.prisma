@@ -103,6 +103,7 @@ model Visit {
   customer      Customer           @relation(fields: [customerId], references: [id])
   session       CashDrawerSession? @relation(fields: [sessionId], references: [id])
   items         VisitItem[]
+  tipMovements  CashMovement[]
 }
 
 model CashDrawerSession {
@@ -129,8 +130,10 @@ model CashMovement {
   reason          String
   createdAt       DateTime          @default(now())
   createdByUserId String
+  visitId         String?
   createdBy       User              @relation("CreatedMovements", fields: [createdByUserId], references: [id])
   session         CashDrawerSession @relation(fields: [sessionId], references: [id])
+  visit           Visit?            @relation(fields: [visitId], references: [id])
 }
 
 model VisitItem {
