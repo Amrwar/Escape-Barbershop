@@ -188,6 +188,8 @@ const ar: Record<TranslationKey, string> = {
   "barbers.editBarber": "تعديل بيانات الحلاق",
   "barbers.salarySettings": "إعدادات الراتب —",
   "barbers.noBarbers": "لا يوجد حلاقون بعد",
+  "barbers.deleteConfirm": "هل أنت متأكد من حذف",
+  "barbers.hasVisitsError": "هذا الحلاق لديه زيارات ولا يمكن حذفه. قم بإلغاء تفعيله بدلاً من ذلك.",
   "barbers.barberName": "اسم الحلاق",
   "barbers.commission": "عمولة",
   "barbers.perVisit": "/زيارة",

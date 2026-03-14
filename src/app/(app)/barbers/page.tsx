@@ -42,6 +42,47 @@ export default function BarbersPage() {
   const [salaryForm, setSalaryForm] = useState(defaultSalary);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
+  const [deleteModal, setDeleteModal] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Barber | null>(null);
+  const [deletePin, setDeletePin] = useState("");
+  const [deletePinError, setDeletePinError] = useState("");
+  const [deletePinVerifying, setDeletePinVerifying] = useState(false);
+
+  const openDelete = (b: Barber) => {
+    setDeleteTarget(b);
+    setDeletePin("");
+    setDeletePinError("");
+    setDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    setDeletePinError("");
+    setDeletePinVerifying(true);
+    try {
+      const pinRes = await fetch("/api/settings/discount-pin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pin: deletePin }),
+      });
+      const pinData = await pinRes.json();
+      if (!pinData.valid) { setDeletePinError(t("newVisit.wrongPin")); return; }
+      const res = await fetch(`/api/barbers/${deleteTarget.id}`, { method: "DELETE" });
+      if (res.ok) {
+        setDeleteModal(false);
+        load();
+      } else {
+        const d = await res.json();
+        if (d.error === "has_visits") {
+          setDeletePinError(t("barbers.hasVisitsError", { count: d.count }));
+        } else {
+          setDeletePinError(d.error ?? "Failed");
+        }
+      }
+    } finally {
+      setDeletePinVerifying(false);
+    }
+  };
 
   const load = () => {
     setLoading(true);
@@ -176,6 +217,9 @@ export default function BarbersPage() {
                       <button onClick={() => toggleActive(b)} className="btn-ghost text-xs px-2 py-1">
                         {b.isActive ? t("action.deactivate") : t("action.activate")}
                       </button>
+                      <button onClick={() => openDelete(b)} className="text-xs text-red-500 hover:text-red-700 px-2 py-1 rounded hover:bg-red-50 transition-colors">
+                        {t("action.delete")}
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -214,6 +258,37 @@ export default function BarbersPage() {
             <button type="submit" disabled={saving} className="btn-primary flex-1">{saving ? t("action.saving") : t("action.save")}</button>
           </div>
         </form>
+      </Modal>
+
+      {/* Delete barber */}
+      <Modal open={deleteModal} onClose={() => setDeleteModal(false)} title={t("action.delete")} size="sm">
+        <div className="space-y-4">
+          <p className="text-sm text-gray-600">
+            {t("barbers.deleteConfirm")} <strong>{deleteTarget?.name}</strong>?
+          </p>
+          <p className="text-sm text-gray-600">{t("settings.securityPinVerify")}</p>
+          <input
+            type="password"
+            className="input text-center text-xl tracking-widest"
+            placeholder="••••"
+            value={deletePin}
+            onChange={(e) => setDeletePin(e.target.value)}
+            autoFocus
+            maxLength={20}
+          />
+          {deletePinError && <p className="text-red-500 text-sm text-center">{deletePinError}</p>}
+          <div className="flex gap-3">
+            <button type="button" onClick={() => setDeleteModal(false)} className="btn-secondary flex-1">{t("action.cancel")}</button>
+            <button
+              type="button"
+              onClick={confirmDelete}
+              disabled={deletePinVerifying || !deletePin}
+              className="flex-1 py-2 px-4 rounded-lg text-sm font-medium bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
+            >
+              {deletePinVerifying ? "…" : t("action.delete")}
+            </button>
+          </div>
+        </div>
       </Modal>
 
       {/* Salary settings */}

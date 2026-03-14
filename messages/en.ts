@@ -186,6 +186,8 @@ const en = {
   "barbers.editBarber": "Edit Barber",
   "barbers.salarySettings": "Salary Settings —",
   "barbers.noBarbers": "No barbers yet",
+  "barbers.deleteConfirm": "Are you sure you want to permanently delete",
+  "barbers.hasVisitsError": "This barber has visits and cannot be deleted. Deactivate them instead.",
   "barbers.barberName": "Barber name",
   "barbers.commission": "commission",
   "barbers.perVisit": "/visit",

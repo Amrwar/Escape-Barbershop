@@ -3,6 +3,28 @@ import { prisma } from "@/lib/prisma";
 import { requireOwner } from "@/lib/auth";
 import { barberSchema } from "@/lib/validations";
 
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    await requireOwner();
+    const count = await prisma.visit.count({ where: { barberId: params.id } });
+    if (count > 0) {
+      return NextResponse.json({ error: "has_visits", count }, { status: 409 });
+    }
+    // Also delete salary settings before deleting barber
+    await prisma.barberSalarySettings.deleteMany({ where: { barberId: params.id } });
+    await prisma.barber.delete({ where: { id: params.id } });
+    return NextResponse.json({ success: true });
+  } catch (err: unknown) {
+    if (err instanceof Error && err.message.includes("Unauthorized")) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    return NextResponse.json({ error: "Failed" }, { status: 500 });
+  }
+}
+
 export async function PATCH(
   req: NextRequest,
   { params }: { params: { id: string } }
