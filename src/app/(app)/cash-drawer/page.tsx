@@ -387,13 +387,26 @@ export default function CashDrawerPage() {
                         </div>
                       </div>
                     </div>
-                    <span
-                      className={`text-sm font-semibold ${
-                        m.type === "IN" ? "text-green-600" : "text-red-600"
-                      }`}
-                    >
-                      {m.type === "IN" ? "+" : "-"}{fmtCurrency(m.amount)}
-                    </span>
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={`text-sm font-semibold ${
+                          m.type === "IN" ? "text-green-600" : "text-red-600"
+                        }`}
+                      >
+                        {m.type === "IN" ? "+" : "-"}{fmtCurrency(m.amount)}
+                      </span>
+                      {isOwner && (
+                        <button
+                          onClick={async () => {
+                            await fetch(`/api/cash-drawer/movements/${m.id}`, { method: "DELETE" });
+                            await fetchSession();
+                          }}
+                          className="text-xs text-red-400 hover:text-red-600"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>

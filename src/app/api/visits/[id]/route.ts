@@ -125,8 +125,32 @@ export async function DELETE(
 ) {
   try {
     await requireOwner();
-    // Remove any auto-created tip movements linked to this visit before deleting
-    await prisma.cashMovement.deleteMany({ where: { visitId: params.id } });
+
+    // Fetch visit first so we can clean up tip movements (including old ones without visitId)
+    const visit = await prisma.visit.findUnique({
+      where: { id: params.id },
+      include: { barber: { select: { name: true } } },
+    });
+
+    if (visit) {
+      await prisma.cashMovement.deleteMany({
+        where: {
+          OR: [
+            { visitId: params.id },
+            // Backwards-compat: old movements before visitId was added
+            ...(visit.sessionId && visit.tip > 0
+              ? [{
+                  sessionId: visit.sessionId,
+                  visitId: null,
+                  amount: visit.tip,
+                  reason: `Card tip — ${visit.barber.name}`,
+                }]
+              : []),
+          ],
+        },
+      });
+    }
+
     await prisma.visit.delete({ where: { id: params.id } });
     return NextResponse.json({ success: true });
   } catch (err: unknown) {
