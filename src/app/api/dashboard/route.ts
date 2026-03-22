@@ -71,10 +71,10 @@ export async function GET(req: NextRequest) {
     });
     const serviceMap = Object.fromEntries(services.map((s) => [s.id, { name: s.name, arabicName: s.arabicName }]));
 
-    // Enrich revenue per barber with names
-    const barberIds = (revenuePerBarber as Array<{ barberId: string }>).map(
-      (b) => b.barberId
-    );
+    // Enrich revenue per barber with names (filter out null barberId from visits with deleted barbers)
+    const barberIds = (revenuePerBarber as Array<{ barberId: string | null }>)
+      .map((b) => b.barberId)
+      .filter((id): id is string => id !== null);
     const barbers = await prisma.barber.findMany({
       where: { id: { in: barberIds } },
       select: { id: true, name: true },
@@ -164,16 +164,18 @@ export async function GET(req: NextRequest) {
       })),
       revenuePerBarber: (
         revenuePerBarber as Array<{
-          barberId: string;
+          barberId: string | null;
           _sum: { total: number | null };
           _count: { id: number };
         }>
-      ).map((b) => ({
-        barberId: b.barberId,
-        name: barberMap[b.barberId] ?? "Unknown",
-        revenue: b._sum.total ?? 0,
-        visits: b._count.id,
-      })),
+      )
+        .filter((b) => b.barberId !== null)
+        .map((b) => ({
+          barberId: b.barberId!,
+          name: barberMap[b.barberId!] ?? "Unknown",
+          revenue: b._sum.total ?? 0,
+          visits: b._count.id,
+        })),
       drawerStatus,
     });
   } catch (err: unknown) {
