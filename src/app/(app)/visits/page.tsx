@@ -158,7 +158,7 @@ export default function VisitsPage() {
                       {v.paymentMethod === "CASH" ? t("common.cash") : v.paymentMethod === "CARD" ? t("common.card") : t("common.mixed")}
                     </Badge>
                     {isOwner && (
-                      <span className="text-xs text-gray-500">{t("common.by")} {v.barber.name}</span>
+                      <span className="text-xs text-gray-500">{t("common.by")} {v.barber?.name ?? "—"}</span>
                     )}
                   </div>
                   <div className="text-xs text-gray-400 mt-0.5">{fmtDateTime(v.visitAt)}</div>

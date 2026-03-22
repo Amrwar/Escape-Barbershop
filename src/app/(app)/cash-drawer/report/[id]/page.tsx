@@ -189,7 +189,7 @@ export default function ReportPage() {
         "Visit",
         new Date(v.visitAt).toLocaleString(),
         v.customer.name,
-        v.barber.name,
+        v.barber?.name ?? "—",
         v.items.map((i) => `${i.service.name}×${i.quantity}`).join("; "),
         v.paymentMethod,
         v.total.toFixed(2),
@@ -442,7 +442,7 @@ export default function ReportPage() {
                       {fmtCustomerName(v.customer.name)}
                       <div className="text-xs text-gray-400">{new Date(v.visitAt).toLocaleTimeString()}</div>
                     </td>
-                    <td className="px-3 py-2 text-gray-600">{v.barber.name}</td>
+                    <td className="px-3 py-2 text-gray-600">{v.barber?.name ?? "—"}</td>
                     <td className="px-3 py-2 text-gray-600 text-xs">
                       {v.items.map((i) => `${i.service.name}×${i.quantity}`).join(", ")}
                     </td>
