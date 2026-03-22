@@ -11,8 +11,12 @@ export async function GET(req: NextRequest) {
     const now = new Date();
     // Shift "now" by the client offset to compute local date components
     const local = new Date(now.getTime() + offsetMs);
-    // Business day starts at midnight, ends at 3AM next day
-    const todayStart = new Date(Date.UTC(local.getUTCFullYear(), local.getUTCMonth(), local.getUTCDate()) - offsetMs);
+    // Business day boundary: 3AM. If local time is before 3AM, "today" started at 3AM yesterday.
+    const BOUNDARY_HOUR = 3;
+    const effectiveLocal = local.getUTCHours() < BOUNDARY_HOUR
+      ? new Date(local.getTime() - 24 * 60 * 60 * 1000)
+      : local;
+    const todayStart = new Date(Date.UTC(effectiveLocal.getUTCFullYear(), effectiveLocal.getUTCMonth(), effectiveLocal.getUTCDate(), BOUNDARY_HOUR) - offsetMs);
     const monthStart = new Date(Date.UTC(local.getUTCFullYear(), local.getUTCMonth(), 1) - offsetMs);
     const monthEnd = new Date(Date.UTC(local.getUTCFullYear(), local.getUTCMonth() + 1, 0, 23, 59, 59) - offsetMs);
 
