@@ -22,7 +22,7 @@ interface VisitDetail {
   notes: string | null;
   sessionSequence: number | null;
   customer: { name: string; phone: string | null };
-  barber: { name: string };
+  barber: { name: string } | null;
   items: {
     id: string;
     service: { name: string; arabicName: string | null };
@@ -220,7 +220,7 @@ export default function VisitDetailPage() {
           </div>
           <div>
             <div className="label mb-0.5">{t("field.barber")}</div>
-            <div className="font-medium text-gray-900">{visit.barber.name}</div>
+            <div className="font-medium text-gray-900">{visit.barber?.name ?? "—"}</div>
           </div>
           <div>
             <div className="label mb-0.5">{t("customers.title")}</div>

@@ -16,7 +16,7 @@ export interface ReceiptVisit {
   id: string;
   visitAt: string;
   customer: { name: string; phone: string | null };
-  barber: { name: string };
+  barber: { name: string } | null;
   paymentMethod: "CASH" | "CARD" | "MIXED";
   cashAmount: number | null;
   cardAmount: number | null;
@@ -155,7 +155,7 @@ function buildReceiptBlock(
       ${SEP}
       <div style="font-size:15px;color:#000;margin:5px 0;">Receipt #: ${receiptNo}</div>
       <div style="font-size:15px;color:#000;margin:5px 0;">Date: ${fmtDate(visit.visitAt)}</div>
-      <div style="font-size:15px;color:#000;margin:5px 0;">Barber: ${visit.barber.name}</div>
+      <div style="font-size:15px;color:#000;margin:5px 0;">Barber: ${visit.barber?.name ?? "—"}</div>
       <div style="font-size:15px;color:#000;margin:5px 0;">Customer: ${customerDisplayName(visit.customer.name, lang)}${visit.customer.phone ? `<br/>&nbsp;&nbsp;${visit.customer.phone}` : ""}</div>
       ${SEP}
       <table style="width:100%;">
@@ -193,7 +193,7 @@ export function buildWhatsAppText(
     `*${shop.shopName}*`,
     `📋 Receipt #${receiptNo}`,
     `📅 ${date}`,
-    `👤 Barber: ${visit.barber.name}`,
+    `👤 Barber: ${visit.barber?.name ?? "—"}`,
     ``,
     `*Services:*`,
     serviceLines,
@@ -281,7 +281,7 @@ export async function downloadReceiptPdf(
   doc.setFontSize(15);
   doc.text(`Receipt #: ${receiptNo}`, margin, y); y += lh;
   doc.text(`Date: ${fmtDate(visit.visitAt)}`, margin, y); y += lh;
-  doc.text(`Barber: ${visit.barber.name}`, margin, y); y += lh;
+  doc.text(`Barber: ${visit.barber?.name ?? "—"}`, margin, y); y += lh;
   doc.text(`Customer: ${customerDisplayName(visit.customer.name, lang)}`, margin, y); y += lh;
 
   sep();
