@@ -118,7 +118,7 @@ interface Visit {
   discount: number;
   total: number;
   customer: { name: string };
-  barber: { name: string };
+  barber: { name: string } | null;
   items: VisitItem[];
 }
 
@@ -274,7 +274,7 @@ export default function ReportsPage() {
     const visitsRows = data.visits.map((v) => ({
       Date: new Date(v.visitAt).toLocaleString(),
       Customer: v.customer.name,
-      Barber: v.barber.name,
+      Barber: v.barber?.name ?? "—",
       Services: v.items.map((i) => `${i.service.name}${i.quantity > 1 ? ` ×${i.quantity}` : ""}`).join(", "),
       Payment: paymentLabel[v.paymentMethod] ?? v.paymentMethod,
       Subtotal: v.items.reduce((s, i) => s + i.priceAtTime * i.quantity, 0),
@@ -490,7 +490,7 @@ export default function ReportsPage() {
                         <tr key={v.id} className="hover:bg-gray-50">
                           <td className="px-4 py-2 text-gray-500 text-xs whitespace-nowrap">{fmtDateTime(v.visitAt)}</td>
                           <td className="px-4 py-2 font-medium">{fmtCustomerName(v.customer.name)}</td>
-                          {isOwner && <td className="px-4 py-2 text-gray-600">{v.barber.name}</td>}
+                          {isOwner && <td className="px-4 py-2 text-gray-600">{v.barber?.name ?? "—"}</td>}
                           <td className="px-4 py-2 text-gray-600 text-xs">
                             {v.items.map((i) => `${lang === "ar" && i.service.arabicName ? i.service.arabicName : i.service.name}${i.quantity > 1 ? ` ×${i.quantity}` : ""}`).join(", ")}
                           </td>
