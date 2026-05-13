@@ -68,7 +68,7 @@ async function main() {
 
   // Create default owner
   const ownerEmail = process.env.SEED_OWNER_EMAIL ?? "Admin@escape.com";
-  const ownerPassword = process.env.SEED_OWNER_PASSWORD ?? "015555";
+  const ownerPassword = process.env.SEED_OWNER_PASSWORD ?? "yousef1234";
   const hashedPassword = await bcrypt.hash(ownerPassword, 12);
 
   await prisma.user.upsert({
@@ -107,7 +107,7 @@ async function main() {
   });
 
   // Create barber user account
-  const barberPassword = await bcrypt.hash("barber123", 12);
+  const barberPassword = await bcrypt.hash("yousef1234", 12);
   await prisma.user.upsert({
     where: { email: "cashier@escape.com" },
     update: {},
@@ -119,7 +119,7 @@ async function main() {
       barberId: barber.id,
     },
   });
-  console.log("Sample cashier account: cashier@escape.com / barber123");
+  console.log("Sample cashier account: cashier@escape.com / yousef1234");
 
   console.log("Seeding complete!");
 }
