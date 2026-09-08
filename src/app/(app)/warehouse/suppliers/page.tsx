@@ -7,6 +7,7 @@ import { Modal } from "@/components/ui/Modal";
 import { useTranslation } from "@/lib/i18n";
 import { Icon } from "@/components/ui/Icon";
 import { Note } from "@/components/ui/Note";
+import { ExportButton } from "@/components/ui/ExportButton";
 
 type PayMethod = "CASH" | "CARD";
 
@@ -156,7 +157,28 @@ export default function SuppliersPage() {
       <PageHeader
         title={t("suppliers.title")}
         subtitle={t("suppliers.subtitle")}
-        action={<button onClick={openNew} className="btn-primary">{t("suppliers.addSupplier")}</button>}
+        action={
+          <div className="flex gap-2">
+            <ExportButton
+              filename="suppliers.xlsx"
+              disabled={suppliers.length === 0}
+              build={() => [
+                {
+                  name: t("suppliers.title"),
+                  rows: suppliers.map((s) => ({
+                    [t("field.name")]: s.name,
+                    [t("field.phone")]: s.phone ?? "",
+                    [t("suppliers.creditTotal")]: s.creditTotal,
+                    [t("suppliers.paidTotal")]: s.paidTotal,
+                    [t("suppliers.balance")]: s.balance,
+                    [t("field.status")]: s.isActive ? t("common.active") : t("common.inactive"),
+                  })),
+                },
+              ]}
+            />
+            <button onClick={openNew} className="btn-primary">{t("suppliers.addSupplier")}</button>
+          </div>
+        }
       />
 
       <Note tone="rule" title={t("note.suppliersTitle")} icon="truck">

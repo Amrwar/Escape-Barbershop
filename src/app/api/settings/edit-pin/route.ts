@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireOwner, requireAuth } from "@/lib/auth";
+import { recordAudit } from "@/lib/audit";
 
 // POST — verify the edit PIN (any authenticated user)
 export async function POST(req: NextRequest) {
@@ -19,7 +20,7 @@ export async function POST(req: NextRequest) {
 // PATCH — set the edit PIN (owner only, requires current PIN)
 export async function PATCH(req: NextRequest) {
   try {
-    await requireOwner();
+    const authSession = await requireOwner();
     const { pin, currentPin } = await req.json();
     if (!pin || String(pin).trim().length < 4) {
       return NextResponse.json({ error: "PIN must be at least 4 characters" }, { status: 400 });
@@ -35,6 +36,13 @@ export async function PATCH(req: NextRequest) {
       update: { value: String(pin).trim() },
       create: { key: "edit_pin", value: String(pin).trim() },
     });
+    await recordAudit(authSession, {
+      action: "UPDATE",
+      entity: "SETTING",
+      entityId: "edit_pin",
+      summary: "Changed the edit PIN",
+    });
+
     return NextResponse.json({ success: true });
   } catch (err: unknown) {
     if (err instanceof Error && err.message.includes("Unauthorized")) {

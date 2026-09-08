@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { passwordChangeSchema, profileSchema } from "@/lib/validations";
+import { recordAudit } from "@/lib/audit";
 
 // Your own login. Anyone signed in can change their own name, email and
 // password — changing the password always requires the current one, so a
@@ -42,6 +43,13 @@ export async function PATCH(req: NextRequest) {
         where: { id: user.id },
         data: { password: await bcrypt.hash(data.newPassword, 12) },
       });
+      await recordAudit(session, {
+        action: "UPDATE",
+        entity: "USER",
+        entityId: user.id,
+        summary: `Changed their own password (${user.email})`,
+      });
+
       return NextResponse.json({ passwordChanged: true });
     }
 
@@ -55,6 +63,13 @@ export async function PATCH(req: NextRequest) {
       },
       select: { id: true, name: true, email: true, role: true },
     });
+    await recordAudit(session, {
+      action: "UPDATE",
+      entity: "USER",
+      entityId: updated.id,
+      summary: `Updated their own login details (${updated.email})`,
+    });
+
     return NextResponse.json(updated);
   } catch (err: unknown) {
     if (err instanceof Error && err.message.includes("Unauthorized")) {

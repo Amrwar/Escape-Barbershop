@@ -8,6 +8,7 @@ import Link from "next/link";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { useTranslation } from "@/lib/i18n";
 import { Note } from "@/components/ui/Note";
+import { ExportButton } from "@/components/ui/ExportButton";
 
 interface SessionRow {
   id: string;
@@ -243,9 +244,76 @@ function DayReportContent() {
           <PageHeader title={t("cashDrawer.dayReport")} subtitle={t("cashDrawer.dayReportSubtitle")} />
         </div>
         {report && (
-          <button onClick={() => printReceipt(report, shop)} className="btn-secondary text-sm">
-            {t("cashDrawer.printReceiptBtn")}
-          </button>
+          <div className="flex gap-2">
+            <ExportButton
+              filename={`day-${date}.xlsx`}
+              disabled={!s}
+              build={() => [
+                {
+                  name: t("cashDrawer.dayReport"),
+                  rows: [
+                    [t("field.date"), date],
+                    [t("cashDrawer.sessions"), s!.sessionCount],
+                    [t("common.visits"), s!.totalVisits],
+                    [t("cashDrawer.cashSales"), s!.cashSales],
+                    [t("cashDrawer.cardSales"), s!.cardSales],
+                    [t("cashDrawer.visaCommission"), -s!.visaCommission],
+                    [t("cashDrawer.cardNet"), s!.cardNet],
+                    [t("cashDrawer.cashExpenses"), -s!.cashExpenses],
+                    [t("cashDrawer.cardExpenses"), -s!.cardExpenses],
+                    [t("cashDrawer.advances"), s!.advancesTotal],
+                    [t("cashDrawer.openingBalance"), s!.totalOpeningCash],
+                    [t("cashDrawer.cashIn"), s!.cashIn],
+                    [t("cashDrawer.cashOut"), -s!.cashOut],
+                    [t("cashDrawer.expectedCash"), s!.expectedCash],
+                    [t("cashDrawer.countedCash"), s!.totalCountedCash ?? ""],
+                    [t("cashDrawer.difference"), s!.difference ?? ""],
+                    [t("reports.totalRevenue"), s!.totalRevenue],
+                    [t("cashDrawer.netRevenue"), s!.netRevenue ?? ""],
+                  ].map(([k, v]) => ({ [t("field.line")]: k, [t("field.amount")]: v })),
+                },
+                {
+                  name: t("reports.expensesList"),
+                  rows: (report.expenses ?? []).map((e) => ({
+                    [t("field.date")]: fmtDate(e.date),
+                    [t("field.reason")]: e.reason,
+                    [t("expenses.paidBy")]: e.paymentMethod === "CARD" ? t("common.card") : t("common.cash"),
+                    [t("expenses.amount")]: e.amount,
+                  })),
+                },
+                {
+                  name: t("reports.advancesList"),
+                  rows: (report.advances ?? []).map((a) => ({
+                    [t("field.date")]: fmtDate(a.date),
+                    [t("field.barber")]: a.barberName,
+                    [t("expenses.paidBy")]: a.paymentMethod === "CARD" ? t("common.card") : t("common.cash"),
+                    [t("field.amount")]: a.amount,
+                  })),
+                },
+                {
+                  name: t("cashDrawer.purchases"),
+                  rows: (report.purchases?.rows ?? []).map((p) => ({
+                    [t("field.date")]: fmtDate(p.date),
+                    [t("purchases.invoiceNo")]: p.number ?? "",
+                    [t("purchases.supplier")]: p.supplierName ?? "",
+                    [t("purchases.paymentType")]: p.paymentType,
+                    [t("field.total")]: p.total,
+                  })),
+                },
+                {
+                  name: t("report.topServices"),
+                  rows: report.topServices.map((x, i) => ({
+                    "#": i + 1,
+                    [t("field.service")]: x.name,
+                    [t("field.quantity")]: x.count,
+                  })),
+                },
+              ]}
+            />
+            <button onClick={() => printReceipt(report, shop)} className="btn-secondary text-sm">
+              {t("cashDrawer.printReceiptBtn")}
+            </button>
+          </div>
         )}
       </div>
 

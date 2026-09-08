@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Modal } from "@/components/ui/Modal";
 import { useTranslation } from "@/lib/i18n";
 import { Note } from "@/components/ui/Note";
+import { ExportButton } from "@/components/ui/ExportButton";
 
 type Loc = "MAIN" | "BRANCH";
 
@@ -149,7 +150,40 @@ export default function StockCountPage() {
       <PageHeader
         title={t("stockCount.title")}
         subtitle={t("stockCount.subtitle")}
-        action={<button onClick={openNew} className="btn-primary">{t("stockCount.newCount")}</button>}
+        action={
+          <div className="flex gap-2">
+            <ExportButton
+              filename={`stocktake-${from}-to-${to}.xlsx`}
+              disabled={counts.length === 0}
+              build={() => [
+                {
+                  name: t("stockCount.title"),
+                  rows: counts.map((c) => ({
+                    [t("field.date")]: fmtDate(c.date),
+                    [t("warehouse.location")]: locLabel(c.location),
+                    [t("purchases.items")]: c.itemCount,
+                    [t("stockCount.differenceValue")]: c.differenceValue,
+                  })),
+                },
+                {
+                  name: t("stockCount.difference"),
+                  rows: counts.flatMap((c) =>
+                    c.items.map((i) => ({
+                      [t("field.date")]: fmtDate(c.date),
+                      [t("warehouse.location")]: locLabel(c.location),
+                      [t("warehouse.productName")]: i.product.name,
+                      [t("stockCount.systemQty")]: i.systemQty,
+                      [t("stockCount.countedQty")]: i.countedQty,
+                      [t("stockCount.difference")]: i.countedQty - i.systemQty,
+                      [t("stockCount.differenceValue")]: (i.countedQty - i.systemQty) * i.unitCost,
+                    }))
+                  ),
+                },
+              ]}
+            />
+            <button onClick={openNew} className="btn-primary">{t("stockCount.newCount")}</button>
+          </div>
+        }
       />
 
       <div className="card p-4 flex flex-wrap gap-3 items-end">

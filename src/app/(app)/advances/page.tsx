@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { useTranslation } from "@/lib/i18n";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { Note } from "@/components/ui/Note";
+import { ExportButton } from "@/components/ui/ExportButton";
 
 type PayMethod = "CASH" | "CARD";
 
@@ -115,7 +116,28 @@ export default function AdvancesPage() {
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <PageHeader title={t("advances.title")} subtitle={t("advances.subtitle")} />
+      <PageHeader
+        title={t("advances.title")}
+        subtitle={t("advances.subtitle")}
+        action={
+          <ExportButton
+            filename={`advances-${from}-to-${to}.xlsx`}
+            disabled={advances.length === 0}
+            build={() => [
+              {
+                name: t("advances.title"),
+                rows: advances.map((a) => ({
+                  [t("field.date")]: fmtDate(a.date),
+                  [t("field.barber")]: a.barber?.name ?? "",
+                  [t("expenses.paidBy")]: a.paymentMethod === "CARD" ? t("common.card") : t("common.cash"),
+                  [t("field.notes")]: a.notes ?? "",
+                  [t("field.amount")]: a.amount,
+                })),
+              },
+            ]}
+          />
+        }
+      />
 
       <div className="card p-5 mb-6">
         <h2 className="text-sm font-semibold text-gray-900 mb-4">{t("advances.addAdvance")}</h2>

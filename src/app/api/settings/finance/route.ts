@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth, requireOwner } from "@/lib/auth";
 import { VISA_COMMISSION_KEY, getVisaCommissionPercent } from "@/lib/finance";
+import { recordAudit } from "@/lib/audit";
 
 // The card-machine commission rate. Every screen that shows a card total reads
 // it from here, so changing it here changes the whole journal at once.
@@ -16,7 +17,8 @@ export async function GET() {
 
 export async function PATCH(req: NextRequest) {
   try {
-    await requireOwner();
+    const authSession = await requireOwner();
+    const previous = await getVisaCommissionPercent();
     const { visaCommissionPercent } = await req.json();
     const pct = parseFloat(visaCommissionPercent);
     if (!Number.isFinite(pct) || pct < 0 || pct > 100) {
@@ -27,6 +29,14 @@ export async function PATCH(req: NextRequest) {
       update: { value: String(pct) },
       create: { key: VISA_COMMISSION_KEY, value: String(pct) },
     });
+    await recordAudit(authSession, {
+      action: "UPDATE",
+      entity: "SETTING",
+      entityId: VISA_COMMISSION_KEY,
+      amount: pct,
+      summary: `Visa commission ${previous}% -> ${pct}%`,
+    });
+
     return NextResponse.json({ visaCommissionPercent: pct });
   } catch (err: unknown) {
     if (err instanceof Error && err.message.includes("Unauthorized")) {

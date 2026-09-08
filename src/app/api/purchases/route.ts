@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireOwner } from "@/lib/auth";
 import { purchaseInvoiceSchema } from "@/lib/validations";
 import { round2 } from "@/lib/finance";
+import { recordAudit } from "@/lib/audit";
 
 // Purchase invoices. Goods always land in the MAIN store.
 // CASH / CARD invoices post an Expense on the invoice date so they show up in the
@@ -52,7 +53,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    await requireOwner();
+    const authSession = await requireOwner();
     const data = purchaseInvoiceSchema.parse(await req.json());
     const date = new Date(data.date);
     const supplierId = data.supplierId ? String(data.supplierId) : null;
@@ -123,6 +124,14 @@ export async function POST(req: NextRequest) {
       }
 
       return created;
+    });
+
+    await recordAudit(authSession, {
+      action: "CREATE",
+      entity: "PURCHASE",
+      entityId: invoice.id,
+      amount: total,
+      summary: `${data.paymentType} ${total.toFixed(2)}${supplier ? ` - ${supplier.name}` : ""}, ${items.length} line(s)`,
     });
 
     return NextResponse.json(invoice, { status: 201 });

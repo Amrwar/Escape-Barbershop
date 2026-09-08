@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireOwner } from "@/lib/auth";
+import { recordAudit } from "@/lib/audit";
 import { serviceSchema } from "@/lib/validations";
 
 export async function PATCH(
@@ -30,8 +31,19 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    await requireOwner();
+    const authSession = await requireOwner();
+    const existing = await prisma.service.findUnique({ where: { id: params.id } });
     await prisma.service.delete({ where: { id: params.id } });
+    if (existing) {
+      await recordAudit(authSession, {
+        action: "DELETE",
+        entity: "SERVICE",
+        entityId: existing.id,
+        amount: existing.defaultPrice,
+        summary: `${existing.name} (${existing.defaultPrice.toFixed(2)})`,
+        details: { arabicName: existing.arabicName, excludeFromCommission: existing.excludeFromCommission },
+      });
+    }
     return NextResponse.json({ success: true });
   } catch {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

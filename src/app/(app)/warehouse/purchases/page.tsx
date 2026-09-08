@@ -8,6 +8,7 @@ import { Modal } from "@/components/ui/Modal";
 import { useTranslation } from "@/lib/i18n";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { Note } from "@/components/ui/Note";
+import { ExportButton } from "@/components/ui/ExportButton";
 
 type PaymentType = "CASH" | "CARD" | "CREDIT";
 
@@ -186,7 +187,45 @@ export default function PurchasesPage() {
       <PageHeader
         title={t("purchases.title")}
         subtitle={t("purchases.subtitle")}
-        action={<button onClick={openNew} className="btn-primary">{t("purchases.newInvoice")}</button>}
+        action={
+          <div className="flex gap-2">
+            <ExportButton
+              filename={`purchases-${from}-to-${to}.xlsx`}
+              disabled={invoices.length === 0}
+              build={() => [
+                {
+                  name: t("purchases.title"),
+                  rows: invoices.map((inv) => ({
+                    [t("field.date")]: fmtDate(inv.date),
+                    [t("purchases.invoiceNo")]: inv.number ?? "",
+                    [t("purchases.supplier")]: inv.supplier?.name ?? t("purchases.noSupplier"),
+                    [t("purchases.paymentType")]:
+                      inv.paymentType === "CREDIT"
+                        ? t("common.credit")
+                        : inv.paymentType === "CARD"
+                        ? t("common.card")
+                        : t("common.cash"),
+                    [t("field.total")]: inv.total,
+                  })),
+                },
+                {
+                  name: t("purchases.items"),
+                  rows: invoices.flatMap((inv) =>
+                    inv.items.map((it) => ({
+                      [t("field.date")]: fmtDate(inv.date),
+                      [t("purchases.invoiceNo")]: inv.number ?? "",
+                      [t("warehouse.productName")]: it.product.name,
+                      [t("field.quantity")]: it.quantity,
+                      [t("purchases.unitCost")]: it.unitCost,
+                      [t("purchases.lineTotal")]: it.total,
+                    }))
+                  ),
+                },
+              ]}
+            />
+            <button onClick={openNew} className="btn-primary">{t("purchases.newInvoice")}</button>
+          </div>
+        }
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">

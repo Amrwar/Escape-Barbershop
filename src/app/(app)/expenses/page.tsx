@@ -9,6 +9,7 @@ import { EditPinModal } from "@/components/ui/EditPinModal";
 import { useTranslation } from "@/lib/i18n";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { Note } from "@/components/ui/Note";
+import { ExportButton } from "@/components/ui/ExportButton";
 
 type PayMethod = "CASH" | "CARD";
 
@@ -144,6 +145,32 @@ export default function ExpensesPage() {
       <PageHeader
         title={t("expenses.title")}
         subtitle={t("expenses.subtitle")}
+        action={
+          <ExportButton
+            filename={`expenses-${from}-to-${to}.xlsx`}
+            disabled={expenses.length === 0}
+            build={() => [
+              {
+                name: t("expenses.title"),
+                rows: expenses.map((e) => ({
+                  [t("field.date")]: fmtDate(e.date),
+                  [t("field.reason")]: e.reason,
+                  [t("expenses.paidBy")]: e.paymentMethod === "CARD" ? t("common.card") : t("common.cash"),
+                  [t("expenses.category")]: e.category ?? "",
+                  [t("expenses.amount")]: e.amount,
+                })),
+              },
+              {
+                name: t("field.total"),
+                rows: [
+                  { [t("field.total")]: t("expenses.cashTotal"), [t("expenses.amount")]: cashTotal },
+                  { [t("field.total")]: t("expenses.cardTotal"), [t("expenses.amount")]: cardTotal },
+                  { [t("field.total")]: t("expenses.totalExpenses"), [t("expenses.amount")]: total },
+                ],
+              },
+            ]}
+          />
+        }
       />
 
       {/* Add expense form */}

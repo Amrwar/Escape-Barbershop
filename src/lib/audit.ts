@@ -23,6 +23,13 @@ export type AuditEntity =
   | "STOCK_TRANSFER"
   | "STOCK_COUNT"
   | "PRODUCT"
+  | "PRODUCT_USAGE"
+  | "SUPPLIER"
+  | "SERVICE"
+  | "CUSTOMER"
+  | "BARBER"
+  | "ATTENDANCE"
+  | "SETTING"
   | "USER";
 
 interface Actor {

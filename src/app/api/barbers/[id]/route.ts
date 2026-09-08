@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireOwner } from "@/lib/auth";
+import { recordAudit } from "@/lib/audit";
 import { barberSchema } from "@/lib/validations";
 
 export async function DELETE(
@@ -8,11 +9,21 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    await requireOwner();
+    const authSession = await requireOwner();
+    const existing = await prisma.barber.findUnique({ where: { id: params.id } });
     // Unlink visits from barber before deleting
     await prisma.visit.updateMany({ where: { barberId: params.id }, data: { barberId: null } });
     await prisma.barberSalarySettings.deleteMany({ where: { barberId: params.id } });
     await prisma.barber.delete({ where: { id: params.id } });
+    if (existing) {
+      await recordAudit(authSession, {
+        action: "DELETE",
+        entity: "BARBER",
+        entityId: existing.id,
+        summary: `${existing.name}${existing.phone ? ` · ${existing.phone}` : ""}`,
+        details: { isActive: existing.isActive },
+      });
+    }
     return NextResponse.json({ success: true });
   } catch (err: unknown) {
     if (err instanceof Error && err.message.includes("Unauthorized")) {

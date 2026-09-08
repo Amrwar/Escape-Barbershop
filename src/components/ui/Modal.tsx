@@ -25,6 +25,9 @@ export function Modal({
   size = "md",
 }: ModalProps) {
   const ref = useRef<HTMLDivElement>(null);
+  // Several titles reuse the label of the button that opened them ("+ New
+  // Invoice"); the plus belongs on the button, not on the heading.
+  const heading = title.replace(/^\+\s*/, "");
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
@@ -53,7 +56,7 @@ export function Modal({
         className={`relative bg-white rounded-xl shadow-xl w-full ${sizeClasses[size]} max-h-[90vh] overflow-y-auto`}
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 sticky top-0 bg-white z-10">
-          <h2 className="text-base font-semibold text-gray-900">{title}</h2>
+          <h2 className="text-base font-semibold text-gray-900">{heading}</h2>
           <button
             onClick={onClose}
             className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"

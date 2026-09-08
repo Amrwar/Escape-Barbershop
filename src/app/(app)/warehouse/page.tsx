@@ -7,6 +7,7 @@ import { Modal } from "@/components/ui/Modal";
 import { useTranslation } from "@/lib/i18n";
 import { Icon } from "@/components/ui/Icon";
 import { Note } from "@/components/ui/Note";
+import { ExportButton } from "@/components/ui/ExportButton";
 
 interface StockRow {
   productId: string;
@@ -116,9 +117,30 @@ export default function WarehousePage() {
         title={t("warehouse.title")}
         subtitle={t("warehouse.subtitle")}
         action={
-          <button onClick={openNew} className="btn-primary">
-            {t("warehouse.addProduct")}
-          </button>
+          <div className="flex gap-2">
+            <ExportButton
+              filename="stock.xlsx"
+              disabled={rows.length === 0}
+              build={() => [
+                {
+                  name: t("warehouse.title"),
+                  rows: rows.map((r) => ({
+                    [t("warehouse.productName")]: r.name,
+                    [t("warehouse.unit")]: r.unit,
+                    [t("warehouse.mainStore")]: r.main,
+                    [t("warehouse.branch")]: r.branch,
+                    [t("warehouse.onHand")]: r.total,
+                    [t("warehouse.costPrice")]: r.costPrice,
+                    [t("warehouse.stockValue")]: r.value,
+                    [t("field.status")]: r.isActive ? t("common.active") : t("common.inactive"),
+                  })),
+                },
+              ]}
+            />
+            <button onClick={openNew} className="btn-primary">
+              {t("warehouse.addProduct")}
+            </button>
+          </div>
         }
       />
 

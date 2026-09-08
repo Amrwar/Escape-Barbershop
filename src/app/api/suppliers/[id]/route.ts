@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireOwner } from "@/lib/auth";
+import { recordAudit } from "@/lib/audit";
 
 // Supplier account statement: invoices and payments merged into one ledger.
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
@@ -61,7 +62,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
 export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    await requireOwner();
+    const authSession = await requireOwner();
+    const existing = await prisma.supplier.findUnique({ where: { id: params.id } });
     const [invoices, payments] = await Promise.all([
       prisma.purchaseInvoice.count({ where: { supplierId: params.id } }),
       prisma.supplierPayment.count({ where: { supplierId: params.id } }),
@@ -74,6 +76,14 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ deactivated: true, supplier });
     }
     await prisma.supplier.delete({ where: { id: params.id } });
+    if (existing) {
+      await recordAudit(authSession, {
+        action: "DELETE",
+        entity: "SUPPLIER",
+        entityId: existing.id,
+        summary: `${existing.name}${existing.phone ? ` · ${existing.phone}` : ""}`,
+      });
+    }
     return NextResponse.json({ deleted: true });
   } catch (err: unknown) {
     if (err instanceof Error && err.message.includes("Unauthorized"))

@@ -7,6 +7,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Badge } from "@/components/ui/Badge";
 import { useTranslation } from "@/lib/i18n";
 import { Note } from "@/components/ui/Note";
+import { ExportButton } from "@/components/ui/ExportButton";
 
 interface PenaltyRecord { id: string; date: string; amount: number; reason: string; }
 
@@ -125,7 +126,55 @@ export default function SalariesPage() {
         title={t("salaries.title")}
         subtitle={t("salaries.subtitle")}
         action={
-          <button onClick={openPenaltyModal} className="btn-secondary">{t("action.addPenalty")}</button>
+          <div className="flex gap-2">
+            <ExportButton
+              filename={`payroll-${year}-${String(month).padStart(2, "0")}.xlsx`}
+              disabled={payroll.length === 0}
+              build={() => [
+                {
+                  name: t("salaries.title"),
+                  rows: payroll.map((b) => ({
+                    [t("common.barber")]: b.name,
+                    [t("salaries.visitCount")]: b.visitCount,
+                    [t("salaries.visitRevenue")]: b.visitTotal,
+                    [t("salaries.commissionableRevenue")]: b.commissionableTotal,
+                    [t("salaries.base")]: b.baseSalary,
+                    [t("salaries.commission")]: b.commission,
+                    [t("salaries.gross")]: b.gross,
+                    [t("salaries.penalties")]: -b.penaltiesTotal,
+                    [t("salaries.advances")]: -b.advancesTotal,
+                    [t("attendance.absentDays")]: b.absentDays,
+                    [t("salaries.attendanceDeduction")]: -b.attendanceDeduction,
+                    [t("salaries.net")]: b.net,
+                  })),
+                },
+                {
+                  name: t("salaries.penaltiesTitle"),
+                  rows: payroll.flatMap((b) =>
+                    b.penalties.map((p) => ({
+                      [t("common.barber")]: b.name,
+                      [t("field.date")]: fmtDate(p.date),
+                      [t("field.amount")]: p.amount,
+                      [t("field.reason")]: p.reason,
+                    }))
+                  ),
+                },
+                {
+                  name: t("salaries.advancesTitle"),
+                  rows: payroll.flatMap((b) =>
+                    (b.advances ?? []).map((a) => ({
+                      [t("common.barber")]: b.name,
+                      [t("field.date")]: fmtDate(a.date),
+                      [t("field.amount")]: a.amount,
+                      [t("expenses.paidBy")]: a.paymentMethod === "CARD" ? t("common.card") : t("common.cash"),
+                      [t("field.notes")]: a.notes ?? "",
+                    }))
+                  ),
+                },
+              ]}
+            />
+            <button onClick={openPenaltyModal} className="btn-secondary">{t("action.addPenalty")}</button>
+          </div>
         }
       />
 

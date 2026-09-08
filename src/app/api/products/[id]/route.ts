@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireOwner } from "@/lib/auth";
+import { recordAudit } from "@/lib/audit";
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -29,7 +30,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 // deleted, so historical invoices and stocktakes stay readable.
 export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    await requireOwner();
+    const authSession = await requireOwner();
+    const existing = await prisma.product.findUnique({ where: { id: params.id } });
     const [movements, usages] = await Promise.all([
       prisma.stockMovement.count({ where: { productId: params.id } }),
       prisma.productUsage.count({ where: { productId: params.id } }),
@@ -42,6 +44,15 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ deactivated: true, product });
     }
     await prisma.product.delete({ where: { id: params.id } });
+    if (existing) {
+      await recordAudit(authSession, {
+        action: "DELETE",
+        entity: "PRODUCT",
+        entityId: existing.id,
+        amount: existing.costPrice,
+        summary: `${existing.name} (${existing.unit})`,
+      });
+    }
     return NextResponse.json({ deleted: true });
   } catch (err: unknown) {
     if (err instanceof Error && err.message.includes("Unauthorized"))

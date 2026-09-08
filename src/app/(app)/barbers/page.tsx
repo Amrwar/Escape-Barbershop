@@ -232,13 +232,13 @@ export default function BarbersPage() {
                           <div className="absolute ltr:right-0 rtl:left-0 top-full mt-1 w-44 bg-white border border-gray-200 rounded-lg shadow-lg z-20 py-1">
                             <button
                               onClick={() => { openSalary(b); setOpenMenu(null); }}
-                              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                              className="w-full text-start px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                             >
                               {t("barbers.salarySettings").replace(" —", "")}
                             </button>
                             <button
                               onClick={() => { toggleActive(b); setOpenMenu(null); }}
-                              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                              className="w-full text-start px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                             >
                               {b.isActive ? t("action.deactivate") : t("action.activate")}
                             </button>

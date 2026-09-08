@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
+import { recordAudit } from "@/lib/audit";
 
 export async function GET(req: NextRequest) {
   try {
-    await requireAuth();
+    const authSession = await requireAuth();
     const month = parseInt(req.nextUrl.searchParams.get("month") ?? "0");
     const year = parseInt(req.nextUrl.searchParams.get("year") ?? "0");
 
@@ -35,7 +36,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    await requireAuth();
+    const authSession = await requireAuth();
     const { barberId, date } = await req.json();
 
     if (!barberId || !date) {
@@ -49,11 +50,28 @@ export async function POST(req: NextRequest) {
       where: { barberId_date: { barberId, date: dateObj } },
     });
 
+    const barber = await prisma.barber.findUnique({
+      where: { id: barberId },
+      select: { name: true },
+    });
+
     if (existing) {
       await prisma.attendance.delete({ where: { id: existing.id } });
+      await recordAudit(authSession, {
+        action: "DELETE",
+        entity: "ATTENDANCE",
+        entityId: existing.id,
+        summary: `${barber?.name ?? barberId} marked present on ${date}`,
+      });
       return NextResponse.json({ absent: false });
     } else {
-      await prisma.attendance.create({ data: { barberId, date: dateObj } });
+      const created = await prisma.attendance.create({ data: { barberId, date: dateObj } });
+      await recordAudit(authSession, {
+        action: "CREATE",
+        entity: "ATTENDANCE",
+        entityId: created.id,
+        summary: `${barber?.name ?? barberId} marked absent on ${date}`,
+      });
       return NextResponse.json({ absent: true });
     }
   } catch {
