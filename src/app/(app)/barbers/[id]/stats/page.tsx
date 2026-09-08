@@ -316,7 +316,7 @@ export default function BarberStatsPage() {
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <SummaryCard label={t("reports.totalRevenue")} value={`${fmtCurrency(data.summary.totalRevenue)}`} accent />
             <SummaryCard label={t("common.visits")} value={String(data.summary.visitCount)} />
-            {topService && <SummaryCard label="Top Service" value={topService.name} />}
+            {topService && <SummaryCard label={t("stats.topService")} value={topService.name} />}
           </div>
 
           {/* Salary estimate */}

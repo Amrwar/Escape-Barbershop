@@ -69,7 +69,8 @@ ${session.closedBy ? `<div class="row"><span>Closed by:</span><span>${session.cl
 <div class="bold">REVENUE</div>
 <div class="row"><span>Visits:</span><span>${summary.visitCount}</span></div>
 <div class="row"><span>Cash Sales:</span><span>${fmt(summary.cashSales)}</span></div>
-<div class="row"><span>Card Sales:</span><span>${fmt(summary.cardTotal)}</span></div>
+<div class="row"><span>Card Sales:</span><span>${fmt(summary.cardSales)}</span></div>
+${summary.visaCommission > 0 ? `<div class="row"><span>Visa Commission (${summary.visaPercent}%):</span><span>-${fmt(summary.visaCommission)}</span></div><div class="row bold"><span>Net Card:</span><span>${fmt(summary.cardNet)}</span></div>` : ""}
 ${summary.discountsTotal > 0 ? `<div class="row"><span>Discounts:</span><span>-${fmt(summary.discountsTotal)}</span></div>` : ""}
 <hr />
 <div class="bold">CASH RECONCILIATION</div>
@@ -326,15 +327,53 @@ export default function ReportPage() {
             <div className="text-xl font-bold text-blue-700">{fmtCurrency(summary.cardTotal)}</div>
           </div>
           <div className="bg-purple-50 rounded-lg p-3">
-            <div className="text-gray-500 text-xs">{t("cashDrawer.mixedSales")} (cash part)</div>
+            <div className="text-gray-500 text-xs">
+              {t("cashDrawer.mixedSales")} ({t("common.cash")})
+            </div>
             <div className="text-xl font-bold text-purple-700">{fmtCurrency(summary.mixedCashAmount)}</div>
           </div>
           <div className="bg-red-50 rounded-lg p-3">
-            <div className="text-gray-500 text-xs">{t("field.discount")}s</div>
+            <div className="text-gray-500 text-xs">{t("reports.discounts")}</div>
             <div className="text-xl font-bold text-red-600">-{fmtCurrency(summary.discountsTotal)}</div>
           </div>
         </div>
       </div>
+
+      {/* 3a. Card account — collected by machine, so it never reaches the drawer */}
+      {(summary.cardSales > 0 || summary.visaCommission > 0) && (
+        <div className="card p-5 mb-6">
+          <h2 className="text-sm font-semibold text-gray-900 mb-4">{t("finance.cardAccount")}</h2>
+          <div className="space-y-2 text-sm max-w-sm">
+            <div className="flex justify-between text-gray-600">
+              <span>{t("cashDrawer.cardSales")}</span>
+              <span className="text-blue-700 tabular-nums">+{fmtCurrency(summary.cardSales)}</span>
+            </div>
+            <div className="flex justify-between text-gray-600">
+              <span>
+                {t("cashDrawer.visaCommission")}
+                <span className="text-gray-400"> ({summary.visaPercent}%)</span>
+              </span>
+              <span className="text-red-600 tabular-nums">-{fmtCurrency(summary.visaCommission)}</span>
+            </div>
+            {summary.cardExpenses > 0 && (
+              <div className="flex justify-between text-gray-600">
+                <span>{t("cashDrawer.cardExpenses")}</span>
+                <span className="text-red-600 tabular-nums">-{fmtCurrency(summary.cardExpenses)}</span>
+              </div>
+            )}
+            {summary.cardAdvances > 0 && (
+              <div className="flex justify-between text-gray-600">
+                <span>{t("cashDrawer.advances")}</span>
+                <span className="text-red-600 tabular-nums">-{fmtCurrency(summary.cardAdvances)}</span>
+              </div>
+            )}
+            <div className="flex justify-between font-bold text-gray-900 pt-2 border-t border-gray-200">
+              <span>{t("cashDrawer.cardNet")}</span>
+              <span className="text-blue-700 tabular-nums">{fmtCurrency(summary.cardNet)}</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 3. Cash Reconciliation */}
       <div className="card p-5 mb-6">
@@ -358,12 +397,6 @@ export default function ReportPage() {
             <div className="flex justify-between text-gray-600">
               <span>{t("cashDrawer.cashOut")}</span>
               <span className="text-red-600">-{fmtCurrency(summary.cashOut)}</span>
-            </div>
-          )}
-          {summary.visaCommission > 0 && (
-            <div className="flex justify-between text-gray-600">
-              <span>{t("cashDrawer.visaCommission")}</span>
-              <span className="text-red-600">-{fmtCurrency(summary.visaCommission)}</span>
             </div>
           )}
           {summary.cashAdvances > 0 && (

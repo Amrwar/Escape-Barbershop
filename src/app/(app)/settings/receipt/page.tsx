@@ -232,7 +232,7 @@ export default function ReceiptSettingsPage() {
                   disabled={uploading}
                   className="btn-secondary text-sm"
                 >
-                  {uploading ? t("settings.logoUploading") : "Choose Image"}
+                  {uploading ? t("settings.logoUploading") : t("settings.chooseImage")}
                 </button>
                 <input
                   ref={fileRef}

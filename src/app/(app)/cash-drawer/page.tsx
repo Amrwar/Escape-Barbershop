@@ -38,6 +38,7 @@ interface SessionData {
     cardAdvances: number;
     advancesTotal: number;
     cardSales: number;
+    mixedCard: number;
     cardNet: number;
     visaPercent: number;
     visaCommission: number;
@@ -373,57 +374,132 @@ export default function CashDrawerPage() {
               </div>
             </div>
 
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between text-gray-600">
-                <span>{t("cashDrawer.openingBalance")}</span>
-                <span>{fmtCurrency(session.openingCash)}</span>
+            {/* Takings first: what came in today, however it was paid */}
+            <div className="grid grid-cols-3 gap-3 mb-4 pb-4 border-b border-green-200">
+              <div>
+                <div className="text-xs text-gray-600">{t("common.visits")}</div>
+                <div className="text-lg font-bold text-gray-900 tabular-nums">
+                  {session.visitSummary.visitCount}
+                </div>
               </div>
-              <div className="flex justify-between text-gray-600">
-                <span>
-                  {t("cashDrawer.cashSales")} ({session.visitSummary.visitCount}{" "}
-                  {t("common.visits")})
-                </span>
-                <span className="text-green-700">
-                  +{fmtCurrency(session.visitSummary.cashSales)}
-                </span>
+              <div>
+                <div className="text-xs text-gray-600">{t("cashDrawer.cashSales")}</div>
+                <div className="text-lg font-bold text-green-700 tabular-nums">
+                  {fmtCurrency(session.visitSummary.cashSales)}
+                </div>
               </div>
-              {session.visitSummary.cashIn > 0 && (
+              <div>
+                <div className="text-xs text-gray-600">{t("cashDrawer.cardSales")}</div>
+                <div className="text-lg font-bold text-blue-700 tabular-nums">
+                  {fmtCurrency(session.visitSummary.cardSales)}
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              {/* Cash: this is the money that must physically be in the drawer */}
+              <div className="space-y-2 text-sm">
+                <div className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
+                  {t("finance.cashAccount")}
+                </div>
                 <div className="flex justify-between text-gray-600">
-                  <span>{t("cashDrawer.cashIn")}</span>
-                  <span className="text-green-700">
-                    +{fmtCurrency(session.visitSummary.cashIn)}
+                  <span>{t("cashDrawer.openingBalance")}</span>
+                  <span className="tabular-nums">{fmtCurrency(session.openingCash)}</span>
+                </div>
+                <div className="flex justify-between text-gray-600">
+                  <span>{t("cashDrawer.cashSales")}</span>
+                  <span className="text-green-700 tabular-nums">
+                    +{fmtCurrency(session.visitSummary.cashSales)}
                   </span>
                 </div>
-              )}
-              {session.visitSummary.cashOut > 0 && (
-                <div className="flex justify-between text-gray-600">
-                  <span>{t("cashDrawer.cashOut")}</span>
-                  <span className="text-red-600">
-                    -{fmtCurrency(session.visitSummary.cashOut)}
+                {session.visitSummary.cashIn > 0 && (
+                  <div className="flex justify-between text-gray-600">
+                    <span>{t("cashDrawer.cashIn")}</span>
+                    <span className="text-green-700 tabular-nums">
+                      +{fmtCurrency(session.visitSummary.cashIn)}
+                    </span>
+                  </div>
+                )}
+                {session.visitSummary.cashOut > 0 && (
+                  <div className="flex justify-between text-gray-600">
+                    <span>{t("cashDrawer.cashOut")}</span>
+                    <span className="text-red-600 tabular-nums">
+                      -{fmtCurrency(session.visitSummary.cashOut)}
+                    </span>
+                  </div>
+                )}
+                {session.visitSummary.cashAdvances > 0 && (
+                  <div className="flex justify-between text-gray-600">
+                    <span>{t("cashDrawer.advances")}</span>
+                    <span className="text-red-600 tabular-nums">
+                      -{fmtCurrency(session.visitSummary.cashAdvances)}
+                    </span>
+                  </div>
+                )}
+                {session.visitSummary.cashExpenses > 0 && (
+                  <div className="flex justify-between text-gray-600">
+                    <span>{t("cashDrawer.cashExpenses")}</span>
+                    <span className="text-red-600 tabular-nums">
+                      -{fmtCurrency(session.visitSummary.cashExpenses)}
+                    </span>
+                  </div>
+                )}
+                <div className="flex justify-between font-bold text-base text-gray-900 pt-2 border-t border-green-200">
+                  <span>{t("cashDrawer.expectedCash")}</span>
+                  <span className="text-green-700 tabular-nums">
+                    {fmtCurrency(session.visitSummary.expectedCash)}
                   </span>
                 </div>
-              )}
-              {session.visitSummary.cashAdvances > 0 && (
+              </div>
+
+              {/* Visa: collected by machine, so it never touches the drawer */}
+              <div className="space-y-2 text-sm">
+                <div className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
+                  {t("finance.cardAccount")}
+                </div>
                 <div className="flex justify-between text-gray-600">
-                  <span>{t("cashDrawer.advances")}</span>
-                  <span className="text-red-600">
-                    -{fmtCurrency(session.visitSummary.cashAdvances)}
+                  <span>{t("cashDrawer.cardSales")}</span>
+                  <span className="text-blue-700 tabular-nums">
+                    +{fmtCurrency(session.visitSummary.cardSales)}
                   </span>
                 </div>
-              )}
-              {session.visitSummary.cashExpenses > 0 && (
+                {session.visitSummary.mixedCard > 0 && (
+                  <div className="flex justify-between text-gray-500 text-xs">
+                    <span>{t("cashDrawer.mixedSales")}</span>
+                    <span className="tabular-nums">{fmtCurrency(session.visitSummary.mixedCard)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-gray-600">
-                  <span>{t("expenses.title")}</span>
-                  <span className="text-red-600">
-                    -{fmtCurrency(session.visitSummary.cashExpenses)}
+                  <span>
+                    {t("cashDrawer.visaCommission")}
+                    <span className="text-gray-400"> ({session.visitSummary.visaPercent}%)</span>
+                  </span>
+                  <span className="text-red-600 tabular-nums">
+                    -{fmtCurrency(session.visitSummary.visaCommission)}
                   </span>
                 </div>
-              )}
-              <div className="flex justify-between font-bold text-base text-gray-900 pt-2 border-t border-green-200">
-                <span>{t("cashDrawer.expectedCash")}</span>
-                <span className="text-green-700">
-                  {fmtCurrency(session.visitSummary.expectedCash)}
-                </span>
+                {session.visitSummary.cardExpenses > 0 && (
+                  <div className="flex justify-between text-gray-600">
+                    <span>{t("cashDrawer.cardExpenses")}</span>
+                    <span className="text-red-600 tabular-nums">
+                      -{fmtCurrency(session.visitSummary.cardExpenses)}
+                    </span>
+                  </div>
+                )}
+                {session.visitSummary.cardAdvances > 0 && (
+                  <div className="flex justify-between text-gray-600">
+                    <span>{t("cashDrawer.advances")}</span>
+                    <span className="text-red-600 tabular-nums">
+                      -{fmtCurrency(session.visitSummary.cardAdvances)}
+                    </span>
+                  </div>
+                )}
+                <div className="flex justify-between font-bold text-base text-gray-900 pt-2 border-t border-green-200">
+                  <span>{t("cashDrawer.cardNet")}</span>
+                  <span className="text-blue-700 tabular-nums">
+                    {fmtCurrency(session.visitSummary.cardNet)}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
