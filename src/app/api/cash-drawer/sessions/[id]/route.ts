@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireOwner } from "@/lib/auth";
+import { recordAudit } from "@/lib/audit";
 
 export async function DELETE(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    await requireOwner();
+    const authSession = await requireOwner();
 
     const { pin } = await req.json();
     const setting = await prisma.setting.findUnique({ where: { key: "edit_pin" } });
@@ -31,6 +32,20 @@ export async function DELETE(
     // Movements are cascade-deleted via Prisma relation
     await prisma.cashMovement.deleteMany({ where: { sessionId: params.id } });
     await prisma.cashDrawerSession.delete({ where: { id: params.id } });
+
+    await recordAudit(authSession, {
+      action: "DELETE",
+      entity: "DRAWER_SESSION",
+      entityId: params.id,
+      amount: session.closingCashCounted,
+      summary: `Deleted the drawer session opened ${session.openedAt.toISOString()}`,
+      details: {
+        openedAt: session.openedAt,
+        closedAt: session.closedAt,
+        openingCash: session.openingCash,
+        closingCashCounted: session.closingCashCounted,
+      },
+    });
 
     return NextResponse.json({ deleted: true });
   } catch (err: unknown) {

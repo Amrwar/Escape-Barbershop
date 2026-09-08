@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
+import { recordAudit } from "@/lib/audit";
 
 export async function DELETE(
   _req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    await requireAuth();
+    const authSession = await requireAuth();
 
     const expense = await prisma.expense.findUnique({
       where: { id: params.id },
@@ -22,6 +23,16 @@ export async function DELETE(
     }
 
     await prisma.expense.delete({ where: { id: params.id } });
+
+    await recordAudit(authSession, {
+      action: "DELETE",
+      entity: "EXPENSE",
+      entityId: expense.id,
+      amount: expense.amount,
+      summary: `${expense.amount.toFixed(2)} ${expense.paymentMethod} - ${expense.reason}`,
+      details: { date: expense.date, category: expense.category },
+    });
+
     return NextResponse.json({ success: true });
   } catch (err: unknown) {
     if (err instanceof Error && err.message.includes("Unauthorized")) {

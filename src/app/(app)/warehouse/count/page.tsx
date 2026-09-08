@@ -6,6 +6,7 @@ import { DateNavInput } from "@/components/ui/DateNavInput";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Modal } from "@/components/ui/Modal";
 import { useTranslation } from "@/lib/i18n";
+import { Note } from "@/components/ui/Note";
 
 type Loc = "MAIN" | "BRANCH";
 
@@ -260,9 +261,9 @@ export default function StockCountPage() {
         </div>
       )}
 
-      <p className="text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+      <Note tone="rule" title={t("stockCount.difference")} icon="clipboard-check">
         {t("stockCount.notAnExpenseNote")}
-      </p>
+      </Note>
 
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={t("stockCount.newCount")} size="xl">
         <form onSubmit={save} className="space-y-4">

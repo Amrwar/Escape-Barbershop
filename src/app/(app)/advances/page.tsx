@@ -6,6 +6,7 @@ import { DateNavInput } from "@/components/ui/DateNavInput";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { useTranslation } from "@/lib/i18n";
 import { Icon, type IconName } from "@/components/ui/Icon";
+import { Note } from "@/components/ui/Note";
 
 type PayMethod = "CASH" | "CARD";
 
@@ -197,9 +198,11 @@ export default function AdvancesPage() {
           </div>
         </form>
 
-        <p className="mt-4 text-xs text-blue-800 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
-          ℹ️ {t("advances.notDeductedNote")}
-        </p>
+        <div className="mt-4">
+          <Note tone="info" title={t("note.advancesTitle")} icon="hand-coins">
+            {t("advances.notDeductedNote")}
+          </Note>
+        </div>
       </div>
 
       <div className="card p-4 mb-4 flex flex-wrap gap-3 items-end">

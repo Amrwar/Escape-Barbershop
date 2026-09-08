@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { stockTransferSchema } from "@/lib/validations";
 import { getBalances } from "@/lib/stock";
+import { recordAudit } from "@/lib/audit";
 
 // Issue notes: stock moving between the main store and the branch. The cashier
 // can raise one, because issuing goods to the floor is a daily-operations job.
@@ -32,7 +33,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    await requireAuth();
+    const authSession = await requireAuth();
     const data = stockTransferSchema.parse(await req.json());
 
     if (data.fromLocation === data.toLocation) {
@@ -96,6 +97,14 @@ export async function POST(req: NextRequest) {
       });
 
       return created;
+    });
+
+    await recordAudit(authSession, {
+      action: "CREATE",
+      entity: "STOCK_TRANSFER",
+      entityId: transfer.id,
+      summary: `${data.items.length} product(s) ${data.fromLocation} to ${data.toLocation}`,
+      details: { number: transfer.number, items: data.items },
     });
 
     return NextResponse.json(transfer, { status: 201 });

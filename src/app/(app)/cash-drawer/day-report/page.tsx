@@ -7,6 +7,7 @@ import { DateNavInput } from "@/components/ui/DateNavInput";
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { useTranslation } from "@/lib/i18n";
+import { Note } from "@/components/ui/Note";
 
 interface SessionRow {
   id: string;
@@ -274,6 +275,10 @@ function DayReportContent() {
         </div>
       ) : (
         <div className="space-y-6">
+          <Note tone="rule" title={t("note.dayReportTitle")} icon="receipt">
+            {t("note.dayReportBody")}
+          </Note>
+
           {/* Summary cards */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div className="card p-4 text-center">

@@ -58,18 +58,29 @@ const EMPTY_OUTFLOWS: JournalOutflows = {
 };
 
 /**
- * Expenses and advances in a window, split by payment method.
- * Both queries are individually guarded so a not-yet-migrated database
- * degrades to zeroes instead of breaking the page.
+ * Expenses and advances in a window, split by payment method. Leave `to` out for
+ * an open-ended window — do not reach for a sentinel far-future date, Postgres
+ * refuses to convert one.
+ *
+ * Each query is guarded so a not-yet-migrated database degrades to zeroes rather
+ * than breaking the page, but the failure is logged: a silent zero on a money
+ * screen is worse than a loud one.
  */
-export async function getJournalOutflows(from: Date, to: Date): Promise<JournalOutflows> {
+export async function getJournalOutflows(from: Date, to?: Date): Promise<JournalOutflows> {
+  const dateFilter = { gte: from, ...(to ? { lte: to } : {}) };
   const [expenses, advances] = await Promise.all([
     prisma.expense
-      .findMany({ where: { date: { gte: from, lte: to } }, select: { amount: true, paymentMethod: true } })
-      .catch(() => [] as { amount: number; paymentMethod: string }[]),
+      .findMany({ where: { date: dateFilter }, select: { amount: true, paymentMethod: true } })
+      .catch((err) => {
+        console.error("[finance] expense lookup failed", err);
+        return [] as { amount: number; paymentMethod: string }[];
+      }),
     prisma.advance
-      .findMany({ where: { date: { gte: from, lte: to } }, select: { amount: true, paymentMethod: true } })
-      .catch(() => [] as { amount: number; paymentMethod: string }[]),
+      .findMany({ where: { date: dateFilter }, select: { amount: true, paymentMethod: true } })
+      .catch((err) => {
+        console.error("[finance] advance lookup failed", err);
+        return [] as { amount: number; paymentMethod: string }[];
+      }),
   ]);
 
   const out = { ...EMPTY_OUTFLOWS };

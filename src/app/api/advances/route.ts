@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireOwner } from "@/lib/auth";
 import { advanceSchema } from "@/lib/validations";
+import { recordAudit } from "@/lib/audit";
 
 // Salary advances (سلف). Owner-only: an advance is a payroll matter, not a till
 // operation — it leaves the drawer but is recovered from the barber's salary.
@@ -49,7 +50,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    await requireOwner();
+    const authSession = await requireOwner();
     const data = advanceSchema.parse(await req.json());
 
     const advance = await prisma.advance.create({
@@ -61,6 +62,14 @@ export async function POST(req: NextRequest) {
         notes: data.notes?.trim() || null,
       },
       include: { barber: { select: { id: true, name: true } } },
+    });
+
+    await recordAudit(authSession, {
+      action: "CREATE",
+      entity: "ADVANCE",
+      entityId: advance.id,
+      amount: advance.amount,
+      summary: `${advance.amount.toFixed(2)} ${advance.paymentMethod} to ${advance.barber?.name ?? "—"}`,
     });
 
     return NextResponse.json(advance, { status: 201 });

@@ -6,6 +6,7 @@ import { Modal } from "@/components/ui/Modal";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Badge } from "@/components/ui/Badge";
 import { useTranslation } from "@/lib/i18n";
+import { Note } from "@/components/ui/Note";
 
 interface PenaltyRecord { id: string; date: string; amount: number; reason: string; }
 
@@ -239,9 +240,11 @@ export default function SalariesPage() {
       )}
 
       {!loading && loaded && payroll.length > 0 && (
-        <p className="text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 mb-4">
-          {t("salaries.payrollOnlyNote")}
-        </p>
+        <div className="mb-4">
+          <Note tone="rule" title={t("note.salariesTitle")} icon="wallet">
+            {t("note.salariesBody")}
+          </Note>
+        </div>
       )}
 
       {/* Penalty modal */}

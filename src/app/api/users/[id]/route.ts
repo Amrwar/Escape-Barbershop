@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { requireOwner } from "@/lib/auth";
 import { userUpdateSchema } from "@/lib/validations";
+import { recordAudit } from "@/lib/audit";
 
 /**
  * Two rules keep the shop from locking itself out:
@@ -36,6 +37,19 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
         ...(data.password !== undefined && { password: await bcrypt.hash(data.password, 12) }),
       },
       select: { id: true, name: true, email: true, role: true },
+    });
+
+    await recordAudit(session, {
+      action: "UPDATE",
+      entity: "USER",
+      entityId: updated.id,
+      summary: [
+        data.password !== undefined ? "Reset the password of" : "Updated",
+        updated.email,
+        data.role !== undefined && data.role !== target.role ? `to ${data.role}` : null,
+      ]
+        .filter(Boolean)
+        .join(" "),
     });
 
     return NextResponse.json({ ...updated, isSelf: updated.id === session.user.id });
@@ -76,6 +90,14 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
     }
 
     await prisma.user.delete({ where: { id: params.id } });
+
+    await recordAudit(session, {
+      action: "DELETE",
+      entity: "USER",
+      entityId: params.id,
+      summary: `Removed the ${target.role} login ${target.email}`,
+    });
+
     return NextResponse.json({ deleted: true });
   } catch (err: unknown) {
     if (err instanceof Error && err.message.includes("Unauthorized")) {

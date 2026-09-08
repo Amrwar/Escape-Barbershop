@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireOwner } from "@/lib/auth";
 import { penaltySchema } from "@/lib/validations";
+import { recordAudit } from "@/lib/audit";
 
 export async function GET(req: NextRequest) {
   try {
@@ -33,7 +34,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    await requireOwner();
+    const authSession = await requireOwner();
     const body = await req.json();
     const data = penaltySchema.parse(body);
 
@@ -46,6 +47,14 @@ export async function POST(req: NextRequest) {
       },
       include: { barber: true },
     });
+    await recordAudit(authSession, {
+      action: "CREATE",
+      entity: "PENALTY",
+      entityId: penalty.id,
+      amount: penalty.amount,
+      summary: `${penalty.amount.toFixed(2)} on ${penalty.barber?.name ?? "—"} - ${penalty.reason}`,
+    });
+
     return NextResponse.json(penalty, { status: 201 });
   } catch (err: unknown) {
     if (err instanceof Error && err.message.includes("Unauthorized")) {

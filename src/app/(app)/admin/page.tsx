@@ -6,6 +6,8 @@ import { useSession } from "next-auth/react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { useTranslation } from "@/lib/i18n";
 import { Icon, type IconName } from "@/components/ui/Icon";
+import { Note } from "@/components/ui/Note";
+import { Badge } from "@/components/ui/Badge";
 import type { TranslationKey } from "../../../../messages/en";
 
 interface DashboardStats {
@@ -21,6 +23,17 @@ interface DashboardStats {
   monthVisaCommission: number;
   visitsThisMonth: number;
   visaPercent: number;
+}
+
+interface AuditRow {
+  id: string;
+  at: string;
+  userName: string;
+  userRole: string;
+  action: "CREATE" | "UPDATE" | "DELETE";
+  entity: string;
+  summary: string;
+  amount: number | null;
 }
 
 interface StockRow {
@@ -78,6 +91,8 @@ export default function AdminPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [stock, setStock] = useState<{ rows: StockRow[]; totalValue: number } | null>(null);
   const [supplierDue, setSupplierDue] = useState<number | null>(null);
+  const [activity, setActivity] = useState<AuditRow[]>([]);
+  const [deletionsWeek, setDeletionsWeek] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -86,12 +101,15 @@ export default function AdminPage() {
     if (status !== "authenticated") return;
 
     const tz = -new Date().getTimezoneOffset();
+    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
     let alive = true;
     Promise.all([
       fetch(`/api/dashboard?tz=${tz}`).then((r) => r.json()).catch(() => null),
       fetch("/api/stock/balances").then((r) => r.json()).catch(() => null),
       fetch("/api/suppliers").then((r) => r.json()).catch(() => null),
-    ]).then(([dash, balances, suppliers]) => {
+      fetch("/api/audit?take=6").then((r) => r.json()).catch(() => null),
+      fetch(`/api/audit?action=DELETE&from=${weekAgo}&take=500`).then((r) => r.json()).catch(() => null),
+    ]).then(([dash, balances, suppliers, recent, deletes]) => {
       if (!alive) return;
       setStats(dash && !dash.error ? dash : null);
       setStock(
@@ -104,6 +122,8 @@ export default function AdminPage() {
           ? suppliers.reduce((s: number, x: { balance?: number }) => s + (x.balance ?? 0), 0)
           : null
       );
+      setActivity(recent && Array.isArray(recent.rows) ? recent.rows : []);
+      setDeletionsWeek(deletes?.counts?.DELETE ?? 0);
       setLoading(false);
     });
 
@@ -227,6 +247,56 @@ export default function AdminPage() {
           <div className="text-xs text-gray-500">{t("admin.stockValue")}</div>
           <div className="text-xl font-bold text-gray-900 tabular-nums">{money(stock?.totalValue)}</div>
         </Link>
+      </div>
+
+      {/* What changed, so a removal is never invisible */}
+      <div className="card overflow-hidden">
+        <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between gap-3">
+          <div>
+            <h2 className="text-sm font-semibold text-gray-900">{t("admin.recentActivity")}</h2>
+            <p className="text-xs text-gray-500 mt-0.5">
+              {t("admin.deletionsWeek")}:{" "}
+              <span className={deletionsWeek > 0 ? "font-semibold text-red-600" : "font-semibold text-gray-700"}>
+                {deletionsWeek}
+              </span>
+            </p>
+          </div>
+          <Link href="/admin/activity" className="btn-secondary text-sm">
+            {t("admin.viewActivity")}
+          </Link>
+        </div>
+
+        {activity.length === 0 ? (
+          <div className="px-5 py-6 text-sm text-gray-400 text-center">{t("admin.noActivity")}</div>
+        ) : (
+          <ul className="divide-y divide-gray-100">
+            {activity.map((a) => (
+              <li
+                key={a.id}
+                className={`px-5 py-3 flex items-center gap-3 text-sm ${a.action === "DELETE" ? "bg-red-50/40" : ""}`}
+              >
+                <Badge variant={a.action === "DELETE" ? "red" : a.action === "UPDATE" ? "yellow" : "green"}>
+                  {a.action === "DELETE"
+                    ? t("activity.deleted")
+                    : a.action === "UPDATE"
+                    ? t("activity.edited")
+                    : t("activity.added")}
+                </Badge>
+                <span className="text-gray-500 text-xs shrink-0">
+                  {t(`activity.entity.${a.entity}` as TranslationKey)}
+                </span>
+                <span className="flex-1 min-w-0 truncate text-gray-900">{a.summary}</span>
+                <span className="text-xs text-gray-400 shrink-0">{a.userName}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <div className="px-5 py-3 border-t border-gray-100">
+          <Note tone="info" title={t("activity.noteTitle")} icon="list">
+            {t("admin.activityHint")}
+          </Note>
+        </div>
       </div>
 
       {/* Quick actions — the menu already handles navigation, so these are jobs */}

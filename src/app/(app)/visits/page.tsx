@@ -32,6 +32,8 @@ const paymentBadge: Record<string, "green" | "blue" | "yellow"> = {
 export default function VisitsPage() {
   const { data: session } = useSession();
   const isOwner = session?.user?.role === "OWNER";
+  // The cashier can remove a visit; it is recorded against their name.
+  const canDelete = isOwner || session?.user?.role === "CASHIER";
   const { t, fmtCurrency, fmtDateTime, lang, fmtCustomerName } = useTranslation();
 
   const [visits, setVisits] = useState<Visit[]>([]);
@@ -181,18 +183,18 @@ export default function VisitsPage() {
                       {t("action.view")}
                     </Link>
                     {isOwner && (
-                      <>
-                        <Link href={`/visits/${v.id}/edit`} className="text-xs text-primary-600 hover:underline">
-                          {t("action.edit")}
-                        </Link>
-                        <button
-                          onClick={() => handleDelete(v.id)}
-                          disabled={deletingId === v.id}
-                          className="text-xs text-red-500 hover:underline"
-                        >
-                          {deletingId === v.id ? "…" : t("action.delete")}
-                        </button>
-                      </>
+                      <Link href={`/visits/${v.id}/edit`} className="text-xs text-primary-600 hover:underline">
+                        {t("action.edit")}
+                      </Link>
+                    )}
+                    {canDelete && (
+                      <button
+                        onClick={() => handleDelete(v.id)}
+                        disabled={deletingId === v.id}
+                        className="text-xs text-red-500 hover:underline"
+                      >
+                        {deletingId === v.id ? "…" : t("action.delete")}
+                      </button>
                     )}
                   </div>
                 </div>

@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Modal } from "@/components/ui/Modal";
 import { useTranslation } from "@/lib/i18n";
 import { Icon } from "@/components/ui/Icon";
+import { Note } from "@/components/ui/Note";
 
 interface StockRow {
   productId: string;
@@ -143,6 +144,10 @@ export default function WarehousePage() {
         <Link href="/issue-notes" className="btn-secondary"><Icon name="tray-up" /> {t("nav.transfers")}</Link>
         <Link href="/warehouse/count" className="btn-secondary"><Icon name="clipboard-check" /> {t("nav.stockCount")}</Link>
       </div>
+
+      <Note tone="rule" title={t("note.warehouseTitle")} icon="box">
+        {t("note.warehouseBody")}
+      </Note>
 
       <div className="card overflow-hidden">
         <div className="px-5 py-4 border-b border-gray-100 flex flex-wrap items-center justify-between gap-3">

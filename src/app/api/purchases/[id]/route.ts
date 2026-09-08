@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireOwner } from "@/lib/auth";
+import { recordAudit } from "@/lib/audit";
 
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -26,10 +27,18 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
 // the expense it posted to the journal.
 export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    await requireOwner();
+    const authSession = await requireOwner();
     const invoice = await prisma.purchaseInvoice.findUnique({
       where: { id: params.id },
-      select: { id: true, expenseId: true },
+      select: {
+        id: true,
+        expenseId: true,
+        number: true,
+        total: true,
+        date: true,
+        paymentType: true,
+        supplier: { select: { name: true } },
+      },
     });
     if (!invoice) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
@@ -39,6 +48,17 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
       if (invoice.expenseId) {
         await tx.expense.delete({ where: { id: invoice.expenseId } });
       }
+    });
+
+    await recordAudit(authSession, {
+      action: "DELETE",
+      entity: "PURCHASE",
+      entityId: invoice.id,
+      amount: invoice.total,
+      summary: `Invoice ${invoice.number ?? invoice.id.slice(-6)} ${invoice.total.toFixed(2)} ${invoice.paymentType}${
+        invoice.supplier ? ` - ${invoice.supplier.name}` : ""
+      }`,
+      details: { date: invoice.date },
     });
 
     return NextResponse.json({ deleted: true });

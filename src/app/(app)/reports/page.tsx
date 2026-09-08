@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { DateNavInput } from "@/components/ui/DateNavInput";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { useTranslation } from "@/lib/i18n";
+import { Note } from "@/components/ui/Note";
 import { format, startOfWeek, startOfMonth } from "date-fns";
 
 interface ShopSettings {
@@ -435,6 +436,9 @@ export default function ReportsPage() {
       {/* Results */}
       {hasData && !loading && (
         <div className="space-y-6">
+          <Note tone="rule" title={t("note.reportsTitle")} icon="chart-line">
+            {t("note.reportsBody")}
+          </Note>
           {/* Summary cards */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             <SummaryCard label={t("reports.totalRevenue")} value={`${fmtCurrency(data.summary.totalRevenue)}`} />

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireOwnerOrCashier } from "@/lib/auth";
 import { closeDrawerSchema } from "@/lib/validations";
+import { recordAudit } from "@/lib/audit";
 
 export async function POST(req: NextRequest) {
   try {
@@ -28,6 +29,15 @@ export async function POST(req: NextRequest) {
         closingCashCounted: data.closingCashCounted,
         notes: data.notes || openSession.notes || null,
       },
+    });
+
+    await recordAudit(authSession, {
+      action: "UPDATE",
+      entity: "DRAWER_SESSION",
+      entityId: closed.id,
+      amount: data.closingCashCounted,
+      summary: `Closed the drawer, counted ${data.closingCashCounted.toFixed(2)}`,
+      details: { openingCash: openSession.openingCash, notes: data.notes ?? null },
     });
 
     return NextResponse.json(closed);

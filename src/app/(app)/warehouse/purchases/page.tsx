@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Modal } from "@/components/ui/Modal";
 import { useTranslation } from "@/lib/i18n";
 import { Icon, type IconName } from "@/components/ui/Icon";
+import { Note } from "@/components/ui/Note";
 
 type PaymentType = "CASH" | "CARD" | "CREDIT";
 
@@ -291,9 +292,9 @@ export default function PurchasesPage() {
         </div>
       )}
 
-      <p className="text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+      <Note tone="rule" title={t("purchases.paymentType")} icon="receipt">
         {t("purchases.postedNote")}
-      </p>
+      </Note>
 
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={t("purchases.newInvoice")} size="xl">
         <form onSubmit={save} className="space-y-4">

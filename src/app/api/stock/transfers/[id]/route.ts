@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireOwner } from "@/lib/auth";
+import { recordAudit } from "@/lib/audit";
 
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -22,13 +23,29 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
 // the cashier undoes after the fact.
 export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    await requireOwner();
+    const authSession = await requireOwner();
+
+    const existing = await prisma.stockTransfer.findUnique({
+      where: { id: params.id },
+      include: { items: { include: { product: { select: { name: true } } } } },
+    });
+
     await prisma.$transaction(async (tx) => {
       await tx.stockMovement.deleteMany({
         where: { refId: params.id, type: { in: ["TRANSFER_IN", "TRANSFER_OUT"] } },
       });
       await tx.stockTransfer.delete({ where: { id: params.id } });
     });
+    await recordAudit(authSession, {
+      action: "DELETE",
+      entity: "STOCK_TRANSFER",
+      entityId: params.id,
+      summary: `Issue note ${existing?.number ?? params.id.slice(-6)} with ${
+        existing?.items.length ?? 0
+      } product(s)`,
+      details: existing?.items.map((i) => ({ product: i.product?.name, quantity: i.quantity })),
+    });
+
     return NextResponse.json({ deleted: true });
   } catch (err: unknown) {
     if (err instanceof Error && err.message.includes("Unauthorized"))

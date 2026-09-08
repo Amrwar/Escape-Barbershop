@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireOwnerOrCashier } from "@/lib/auth";
 import { cashMovementSchema } from "@/lib/validations";
+import { recordAudit } from "@/lib/audit";
 
 export async function POST(req: NextRequest) {
   try {
@@ -30,6 +31,14 @@ export async function POST(req: NextRequest) {
       include: {
         createdBy: { select: { name: true } },
       },
+    });
+
+    await recordAudit(authSession, {
+      action: "CREATE",
+      entity: "CASH_MOVEMENT",
+      entityId: movement.id,
+      amount: movement.amount,
+      summary: `${data.type} ${data.amount.toFixed(2)} - ${data.reason}`,
     });
 
     return NextResponse.json(movement, { status: 201 });

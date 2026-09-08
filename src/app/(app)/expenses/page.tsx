@@ -8,6 +8,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { EditPinModal } from "@/components/ui/EditPinModal";
 import { useTranslation } from "@/lib/i18n";
 import { Icon, type IconName } from "@/components/ui/Icon";
+import { Note } from "@/components/ui/Note";
 
 type PayMethod = "CASH" | "CARD";
 
@@ -219,9 +220,11 @@ export default function ExpensesPage() {
 
         {/* Penalties and advances have their own screens; logging them here would
             charge the day twice. */}
-        <p className="mt-4 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-          ⚠️ {t("expenses.notHereNote")}
-        </p>
+        <div className="mt-4">
+          <Note tone="warn" title={t("note.expensesTitle")} icon="banknote">
+            {t("expenses.notHereNote")}
+          </Note>
+        </div>
       </div>
 
       {/* Filter */}

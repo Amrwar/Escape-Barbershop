@@ -4,6 +4,7 @@ import { requireOwner } from "@/lib/auth";
 import { stockCountSchema } from "@/lib/validations";
 import { getBalances } from "@/lib/stock";
 import { round2 } from "@/lib/finance";
+import { recordAudit } from "@/lib/audit";
 
 // Stocktake. Saving one writes an ADJUSTMENT movement for every difference, so
 // the ledger always matches what was actually counted.
@@ -50,7 +51,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    await requireOwner();
+    const authSession = await requireOwner();
     const data = stockCountSchema.parse(await req.json());
     const date = new Date(data.date);
 
@@ -107,6 +108,16 @@ export async function POST(req: NextRequest) {
     const differenceValue = round2(
       count.items.reduce((s, i) => s + (i.countedQty - i.systemQty) * i.unitCost, 0)
     );
+
+    await recordAudit(authSession, {
+      action: "CREATE",
+      entity: "STOCK_COUNT",
+      entityId: count.id,
+      amount: differenceValue,
+      summary: `Stocktake at ${data.location}, ${count.items.length} product(s), difference ${differenceValue.toFixed(
+        2
+      )}`,
+    });
 
     return NextResponse.json({ ...count, differenceValue }, { status: 201 });
   } catch (err: unknown) {

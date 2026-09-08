@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { expenseSchema } from "@/lib/validations";
+import { recordAudit } from "@/lib/audit";
 
 export async function GET(req: NextRequest) {
   try {
@@ -52,7 +53,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    await requireAuth();
+    const authSession = await requireAuth();
     const data = expenseSchema.parse(await req.json());
 
     const expense = await prisma.expense.create({
@@ -63,6 +64,14 @@ export async function POST(req: NextRequest) {
         paymentMethod: data.paymentMethod,
         category: data.category?.trim() || null,
       },
+    });
+
+    await recordAudit(authSession, {
+      action: "CREATE",
+      entity: "EXPENSE",
+      entityId: expense.id,
+      amount: expense.amount,
+      summary: `${expense.amount.toFixed(2)} ${expense.paymentMethod} - ${expense.reason}`,
     });
 
     return NextResponse.json(expense, { status: 201 });

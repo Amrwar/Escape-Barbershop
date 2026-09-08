@@ -57,6 +57,26 @@ model BarberSalarySettings {
   barber          Barber         @relation(fields: [barberId], references: [id])
 }
 
+/// Who changed what, and when. The user name and role are copied in rather than
+/// joined, so removing a staff account never erases the trail they left.
+model AuditLog {
+  id       String   @id @default(cuid())
+  at       DateTime @default(now())
+  userId   String?
+  userName String
+  userRole String
+  action   String
+  entity   String
+  entityId String?
+  summary  String
+  amount   Float?
+  details  String?
+
+  @@index([at])
+  @@index([entity, action])
+  @@index([userId])
+}
+
 model Setting {
   key   String @id
   value String

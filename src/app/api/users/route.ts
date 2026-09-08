@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { requireOwner } from "@/lib/auth";
 import { userCreateSchema } from "@/lib/validations";
+import { recordAudit } from "@/lib/audit";
 
 // Staff logins. Owner-only, and password hashes never leave the server.
 export async function GET() {
@@ -30,7 +31,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-    await requireOwner();
+    const authSession = await requireOwner();
     const data = userCreateSchema.parse(await req.json());
 
     const user = await prisma.user.create({
@@ -42,6 +43,13 @@ export async function POST(req: NextRequest) {
       },
       select: { id: true, name: true, email: true, role: true, createdAt: true },
     });
+    await recordAudit(authSession, {
+      action: "CREATE",
+      entity: "USER",
+      entityId: user.id,
+      summary: `Added the ${user.role} login ${user.email}`,
+    });
+
     return NextResponse.json(user, { status: 201 });
   } catch (err: unknown) {
     if (err instanceof Error && err.message.includes("Unauthorized")) {

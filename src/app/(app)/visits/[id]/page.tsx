@@ -42,6 +42,8 @@ export default function VisitDetailPage() {
   const router = useRouter();
   const { data: session } = useSession();
   const isOwner = session?.user?.role === "OWNER";
+  // The cashier can remove a visit; the removal is recorded against their name.
+  const canDelete = isOwner || session?.user?.role === "CASHIER";
   const { t, fmtCurrency, fmtDateTime, lang, fmtCustomerName } = useTranslation();
 
   const [visit, setVisit] = useState<VisitDetail | null>(null);
@@ -170,18 +172,18 @@ export default function VisitDetailPage() {
         </Link>
         <div className="flex gap-2">
           {isOwner && (
-            <>
-              <Link href={`/visits/${id}/edit`} className="btn-secondary text-sm">
-                {t("action.edit")}
-              </Link>
-              <button
-                onClick={() => { setDeletePin(""); setDeletePinError(""); setDeleteModal(true); }}
-                disabled={deleting}
-                className="text-sm text-red-500 hover:text-red-700 px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors"
-              >
-                {deleting ? "…" : t("action.delete")}
-              </button>
-            </>
+            <Link href={`/visits/${id}/edit`} className="btn-secondary text-sm">
+              {t("action.edit")}
+            </Link>
+          )}
+          {canDelete && (
+            <button
+              onClick={() => { setDeletePin(""); setDeletePinError(""); setDeleteModal(true); }}
+              disabled={deleting}
+              className="text-sm text-red-500 hover:text-red-700 px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors"
+            >
+              {deleting ? "…" : t("action.delete")}
+            </button>
           )}
           {visit.customer.phone && (
             <button

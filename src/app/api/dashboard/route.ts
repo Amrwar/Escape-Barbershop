@@ -60,7 +60,8 @@ export async function GET(req: NextRequest) {
             })
           : Promise.resolve([]),
         // Expenses and advances, split by how they were paid
-        getJournalOutflows(todayStart, new Date(8640000000000000)),
+        // Open-ended on purpose: today has no upper bound yet.
+        getJournalOutflows(todayStart),
         getJournalOutflows(monthStart, monthEnd),
         getVisaCommissionPercent(),
       ]);

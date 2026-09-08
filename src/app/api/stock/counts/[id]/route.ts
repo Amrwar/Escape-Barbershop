@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireOwner } from "@/lib/auth";
 import { round2 } from "@/lib/finance";
+import { recordAudit } from "@/lib/audit";
 
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -27,11 +28,24 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
 // Deleting a stocktake drops its adjustments, so balances go back to book value.
 export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    await requireOwner();
+    const authSession = await requireOwner();
+
+    const existing = await prisma.stockCount.findUnique({
+      where: { id: params.id },
+      include: { items: true },
+    });
+
     await prisma.$transaction(async (tx) => {
       await tx.stockMovement.deleteMany({ where: { refId: params.id, type: "ADJUSTMENT" } });
       await tx.stockCount.delete({ where: { id: params.id } });
     });
+    await recordAudit(authSession, {
+      action: "DELETE",
+      entity: "STOCK_COUNT",
+      entityId: params.id,
+      summary: `Stocktake at ${existing?.location ?? "—"} with ${existing?.items.length ?? 0} product(s)`,
+    });
+
     return NextResponse.json({ deleted: true });
   } catch (err: unknown) {
     if (err instanceof Error && err.message.includes("Unauthorized"))

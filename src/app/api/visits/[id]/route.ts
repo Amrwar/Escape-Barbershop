@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAuth, requireOwner } from "@/lib/auth";
+import { requireAuth, requireOwner, requireOwnerOrCashier } from "@/lib/auth";
 import { visitSchema } from "@/lib/validations";
+import { recordAudit, describeVisit } from "@/lib/audit";
 
 export async function GET(
   _req: NextRequest,
@@ -34,6 +35,16 @@ export async function PATCH(
     const authSession = await requireOwner();
     const body = await req.json();
     const data = visitSchema.parse(body);
+
+    // Snapshot the visit before it is rewritten, for the activity trail.
+    const before = await prisma.visit.findUnique({
+      where: { id: params.id },
+      include: {
+        customer: { select: { name: true } },
+        barber: { select: { name: true } },
+        items: { include: { service: { select: { name: true } } } },
+      },
+    });
 
     const subtotal = data.items.reduce(
       (sum, item) => sum + item.priceAtTime * item.quantity,
@@ -109,6 +120,17 @@ export async function PATCH(
       return updated;
     });
 
+    if (before) {
+      await recordAudit(authSession, {
+        action: "UPDATE",
+        entity: "VISIT",
+        entityId: visit.id,
+        amount: visit.total,
+        summary: `${describeVisit(before)} -> ${total.toFixed(2)} ${data.paymentMethod}`,
+        details: { before: describeVisit(before), beforeTotal: before.total, afterTotal: total },
+      });
+    }
+
     return NextResponse.json(visit);
   } catch (err: unknown) {
     if (err instanceof Error && err.message.includes("Unauthorized")) {
@@ -124,12 +146,17 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    await requireOwner();
+    const authSession = await requireOwnerOrCashier();
 
-    // Fetch visit first so we can clean up tip movements (including old ones without visitId)
+    // Fetch visit first so we can clean up tip movements (including old ones
+    // without visitId) and keep a readable record of what was removed.
     const visit = await prisma.visit.findUnique({
       where: { id: params.id },
-      include: { barber: { select: { name: true } } },
+      include: {
+        barber: { select: { name: true } },
+        customer: { select: { name: true } },
+        items: { include: { service: { select: { name: true } } } },
+      },
     });
 
     if (visit) {
@@ -152,6 +179,31 @@ export async function DELETE(
     }
 
     await prisma.visit.delete({ where: { id: params.id } });
+
+    if (visit) {
+      await recordAudit(authSession, {
+        action: "DELETE",
+        entity: "VISIT",
+        entityId: visit.id,
+        amount: visit.total,
+        summary: describeVisit(visit),
+        details: {
+          visitAt: visit.visitAt,
+          sessionId: visit.sessionId,
+          sessionSequence: visit.sessionSequence,
+          paymentMethod: visit.paymentMethod,
+          total: visit.total,
+          tip: visit.tip,
+          discount: visit.discount,
+          items: visit.items.map((i) => ({
+            service: i.service?.name,
+            quantity: i.quantity,
+            price: i.priceAtTime,
+          })),
+        },
+      });
+    }
+
     return NextResponse.json({ success: true });
   } catch (err: unknown) {
     if (err instanceof Error && err.message.includes("Unauthorized")) {

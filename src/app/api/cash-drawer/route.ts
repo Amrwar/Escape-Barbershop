@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth, requireOwnerOrCashier } from "@/lib/auth";
 import { openDrawerSchema } from "@/lib/validations";
+import { recordAudit } from "@/lib/audit";
 import { getJournalOutflows, getVisaCommissionPercent, visaCommissionOn, round2 } from "@/lib/finance";
 
 export async function GET() {
@@ -128,6 +129,14 @@ export async function POST(req: NextRequest) {
         notes: data.notes || null,
         openedByUserId: authSession.user.id,
       },
+    });
+
+    await recordAudit(authSession, {
+      action: "CREATE",
+      entity: "DRAWER_SESSION",
+      entityId: session.id,
+      amount: data.openingCash,
+      summary: `Opened the drawer with ${data.openingCash.toFixed(2)}`,
     });
 
     return NextResponse.json(session, { status: 201 });

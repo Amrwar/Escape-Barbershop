@@ -78,11 +78,16 @@ export async function POST(req: NextRequest) {
       });
       const sessionId = openSession?.id ?? null;
 
-      // Assign next sequence number within the session
+      // Next sequence number within the session. Deliberately max+1 rather than
+      // count+1: counting reuses the number of a deleted visit, which hides the
+      // gap and hands two visits the same receipt number.
       let sessionSequence: number | null = null;
       if (sessionId) {
-        const count = await tx.visit.count({ where: { sessionId } });
-        sessionSequence = count + 1;
+        const highest = await tx.visit.aggregate({
+          where: { sessionId },
+          _max: { sessionSequence: true },
+        });
+        sessionSequence = (highest._max.sessionSequence ?? 0) + 1;
       }
 
       const newVisit = await tx.visit.create({

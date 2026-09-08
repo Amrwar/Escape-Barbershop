@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Modal } from "@/components/ui/Modal";
 import { useTranslation } from "@/lib/i18n";
 import { Icon } from "@/components/ui/Icon";
+import { Note } from "@/components/ui/Note";
 
 type PayMethod = "CASH" | "CARD";
 
@@ -157,6 +158,10 @@ export default function SuppliersPage() {
         subtitle={t("suppliers.subtitle")}
         action={<button onClick={openNew} className="btn-primary">{t("suppliers.addSupplier")}</button>}
       />
+
+      <Note tone="rule" title={t("note.suppliersTitle")} icon="truck">
+        {t("note.suppliersBody")}
+      </Note>
 
       <div className="card p-4">
         <div className="text-xs text-gray-500">{t("suppliers.balance")}</div>
