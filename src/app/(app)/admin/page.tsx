@@ -21,6 +21,10 @@ interface DashboardStats {
   monthExpenses: number;
   monthAdvances: number;
   monthVisaCommission: number;
+  todayDiscounts: number;
+  todayDiscountedVisits: number;
+  monthDiscounts: number;
+  monthDiscountedVisits: number;
   visitsThisMonth: number;
   visaPercent: number;
 }
@@ -158,7 +162,7 @@ export default function AdminPage() {
             {stats?.visitsToday ?? 0} {t("common.visits")}
           </span>
         </div>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
           <Figure loading={loading} label={t("admin.netRevenue")} value={money(stats?.todayRevenue)} />
           <Figure loading={loading} label={t("finance.cashAccount")} value={money(stats?.todayCash)} tone="cash" />
           <Figure
@@ -178,6 +182,15 @@ export default function AdminPage() {
             value={money(stats?.todayExpenses)}
             tone={costTone(stats?.todayExpenses)}
           />
+          <Link href="/admin/discounts" className="block hover:opacity-80 transition-opacity">
+            <Figure
+              loading={loading}
+              label={t("discounts.totalGiven")}
+              value={money(stats?.todayDiscounts)}
+              tone={costTone(stats?.todayDiscounts)}
+              hint={`${stats?.todayDiscountedVisits ?? 0} ${t("common.visits")}`}
+            />
+          </Link>
         </div>
       </div>
 
@@ -189,7 +202,7 @@ export default function AdminPage() {
             {stats?.visitsThisMonth ?? 0} {t("common.visits")}
           </span>
         </div>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
           <Figure loading={loading} label={t("admin.netRevenue")} value={money(stats?.monthRevenue)} />
           <Figure
             loading={loading}
@@ -210,6 +223,15 @@ export default function AdminPage() {
             value={money(stats?.monthAdvances)}
             hint={t("advances.recoveredIn")}
           />
+          <Link href="/admin/discounts" className="block hover:opacity-80 transition-opacity">
+            <Figure
+              loading={loading}
+              label={t("discounts.totalGiven")}
+              value={money(stats?.monthDiscounts)}
+              tone={(stats?.monthDiscounts ?? 0) > 0 ? "cost" : "plain"}
+              hint={`${stats?.monthDiscountedVisits ?? 0} ${t("common.visits")}`}
+            />
+          </Link>
         </div>
       </div>
 

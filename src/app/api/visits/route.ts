@@ -102,6 +102,7 @@ export async function POST(req: NextRequest) {
           cardAmount,
           tip,
           notes: data.notes || null,
+          createdByUserId: authSession.user.id,
           ...(sessionId ? { sessionId, sessionSequence } : {}),
           items: {
             create: data.items.map((item) => ({

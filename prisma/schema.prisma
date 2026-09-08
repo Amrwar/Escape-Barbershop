@@ -19,6 +19,7 @@ model User {
   closedSessions CashDrawerSession[] @relation("ClosedSessions")
   openedSessions CashDrawerSession[] @relation("OpenedSessions")
   cashMovements  CashMovement[]      @relation("CreatedMovements")
+  recordedVisits Visit[]             @relation("RecordedVisits")
   barber         Barber?             @relation(fields: [barberId], references: [id])
 }
 
@@ -120,7 +121,10 @@ model Visit {
   tip             Float              @default(0)
   sessionId       String?
   sessionSequence Int?
+  /// Who rang the visit up. Null on visits recorded before this was tracked.
+  createdByUserId String?
   barber          Barber?            @relation(fields: [barberId], references: [id])
+  createdBy       User?              @relation("RecordedVisits", fields: [createdByUserId], references: [id])
   customer        Customer           @relation(fields: [customerId], references: [id])
   session         CashDrawerSession? @relation(fields: [sessionId], references: [id])
   items           VisitItem[]

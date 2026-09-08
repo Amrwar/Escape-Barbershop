@@ -25,8 +25,29 @@ export async function GET(req: NextRequest) {
 
     const isOwner = session.user.role === "OWNER";
 
-    const [todayVisits, monthVisits, topServices, revenuePerBarber, todayOutflows, monthOutflows, visaPercent] =
-      await Promise.all([
+    // Discounts need the line prices to value them, so they are fetched
+    // separately and only for the visits that actually carry one.
+    const discountValue = (
+      rows: { total: number; items: { priceAtTime: number; quantity: number }[] }[]
+    ) =>
+      round2(
+        rows.reduce((s, v) => {
+          const subtotal = v.items.reduce((a, i) => a + i.priceAtTime * i.quantity, 0);
+          return s + (subtotal - v.total);
+        }, 0)
+      );
+
+    const [
+      todayVisits,
+      monthVisits,
+      topServices,
+      revenuePerBarber,
+      todayOutflows,
+      monthOutflows,
+      visaPercent,
+      todayDiscounted,
+      monthDiscounted,
+    ] = await Promise.all([
         prisma.visit.findMany({
           where: { visitAt: { gte: todayStart }, ...barberFilter },
           select: { total: true, cashAmount: true, cardAmount: true, paymentMethod: true, tip: true },
@@ -64,6 +85,14 @@ export async function GET(req: NextRequest) {
         getJournalOutflows(todayStart),
         getJournalOutflows(monthStart, monthEnd),
         getVisaCommissionPercent(),
+        prisma.visit.findMany({
+          where: { visitAt: { gte: todayStart }, discount: { gt: 0 } },
+          select: { total: true, items: { select: { priceAtTime: true, quantity: true } } },
+        }),
+        prisma.visit.findMany({
+          where: { visitAt: { gte: monthStart, lte: monthEnd }, discount: { gt: 0 } },
+          select: { total: true, items: { select: { priceAtTime: true, quantity: true } } },
+        }),
       ]);
 
     // Enrich top services with names
@@ -180,6 +209,10 @@ export async function GET(req: NextRequest) {
       monthTips,
       monthExpenses: monthExpensesTotal,
       monthAdvances: monthOutflows.advancesTotal,
+      todayDiscounts: discountValue(todayDiscounted),
+      todayDiscountedVisits: todayDiscounted.length,
+      monthDiscounts: discountValue(monthDiscounted),
+      monthDiscountedVisits: monthDiscounted.length,
       monthVisaCommission,
       visaPercent,
       visitsToday: todayVisits.length,

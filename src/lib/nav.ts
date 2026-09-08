@@ -50,6 +50,7 @@ export const ADMIN_NAV: NavGroup[] = [
       { href: "/reports", labelKey: "nav.reports", icon: "chart-line" },
       { href: "/cash-drawer/day-report", labelKey: "cashDrawer.dayReport", icon: "receipt" },
       { href: "/admin/activity", labelKey: "nav.activity", icon: "clipboard-check" },
+      { href: "/admin/discounts", labelKey: "nav.discounts", icon: "banknote" },
       { href: "/expenses", labelKey: "nav.expenses", icon: "banknote" },
       { href: "/advances", labelKey: "nav.advances", icon: "hand-coins" },
     ],

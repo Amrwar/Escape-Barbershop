@@ -701,6 +701,21 @@ const en = {
   "note.dayReportBody": "The cash block reconciles the drawer: opening balance, cash sales and movements, minus cash expenses and advances, gives the cash you should be holding. The card block does the same for the machine, after its commission. Anything removed or edited today appears by name under Activity.",
   "note.expensesTitle": "What belongs here",
   "note.advancesTitle": "Why an advance is not an expense",
+  "nav.discounts": "Discounts",
+  "admin.descDiscounts": "Every discounted visit, and what it cost",
+  "discounts.title": "Discounts",
+  "discounts.subtitle": "Every visit that was given a discount, and what the shop gave away",
+  "discounts.noteTitle": "What this screen shows",
+  "discounts.noteBody": "One line per visit that carried a discount: the customer, the barber, the services with their prices, the percentage taken off and the money it cost. Click a line to open the full receipt as it was rung up. The totals at the top show what discounts cost the period and what share of revenue they represent, and the per-barber table shows who is giving them. From now on each visit also records who rang it up, so a discount can be traced to a person.",
+  "discounts.totalGiven": "Discounts given",
+  "discounts.discountedVisits": "Discounted visits",
+  "discounts.averagePercent": "Average discount",
+  "discounts.shareOfRevenue": "Share of revenue",
+  "discounts.amount": "Discount amount",
+  "discounts.count": "Visits",
+  "discounts.recordedBy": "Rung up by",
+  "discounts.notRecorded": "not recorded for this visit",
+  "discounts.none": "No discount was given in this period",
 } as const;
 
 export type TranslationKey = keyof typeof en;
