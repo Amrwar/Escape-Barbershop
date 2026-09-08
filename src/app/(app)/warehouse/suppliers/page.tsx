@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Modal } from "@/components/ui/Modal";
 import { useTranslation } from "@/lib/i18n";
+import { Icon } from "@/components/ui/Icon";
 
 type PayMethod = "CASH" | "CARD";
 
@@ -298,13 +299,14 @@ export default function SuppliersPage() {
                   key={m}
                   type="button"
                   onClick={() => setPayForm((p) => ({ ...p, paymentMethod: m }))}
-                  className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                  className={`flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${
                     payForm.paymentMethod === m
                       ? "bg-primary-50 border-primary-300 text-primary-700"
                       : "border-gray-200 text-gray-600 hover:bg-gray-50"
                   }`}
                 >
-                  {m === "CASH" ? `💵 ${t("common.cash")}` : `💳 ${t("common.card")}`}
+                  <Icon name={m === "CASH" ? "banknote" : "card"} />
+                  {m === "CASH" ? t("common.cash") : t("common.card")}
                 </button>
               ))}
             </div>

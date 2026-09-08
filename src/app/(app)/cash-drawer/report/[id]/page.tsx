@@ -169,7 +169,7 @@ interface ReportData {
 
 export default function ReportPage() {
   const { id } = useParams<{ id: string }>();
-  const { t, fmtCurrency, fmtCustomerName } = useTranslation();
+  const { t, fmtCurrency, fmtCustomerName, fmtDate, fmtDateTime, fmtTime } = useTranslation();
   const [report, setReport] = useState<ReportData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -256,7 +256,7 @@ export default function ReportPage() {
         <div className="flex-1">
           <PageHeader
             title={t("report.title")}
-            subtitle={`${new Date(session.openedAt).toLocaleDateString()} · ${session.openedBy.name}`}
+            subtitle={`${fmtDate(session.openedAt)} · ${session.openedBy.name}`}
           />
         </div>
         <button onClick={() => window.print()} className="btn-secondary text-sm">
@@ -274,7 +274,7 @@ export default function ReportPage() {
       <div className="hidden print:block mb-6">
         <h1 className="text-2xl font-bold">{t("report.title")}</h1>
         <p className="text-gray-600">
-          {new Date(session.openedAt).toLocaleString()} — {session.openedBy.name}
+          {fmtDateTime(session.openedAt)} — {session.openedBy.name}
         </p>
       </div>
 
@@ -283,7 +283,7 @@ export default function ReportPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
           <div>
             <div className="text-gray-500 text-xs">{t("cashDrawer.openedAt")}</div>
-            <div className="font-medium">{new Date(session.openedAt).toLocaleString()}</div>
+            <div className="font-medium">{fmtDateTime(session.openedAt)}</div>
           </div>
           <div>
             <div className="text-gray-500 text-xs">{t("cashDrawer.openedBy")}</div>
@@ -293,7 +293,7 @@ export default function ReportPage() {
             <>
               <div>
                 <div className="text-gray-500 text-xs">{t("cashDrawer.closedAt")}</div>
-                <div className="font-medium">{new Date(session.closedAt).toLocaleString()}</div>
+                <div className="font-medium">{fmtDateTime(session.closedAt)}</div>
               </div>
               <div>
                 <div className="text-gray-500 text-xs">{t("cashDrawer.closedBy")}</div>
@@ -462,7 +462,7 @@ export default function ReportPage() {
                   <tr key={v.id}>
                     <td className="px-3 py-2 font-medium text-gray-900">
                       {fmtCustomerName(v.customer.name)}
-                      <div className="text-xs text-gray-400">{new Date(v.visitAt).toLocaleTimeString()}</div>
+                      <div className="text-xs text-gray-400">{fmtTime(v.visitAt)}</div>
                     </td>
                     <td className="px-3 py-2 text-gray-600">{v.barber?.name ?? "—"}</td>
                     <td className="px-3 py-2 text-gray-600 text-xs">
@@ -508,7 +508,7 @@ export default function ReportPage() {
                     </span>
                   </td>
                   <td className="px-3 py-2 text-gray-900">{m.reason}</td>
-                  <td className="px-3 py-2 text-gray-500 text-xs">{m.createdBy.name} · {new Date(m.createdAt).toLocaleTimeString()}</td>
+                  <td className="px-3 py-2 text-gray-500 text-xs">{m.createdBy.name} · {fmtTime(m.createdAt)}</td>
                   <td className={`px-3 py-2 text-end font-semibold ${m.type === "IN" ? "text-green-600" : "text-red-600"}`}>
                     {m.type === "IN" ? "+" : "-"}{fmtCurrency(m.amount)}
                   </td>

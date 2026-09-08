@@ -45,6 +45,14 @@
   .card {
     @apply bg-white rounded-xl border border-gray-200 shadow-sm;
   }
+  /* Scrolls, but without painting a track across the chrome */
+  .scroll-clean {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scroll-clean::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 /* RTL table cell alignment */

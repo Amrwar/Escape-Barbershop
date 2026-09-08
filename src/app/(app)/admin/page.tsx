@@ -2,181 +2,253 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { useTranslation } from "@/lib/i18n";
+import { Icon, type IconName } from "@/components/ui/Icon";
 import type { TranslationKey } from "../../../../messages/en";
 
 interface DashboardStats {
   todayRevenue: number;
   todayCash: number;
-  todayCard: number;
-  todayExpenses: number;
-  todayAdvances: number;
-  todayVisaCommission: number;
   todayCardNet: number;
+  todayExpenses: number;
+  todayVisaCommission: number;
   visitsToday: number;
+  monthRevenue: number;
+  monthExpenses: number;
+  monthAdvances: number;
+  monthVisaCommission: number;
+  visitsThisMonth: number;
   visaPercent: number;
 }
 
-interface StockTotals {
-  mainValue: number;
-  branchValue: number;
-  totalValue: number;
+interface StockRow {
+  productId: string;
+  name: string;
+  total: number;
 }
 
-interface Tile {
-  href: string;
-  icon: string;
-  labelKey: TranslationKey;
-  descKey: TranslationKey;
-}
-
-const SECTIONS: { titleKey: TranslationKey; tiles: Tile[] }[] = [
-  {
-    titleKey: "admin.sectionMoney",
-    tiles: [
-      { href: "/reports", icon: "📈", labelKey: "nav.reports", descKey: "admin.descReports" },
-      { href: "/cash-drawer/day-report", icon: "🧾", labelKey: "cashDrawer.dayReport", descKey: "admin.descDayReport" },
-      { href: "/expenses", icon: "💸", labelKey: "nav.expenses", descKey: "admin.descExpenses" },
-      { href: "/advances", icon: "🤝", labelKey: "nav.advances", descKey: "admin.descAdvances" },
-    ],
-  },
-  {
-    titleKey: "admin.sectionTeam",
-    tiles: [
-      { href: "/salaries", icon: "💰", labelKey: "nav.salaries", descKey: "admin.descSalaries" },
-      { href: "/attendance", icon: "🗓️", labelKey: "nav.attendance", descKey: "admin.descAttendance" },
-      { href: "/barbers", icon: "💈", labelKey: "nav.barbers", descKey: "admin.descBarbers" },
-    ],
-  },
-  {
-    titleKey: "admin.sectionStock",
-    tiles: [
-      { href: "/warehouse", icon: "📦", labelKey: "nav.warehouse", descKey: "admin.descWarehouse" },
-      { href: "/warehouse/purchases", icon: "🧾", labelKey: "nav.purchases", descKey: "admin.descPurchases" },
-      { href: "/warehouse/suppliers", icon: "🚚", labelKey: "nav.suppliers", descKey: "admin.descSuppliers" },
-      { href: "/issue-notes", icon: "📤", labelKey: "nav.transfers", descKey: "admin.descTransfers" },
-      { href: "/warehouse/count", icon: "🔢", labelKey: "nav.stockCount", descKey: "admin.descStockCount" },
-    ],
-  },
-  {
-    titleKey: "admin.sectionSetup",
-    tiles: [
-      { href: "/services", icon: "✂️", labelKey: "nav.services", descKey: "admin.descServices" },
-      { href: "/customers", icon: "🧑", labelKey: "nav.customers", descKey: "admin.descCustomers" },
-      { href: "/inventory", icon: "📊", labelKey: "nav.inventory", descKey: "admin.descInventory" },
-      { href: "/settings/receipt", icon: "⚙️", labelKey: "nav.settings", descKey: "admin.descSettings" },
-    ],
-  },
+/** The things an owner actually comes here to *do*, not just navigate to. */
+const QUICK_ACTIONS: { href: string; labelKey: TranslationKey; icon: IconName }[] = [
+  { href: "/warehouse/purchases", labelKey: "purchases.newInvoice", icon: "receipt" },
+  { href: "/issue-notes", labelKey: "transfers.newTransfer", icon: "tray-up" },
+  { href: "/advances", labelKey: "advances.addAdvance", icon: "hand-coins" },
+  { href: "/warehouse/count", labelKey: "stockCount.newCount", icon: "clipboard-check" },
+  { href: "/expenses", labelKey: "expenses.addExpense", icon: "banknote" },
+  { href: "/visits/new", labelKey: "action.newVisit", icon: "plus" },
 ];
+
+function Figure({
+  label,
+  value,
+  hint,
+  tone = "plain",
+  loading,
+}: {
+  label: string;
+  value: string;
+  hint?: string;
+  tone?: "plain" | "cash" | "card" | "cost";
+  loading?: boolean;
+}) {
+  const toneClass = {
+    plain: "text-gray-900",
+    cash: "text-green-700",
+    card: "text-blue-700",
+    cost: "text-red-600",
+  }[tone];
+
+  return (
+    <div>
+      <div className="text-xs text-gray-500">{label}</div>
+      {loading ? (
+        <div className="h-7 w-24 bg-gray-100 rounded animate-pulse mt-1" />
+      ) : (
+        <div className={`text-xl font-bold tabular-nums ${toneClass}`}>{value}</div>
+      )}
+      {hint && !loading && <div className="text-[11px] text-gray-400 mt-0.5">{hint}</div>}
+    </div>
+  );
+}
 
 export default function AdminPage() {
   const { t, fmtCurrency } = useTranslation();
+  const { status } = useSession();
   const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [stock, setStock] = useState<StockTotals | null>(null);
+  const [stock, setStock] = useState<{ rows: StockRow[]; totalValue: number } | null>(null);
+  const [supplierDue, setSupplierDue] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const tz = -new Date().getTimezoneOffset();
-    fetch(`/api/dashboard?tz=${tz}`)
-      .then((r) => r.json())
-      .then((d) => setStats(d?.error ? null : d))
-      .catch(() => setStats(null));
-    fetch("/api/stock/balances")
-      .then((r) => r.json())
-      .then((d) => setStock(d?.totals ?? null))
-      .catch(() => setStock(null));
-  }, []);
+    // Wait for the session cookie. Fetching during the redirect straight after
+    // sign-in returns 401 and would quietly render every figure as zero.
+    if (status !== "authenticated") return;
 
-  const money = (n: number | undefined) => fmtCurrency(n ?? 0);
+    const tz = -new Date().getTimezoneOffset();
+    let alive = true;
+    Promise.all([
+      fetch(`/api/dashboard?tz=${tz}`).then((r) => r.json()).catch(() => null),
+      fetch("/api/stock/balances").then((r) => r.json()).catch(() => null),
+      fetch("/api/suppliers").then((r) => r.json()).catch(() => null),
+    ]).then(([dash, balances, suppliers]) => {
+      if (!alive) return;
+      setStats(dash && !dash.error ? dash : null);
+      setStock(
+        balances && !balances.error
+          ? { rows: Array.isArray(balances.rows) ? balances.rows : [], totalValue: balances.totals?.totalValue ?? 0 }
+          : null
+      );
+      setSupplierDue(
+        Array.isArray(suppliers)
+          ? suppliers.reduce((s: number, x: { balance?: number }) => s + (x.balance ?? 0), 0)
+          : null
+      );
+      setLoading(false);
+    });
+
+    return () => { alive = false; };
+  }, [status]);
+
+  const money = (n: number | undefined | null) => fmtCurrency(n ?? 0);
+  // The action keys are shared with buttons that read "+ Add Expense"; the tile
+  // already carries an icon, so drop the leading plus.
+  const actionLabel = (key: TranslationKey) => t(key).replace(/^\+\s*/, "");
+  // A zero cost is not bad news, so it should not shout in red.
+  const costTone = (n: number | undefined | null) => ((n ?? 0) > 0 ? "cost" : "plain");
+  const outOfStock = stock?.rows.filter((r) => r.total <= 0) ?? [];
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6">
-      <PageHeader title={t("admin.title")} subtitle={t("admin.subtitle")} />
+      <PageHeader
+        title={t("admin.title")}
+        subtitle={t("admin.subtitle")}
+        action={
+          <Link href="/visits/new" className="btn-secondary">
+            <Icon name="drawer" /> {t("nav.goToTill")}
+          </Link>
+        }
+      />
 
-      {/* Today at a glance — the numbers only an owner sees */}
+      {/* Today */}
       <div className="card p-5">
-        <h2 className="text-sm font-semibold text-gray-900 mb-4">{t("admin.today")}</h2>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div>
-            <div className="text-xs text-gray-500">{t("admin.netRevenue")}</div>
-            <div className="text-xl font-bold text-gray-900">{money(stats?.todayRevenue)}</div>
-          </div>
-          <div>
-            <div className="text-xs text-gray-500">{t("finance.cashAccount")}</div>
-            <div className="text-xl font-bold text-green-700">{money(stats?.todayCash)}</div>
-          </div>
-          <div>
-            <div className="text-xs text-gray-500">
-              {t("admin.cardNet")}
-              {stats?.visaPercent ? (
-                <span className="text-gray-400"> ({stats.visaPercent}%)</span>
-              ) : null}
-            </div>
-            <div className="text-xl font-bold text-blue-700">{money(stats?.todayCardNet)}</div>
-            {(stats?.todayVisaCommission ?? 0) > 0 && (
-              <div className="text-xs text-gray-400">
-                {t("admin.visaCommission")}: -{money(stats?.todayVisaCommission)}
-              </div>
-            )}
-          </div>
-          <div>
-            <div className="text-xs text-gray-500">{t("admin.stockValue")}</div>
-            <div className="text-xl font-bold text-gray-900">{money(stock?.totalValue)}</div>
-            {stock && (
-              <div className="text-xs text-gray-400">
-                {t("warehouse.mainStore")} {money(stock.mainValue)} · {t("warehouse.branch")}{" "}
-                {money(stock.branchValue)}
-              </div>
-            )}
-          </div>
+        <div className="flex items-baseline justify-between mb-4">
+          <h2 className="text-sm font-semibold text-gray-900">{t("admin.today")}</h2>
+          <span className="text-xs text-gray-400">
+            {stats?.visitsToday ?? 0} {t("common.visits")}
+          </span>
         </div>
-
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-4 pt-4 border-t border-gray-100 text-sm">
-          <div className="flex justify-between">
-            <span className="text-gray-500">{t("expenses.totalExpenses")}</span>
-            <span className="font-medium text-red-600">-{money(stats?.todayExpenses)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-500">{t("admin.advancesToday")}</span>
-            <span className="font-medium text-gray-700">{money(stats?.todayAdvances)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-500">{t("dashboard.visitsToday")}</span>
-            <span className="font-medium text-gray-900">{stats?.visitsToday ?? 0}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-500">{t("finance.visaCommission")}</span>
-            <Link href="/settings/finance" className="font-medium text-primary-600 hover:underline">
-              {stats?.visaPercent ?? 0}%
-            </Link>
-          </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <Figure loading={loading} label={t("admin.netRevenue")} value={money(stats?.todayRevenue)} />
+          <Figure loading={loading} label={t("finance.cashAccount")} value={money(stats?.todayCash)} tone="cash" />
+          <Figure
+            loading={loading}
+            label={t("admin.cardNet")}
+            value={money(stats?.todayCardNet)}
+            tone="card"
+            hint={
+              (stats?.todayVisaCommission ?? 0) > 0
+                ? `${t("admin.visaCommission")} -${money(stats?.todayVisaCommission)}`
+                : undefined
+            }
+          />
+          <Figure
+            loading={loading}
+            label={t("expenses.totalExpenses")}
+            value={money(stats?.todayExpenses)}
+            tone={costTone(stats?.todayExpenses)}
+          />
         </div>
       </div>
 
-      {SECTIONS.map((section) => (
-        <div key={section.titleKey}>
-          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">
-            {t(section.titleKey)}
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {section.tiles.map((tile) => (
-              <Link
-                key={tile.href}
-                href={tile.href}
-                className="card p-4 hover:border-primary-300 hover:shadow transition-all flex gap-3"
-              >
-                <div className="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center text-xl shrink-0">
-                  {tile.icon}
-                </div>
-                <div className="min-w-0">
-                  <div className="font-medium text-gray-900 text-sm">{t(tile.labelKey)}</div>
-                  <div className="text-xs text-gray-500 mt-0.5">{t(tile.descKey)}</div>
-                </div>
-              </Link>
-            ))}
-          </div>
+      {/* Month to date */}
+      <div className="card p-5">
+        <div className="flex items-baseline justify-between mb-4">
+          <h2 className="text-sm font-semibold text-gray-900">{t("admin.monthToDate")}</h2>
+          <span className="text-xs text-gray-400">
+            {stats?.visitsThisMonth ?? 0} {t("common.visits")}
+          </span>
         </div>
-      ))}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <Figure loading={loading} label={t("admin.netRevenue")} value={money(stats?.monthRevenue)} />
+          <Figure
+            loading={loading}
+            label={t("admin.expenses")}
+            value={money(stats?.monthExpenses)}
+            tone={costTone(stats?.monthExpenses)}
+          />
+          <Figure
+            loading={loading}
+            label={t("admin.visaCommission")}
+            value={money(stats?.monthVisaCommission)}
+            tone={costTone(stats?.monthVisaCommission)}
+            hint={`${stats?.visaPercent ?? 0}%`}
+          />
+          <Figure
+            loading={loading}
+            label={t("reports.advancesTotal")}
+            value={money(stats?.monthAdvances)}
+            hint={t("advances.recoveredIn")}
+          />
+        </div>
+      </div>
+
+      {/* What needs attention */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <Link href="/warehouse/suppliers" className="card p-4 hover:border-primary-300 transition-colors">
+          <div className="text-xs text-gray-500">{t("admin.supplierDue")}</div>
+          <div
+            className={`text-xl font-bold tabular-nums ${
+              (supplierDue ?? 0) > 0 ? "text-amber-700" : "text-gray-900"
+            }`}
+          >
+            {money(supplierDue)}
+          </div>
+        </Link>
+
+        <Link href="/warehouse" className="card p-4 hover:border-primary-300 transition-colors">
+          <div className="text-xs text-gray-500">{t("admin.stockAlerts")}</div>
+          {outOfStock.length > 0 ? (
+            <>
+              <div className="text-xl font-bold text-red-600 tabular-nums">{outOfStock.length}</div>
+              <div className="text-[11px] text-gray-400 mt-0.5 truncate">
+                {outOfStock.slice(0, 3).map((r) => r.name).join(", ")}
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="text-xl font-bold text-gray-900">—</div>
+              <div className="text-[11px] text-gray-400 mt-0.5">{t("admin.allStocked")}</div>
+            </>
+          )}
+        </Link>
+
+        <Link href="/warehouse" className="card p-4 hover:border-primary-300 transition-colors">
+          <div className="text-xs text-gray-500">{t("admin.stockValue")}</div>
+          <div className="text-xl font-bold text-gray-900 tabular-nums">{money(stock?.totalValue)}</div>
+        </Link>
+      </div>
+
+      {/* Quick actions — the menu already handles navigation, so these are jobs */}
+      <div>
+        <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+          {t("admin.quickActions")}
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {QUICK_ACTIONS.map((a) => (
+            <Link
+              key={a.labelKey}
+              href={a.href}
+              className="card px-4 py-3 flex items-center gap-3 hover:border-primary-300 hover:shadow transition-all"
+            >
+              <span className="w-9 h-9 rounded-lg bg-primary-50 text-primary-700 flex items-center justify-center">
+                <Icon name={a.icon} />
+              </span>
+              <span className="font-medium text-gray-900 text-sm">{actionLabel(a.labelKey)}</span>
+            </Link>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

@@ -203,7 +203,7 @@ ${shop.receiptFooter ? `<div class="footer">${shop.receiptFooter}</div>` : ""}
 }
 
 function DayReportContent() {
-  const { t, fmtCurrency } = useTranslation();
+  const { t, fmtCurrency, fmtDate } = useTranslation();
   const searchParams = useSearchParams();
   const today = format(new Date(), "yyyy-MM-dd");
   const [date, setDate] = useState(searchParams.get("date") ?? today);
@@ -251,7 +251,7 @@ function DayReportContent() {
       {/* Print header */}
       <div className="hidden print:block mb-6">
         <h1 className="text-2xl font-bold">{t("cashDrawer.dayReport")}</h1>
-        <p className="text-gray-600">{new Date(date).toLocaleDateString()}</p>
+        <p className="text-gray-600">{fmtDate(date)}</p>
       </div>
 
       {/* Date picker */}

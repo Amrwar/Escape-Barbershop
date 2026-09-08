@@ -5,6 +5,7 @@ import Link from "next/link";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Modal } from "@/components/ui/Modal";
 import { useTranslation } from "@/lib/i18n";
+import { Icon } from "@/components/ui/Icon";
 
 interface StockRow {
   productId: string;
@@ -31,6 +32,7 @@ export default function WarehousePage() {
   const [totals, setTotals] = useState<Totals>({ mainValue: 0, branchValue: 0, totalValue: 0 });
   const [loading, setLoading] = useState(true);
   const [showInactive, setShowInactive] = useState(false);
+  const [query, setQuery] = useState("");
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<StockRow | null>(null);
@@ -103,6 +105,10 @@ export default function WarehousePage() {
     load();
   };
 
+  const term = query.trim().toLowerCase();
+  const visible = term ? rows.filter((r) => r.name.toLowerCase().includes(term)) : rows;
+  const outOfStock = rows.filter((r) => r.total <= 0).length;
+
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6">
       <PageHeader
@@ -132,15 +138,28 @@ export default function WarehousePage() {
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <Link href="/warehouse/purchases" className="btn-secondary">🧾 {t("nav.purchases")}</Link>
-        <Link href="/warehouse/suppliers" className="btn-secondary">🚚 {t("nav.suppliers")}</Link>
-        <Link href="/issue-notes" className="btn-secondary">📤 {t("nav.transfers")}</Link>
-        <Link href="/warehouse/count" className="btn-secondary">🔢 {t("nav.stockCount")}</Link>
+        <Link href="/warehouse/purchases" className="btn-secondary"><Icon name="receipt" /> {t("nav.purchases")}</Link>
+        <Link href="/warehouse/suppliers" className="btn-secondary"><Icon name="truck" /> {t("nav.suppliers")}</Link>
+        <Link href="/issue-notes" className="btn-secondary"><Icon name="tray-up" /> {t("nav.transfers")}</Link>
+        <Link href="/warehouse/count" className="btn-secondary"><Icon name="clipboard-check" /> {t("nav.stockCount")}</Link>
       </div>
 
       <div className="card overflow-hidden">
-        <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between gap-3">
-          <h2 className="text-sm font-semibold text-gray-900">{t("warehouse.products")}</h2>
+        <div className="px-5 py-4 border-b border-gray-100 flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-sm font-semibold text-gray-900">
+            {t("warehouse.products")}
+            {outOfStock > 0 && (
+              <span className="ms-2 text-xs font-medium text-red-600">
+                {outOfStock} {t("warehouse.outOfStock")}
+              </span>
+            )}
+          </h2>
+          <input
+            className="input max-w-56 py-1.5"
+            placeholder={t("warehouse.search")}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
           <label className="flex items-center gap-2 text-xs text-gray-500">
             <input
               type="checkbox"
@@ -155,10 +174,10 @@ export default function WarehousePage() {
           <div className="p-4 space-y-2">
             {[...Array(4)].map((_, i) => <div key={i} className="h-10 bg-gray-100 animate-pulse rounded" />)}
           </div>
-        ) : rows.length === 0 ? (
+        ) : visible.length === 0 ? (
           <div className="p-8 text-center text-gray-400">
             <div className="text-3xl mb-2">📦</div>
-            <div className="text-sm">{t("warehouse.noProducts")}</div>
+            <div className="text-sm">{term ? t("warehouse.noMatches") : t("warehouse.noProducts")}</div>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -175,13 +194,18 @@ export default function WarehousePage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {rows.map((r) => (
+                {visible.map((r) => (
                   <tr key={r.productId} className="hover:bg-gray-50">
                     <td className="px-4 py-3">
                       <span className="font-medium text-gray-900">{r.name}</span>
                       <span className="text-xs text-gray-400 ms-2">{r.unit}</span>
                       {!r.isActive && (
                         <span className="ms-2 text-xs text-gray-400">({t("common.inactive")})</span>
+                      )}
+                      {r.total <= 0 && (
+                        <span className="ms-2 px-1.5 py-0.5 rounded text-[11px] font-medium bg-red-50 text-red-700">
+                          {r.total < 0 ? t("warehouse.negative") : t("warehouse.outOfStock")}
+                        </span>
                       )}
                     </td>
                     <td className="px-4 py-3 text-end text-gray-700">{fmtNumber(r.main)}</td>

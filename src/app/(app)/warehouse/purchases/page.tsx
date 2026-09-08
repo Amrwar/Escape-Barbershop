@@ -6,6 +6,7 @@ import { DateNavInput } from "@/components/ui/DateNavInput";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Modal } from "@/components/ui/Modal";
 import { useTranslation } from "@/lib/i18n";
+import { Icon, type IconName } from "@/components/ui/Icon";
 
 type PaymentType = "CASH" | "CARD" | "CREDIT";
 
@@ -162,10 +163,10 @@ export default function PurchasesPage() {
     load();
   };
 
-  const PAYMENT_TYPES: { value: PaymentType; label: string; icon: string }[] = [
-    { value: "CASH", label: t("common.cash"), icon: "💵" },
-    { value: "CARD", label: t("common.card"), icon: "💳" },
-    { value: "CREDIT", label: t("common.credit"), icon: "🧾" },
+  const PAYMENT_TYPES: { value: PaymentType; label: string; icon: IconName }[] = [
+    { value: "CASH", label: t("common.cash"), icon: "banknote" },
+    { value: "CARD", label: t("common.card"), icon: "card" },
+    { value: "CREDIT", label: t("common.credit"), icon: "receipt" },
   ];
 
   const badge = (type: PaymentType) => {
@@ -338,13 +339,13 @@ export default function PurchasesPage() {
                   key={p.value}
                   type="button"
                   onClick={() => setForm((f) => ({ ...f, paymentType: p.value }))}
-                  className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                  className={`flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${
                     form.paymentType === p.value
                       ? "bg-primary-50 border-primary-300 text-primary-700"
                       : "border-gray-200 text-gray-600 hover:bg-gray-50"
                   }`}
                 >
-                  <span className="me-1.5">{p.icon}</span>
+                  <Icon name={p.icon} />
                   {p.label}
                 </button>
               ))}

@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { DateNavInput } from "@/components/ui/DateNavInput";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { useTranslation } from "@/lib/i18n";
+import { Icon, type IconName } from "@/components/ui/Icon";
 
 type PayMethod = "CASH" | "CARD";
 
@@ -106,9 +107,9 @@ export default function AdvancesPage() {
   };
 
   const total = advances.reduce((s, a) => s + a.amount, 0);
-  const METHODS: { value: PayMethod; label: string; icon: string }[] = [
-    { value: "CASH", label: t("common.cash"), icon: "💵" },
-    { value: "CARD", label: t("common.card"), icon: "💳" },
+  const METHODS: { value: PayMethod; label: string; icon: IconName }[] = [
+    { value: "CASH", label: t("common.cash"), icon: "banknote" },
+    { value: "CARD", label: t("common.card"), icon: "card" },
   ];
 
   return (
@@ -163,13 +164,13 @@ export default function AdvancesPage() {
                   key={m.value}
                   type="button"
                   onClick={() => setForm((p) => ({ ...p, paymentMethod: m.value }))}
-                  className={`flex-1 sm:flex-none sm:min-w-32 px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                  className={`flex-1 sm:flex-none sm:min-w-32 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
                     form.paymentMethod === m.value
                       ? "bg-primary-50 border-primary-300 text-primary-700"
                       : "border-gray-200 text-gray-600 hover:bg-gray-50"
                   }`}
                 >
-                  <span className="me-1.5">{m.icon}</span>
+                  <Icon name={m.icon} />
                   {m.label}
                 </button>
               ))}
@@ -246,7 +247,7 @@ export default function AdvancesPage() {
                         a.paymentMethod === "CARD" ? "bg-blue-50 text-blue-700" : "bg-green-50 text-green-700"
                       }`}
                     >
-                      {a.paymentMethod === "CARD" ? "💳" : "💵"}
+                      <Icon name={a.paymentMethod === "CARD" ? "card" : "banknote"} className="w-3.5 h-3.5" />
                       {a.paymentMethod === "CARD" ? t("common.card") : t("common.cash")}
                     </span>
                   </td>

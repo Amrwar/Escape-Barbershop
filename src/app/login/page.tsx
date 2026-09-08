@@ -6,6 +6,7 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { loginSchema } from "@/lib/validations";
 import { useTranslation } from "@/lib/i18n";
+import { landingFor } from "@/lib/nav";
 import { LanguageToggle } from "@/components/ui/LanguageToggle";
 
 export default function LoginPage() {
@@ -30,7 +31,9 @@ export default function LoginPage() {
       if (res?.error) {
         setError(t("auth.invalidCredentials"));
       } else {
-        router.push("/dashboard");
+        // Read the role back so each side opens on its own landing page.
+        const session = await fetch("/api/auth/session").then((r) => r.json()).catch(() => null);
+        router.push(landingFor(session?.user?.role));
         router.refresh();
       }
     } finally {
@@ -39,7 +42,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-900 via-primary-800 to-primary-700 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-primary-900 via-primary-950 to-black p-4">
       {/* Language toggle — top right (always) */}
       <div className="fixed top-4 end-4">
         <LanguageToggle />
@@ -57,7 +60,8 @@ export default function LoginPage() {
               priority
             />
           </div>
-          <p className="text-primary-200 mt-1 text-sm">{t("auth.loginSubtitle")}</p>
+          <h1 className="text-white text-xl font-bold tracking-[0.22em] uppercase">Escape</h1>
+          <p className="text-primary-300 mt-1 text-sm tracking-wide">{t("auth.loginSubtitle")}</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-2xl p-8">

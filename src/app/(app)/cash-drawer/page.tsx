@@ -69,7 +69,7 @@ export default function CashDrawerPage() {
   // Opening, closing and recording cash movements is floor work; deleting
   // movements or sessions stays with the owner.
   const canOperate = isOwner || authSession?.user?.role === "CASHIER";
-  const { t, fmtCurrency } = useTranslation();
+  const { t, fmtCurrency, fmtDateTime, fmtTime } = useTranslation();
 
   const [session, setSession] = useState<SessionData | null | undefined>(undefined);
   const [recentSessions, setRecentSessions] = useState<RecentSession[]>([]);
@@ -361,7 +361,7 @@ export default function CashDrawerPage() {
                 <div className="flex items-center gap-2">
                   <h2 className="text-sm font-semibold text-gray-900">
                     {t("cashDrawer.openedAt")}:{" "}
-                    {new Date(session.openedAt).toLocaleString()}
+                    {fmtDateTime(session.openedAt)}
                   </h2>
                   <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-green-200 text-green-800">
                     {t("cashDrawer.sessionOpen")}
@@ -460,7 +460,7 @@ export default function CashDrawerPage() {
                         </div>
                         <div className="text-xs text-gray-400">
                           {m.createdBy.name} ·{" "}
-                          {new Date(m.createdAt).toLocaleTimeString()}
+                          {fmtTime(m.createdAt)}
                         </div>
                       </div>
                     </div>

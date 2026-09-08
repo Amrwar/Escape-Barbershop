@@ -23,6 +23,7 @@ interface I18nContextValue {
   fmtCurrency: (n: number) => string;
   fmtDate: (date: Date | string) => string;
   fmtDateTime: (date: Date | string) => string;
+  fmtTime: (date: Date | string) => string;
   fmtCustomerName: (name: string) => string;
 }
 
@@ -134,6 +135,21 @@ export function LanguageProvider({
     [lang]
   );
 
+  // Always pass an explicit locale: bare toLocaleTimeString() resolves to the
+  // runtime default, which differs between the Node server and the browser and
+  // breaks hydration.
+  const fmtTime = useCallback(
+    (date: Date | string): string => {
+      const d = typeof date === "string" ? new Date(date) : date;
+      return new Intl.DateTimeFormat(lang === "ar" ? arLocale : "en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: lang === "en",
+      }).format(d);
+    },
+    [lang]
+  );
+
   const fmtCustomerName = useCallback(
     (name: string): string =>
       name === "Walk-in" ? t("common.walkInName") : name,
@@ -142,7 +158,7 @@ export function LanguageProvider({
 
   return (
     <I18nContext.Provider
-      value={{ lang, dir, setLang, t, fmtNumber, fmtCurrency, fmtDate, fmtDateTime, fmtCustomerName }}
+      value={{ lang, dir, setLang, t, fmtNumber, fmtCurrency, fmtDate, fmtDateTime, fmtTime, fmtCustomerName }}
     >
       {children}
     </I18nContext.Provider>
