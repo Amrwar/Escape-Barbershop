@@ -9,11 +9,14 @@ import { useTranslation } from "@/lib/i18n";
 
 interface PenaltyRecord { id: string; date: string; amount: number; reason: string; }
 
+interface AdvanceRecord { id: string; date: string; amount: number; paymentMethod: string; notes: string | null; }
+
 interface BarberPayroll {
   barberId: string; name: string; barberPhone: string | null;
   baseSalary: number; commissionType: "PERCENT" | "FIXED_PER_VISIT"; commissionValue: number;
   visitCount: number; visitTotal: number; commissionableTotal: number; commission: number;
   gross: number; penaltiesTotal: number; penalties: PenaltyRecord[];
+  advancesTotal: number; advances: AdvanceRecord[];
   absentDays: number; dailyRate: number; attendanceDeduction: number;
   net: number;
 }
@@ -94,6 +97,7 @@ export default function SalariesPage() {
       `Commission: ${fmtCurrency(b.commission)}`,
       `*Gross: ${fmtCurrency(b.gross)}*`,
       ...(b.penaltiesTotal > 0 ? [`Penalties: -${fmtCurrency(b.penaltiesTotal)}`] : []),
+      ...(b.advancesTotal > 0 ? [`Advances: -${fmtCurrency(b.advancesTotal)}`] : []),
       ...(b.absentDays > 0 ? [`Absence (${b.absentDays} days): -${fmtCurrency(b.attendanceDeduction)}`] : []),
       ``,
       `*Net Pay: ${fmtCurrency(b.net)}*`,
@@ -112,6 +116,7 @@ export default function SalariesPage() {
   const totalGross     = payroll.reduce((s, b) => s + b.gross, 0);
   const totalNet       = payroll.reduce((s, b) => s + b.net, 0);
   const totalPenalties = payroll.reduce((s, b) => s + b.penaltiesTotal, 0);
+  const totalAdvances  = payroll.reduce((s, b) => s + b.advancesTotal, 0);
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
@@ -162,6 +167,7 @@ export default function SalariesPage() {
                 <th className="text-end px-4 py-3 font-medium text-gray-600">{t("salaries.commission")}</th>
                 <th className="text-end px-4 py-3 font-medium text-gray-600">{t("salaries.gross")}</th>
                 <th className="text-end px-4 py-3 font-medium text-gray-600 hidden sm:table-cell">{t("salaries.penalties")}</th>
+                <th className="text-end px-4 py-3 font-medium text-gray-600 hidden sm:table-cell">{t("salaries.advances")}</th>
                 <th className="text-end px-4 py-3 font-medium text-gray-600 hidden md:table-cell">{t("attendance.absentDays")}</th>
                 <th className="text-end px-4 py-3 font-medium text-gray-600">{t("salaries.net")}</th>
                 <th className="px-4 py-3" />
@@ -190,6 +196,13 @@ export default function SalariesPage() {
                       </button>
                     ) : <span className="text-gray-400">—</span>}
                   </td>
+                  <td className="px-4 py-3 text-end hidden sm:table-cell">
+                    {b.advancesTotal > 0 ? (
+                      <button onClick={() => setDetailBarber(b)} className="text-amber-700 hover:underline">
+                        -{fmtCurrency(b.advancesTotal)}
+                      </button>
+                    ) : <span className="text-gray-400">—</span>}
+                  </td>
                   <td className="px-4 py-3 text-end hidden md:table-cell">
                     {b.absentDays > 0 ? (
                       <span className="text-amber-600 font-medium">
@@ -215,12 +228,20 @@ export default function SalariesPage() {
                 <td className="hidden md:table-cell" />
                 <td className="px-4 py-3 text-end text-gray-900">{fmtCurrency(totalGross)}</td>
                 <td className="px-4 py-3 text-end text-red-600 hidden sm:table-cell">-{fmtCurrency(totalPenalties)}</td>
+                <td className="px-4 py-3 text-end text-amber-700 hidden sm:table-cell">-{fmtCurrency(totalAdvances)}</td>
+                <td className="hidden md:table-cell" />
                 <td className="px-4 py-3 text-end text-green-700">{fmtCurrency(totalNet)}</td>
                 <td />
               </tr>
             </tfoot>
           </table>
         </div>
+      )}
+
+      {!loading && loaded && payroll.length > 0 && (
+        <p className="text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 mb-4">
+          {t("salaries.payrollOnlyNote")}
+        </p>
       )}
 
       {/* Penalty modal */}
@@ -275,6 +296,7 @@ export default function SalariesPage() {
                 [t("salaries.commission"),           `${fmtCurrency(detailBarber.commission)}`],
                 [t("salaries.gross"),                `${fmtCurrency(detailBarber.gross)}`],
                 [t("salaries.penalties"),            `-${fmtCurrency(detailBarber.penaltiesTotal)}`],
+                [t("salaries.advances"),             `-${fmtCurrency(detailBarber.advancesTotal)}`],
                 [t("salaries.attendanceDeduction"),  detailBarber.absentDays > 0 ? `-${fmtCurrency(detailBarber.attendanceDeduction)} (${detailBarber.absentDays}d)` : "—"],
               ].map(([label, value]) => (
                 <div key={String(label)} className="bg-gray-50 rounded-lg px-3 py-2">
@@ -295,6 +317,25 @@ export default function SalariesPage() {
                 💬 {t("salaries.shareWhatsapp")}
               </button>
             )}
+            {detailBarber.advances?.length > 0 && (
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900 mb-2">{t("salaries.advancesTitle")}</h3>
+                <div className="space-y-2">
+                  {detailBarber.advances.map((a) => (
+                    <div key={a.id} className="flex items-center gap-3 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm text-gray-900">
+                          {a.notes || (a.paymentMethod === "CARD" ? t("common.card") : t("common.cash"))}
+                        </div>
+                        <div className="text-xs text-gray-400">{fmtDate(a.date)}</div>
+                      </div>
+                      <Badge variant="yellow">{fmtCurrency(a.amount)}</Badge>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {detailBarber.penalties.length > 0 && (
               <div>
                 <h3 className="text-sm font-semibold text-gray-900 mb-2">{t("salaries.penaltiesTitle")}</h3>

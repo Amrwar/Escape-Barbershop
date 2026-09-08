@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAuth, requireOwner } from "@/lib/auth";
+import { requireAuth, requireOwnerOrCashier } from "@/lib/auth";
 import { openDrawerSchema } from "@/lib/validations";
+import { getJournalOutflows, getVisaCommissionPercent, visaCommissionOn, round2 } from "@/lib/finance";
 
 export async function GET() {
   try {
@@ -43,7 +44,12 @@ export async function GET() {
       .filter((v) => v.paymentMethod === "MIXED")
       .reduce((s, v) => s + (v.cashAmount ?? 0) + (v.tip ?? 0), 0);
 
+    const mixedCard = session.visits
+      .filter((v) => v.paymentMethod === "MIXED")
+      .reduce((s, v) => s + (v.cardAmount ?? 0), 0);
+
     const cashSales = cashTotal + mixedCash;
+    const cardSales = cardTotal + mixedCard;
 
     const cashIn = session.movements
       .filter((m) => m.type === "IN")
@@ -53,18 +59,22 @@ export async function GET() {
       .filter((m) => m.type === "OUT")
       .reduce((s, m) => s + m.amount, 0);
 
-    // Expenses logged during this session's time window
-    const expenses = await prisma.expense.findMany({
-      where: {
-        date: {
-          gte: session.openedAt,
-          lte: new Date(),
-        },
-      },
-    });
-    const expensesTotal = expenses.reduce((s, e) => s + e.amount, 0);
+    // Expenses and advances logged during this session's time window.
+    // Only the ones paid in cash can move the drawer; card ones settle on the card account.
+    const outflows = await getJournalOutflows(session.openedAt, new Date());
 
-    const expectedCash = session.openingCash + cashSales + cashIn - cashOut - expensesTotal;
+    const visaPercent = await getVisaCommissionPercent();
+    const visaCommission = visaCommissionOn(cardSales, visaPercent);
+    const cardNet = round2(cardSales - visaCommission - outflows.cardExpenses - outflows.cardAdvances);
+
+    const expectedCash = round2(
+      session.openingCash +
+        cashSales +
+        cashIn -
+        cashOut -
+        outflows.cashExpenses -
+        outflows.cashAdvances
+    );
 
     return NextResponse.json({
       ...session,
@@ -72,11 +82,22 @@ export async function GET() {
         cashTotal,
         cardTotal,
         mixedCash,
+        mixedCard,
         visitCount: session.visits.length,
         cashSales,
+        cardSales,
         cashIn,
         cashOut,
-        expensesTotal,
+        // `expensesTotal` stays the all-in figure for existing callers
+        expensesTotal: outflows.expensesTotal,
+        cashExpenses: outflows.cashExpenses,
+        cardExpenses: outflows.cardExpenses,
+        advancesTotal: outflows.advancesTotal,
+        cashAdvances: outflows.cashAdvances,
+        cardAdvances: outflows.cardAdvances,
+        visaPercent,
+        visaCommission,
+        cardNet,
         expectedCash,
       },
     });
@@ -87,7 +108,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-    const authSession = await requireOwner();
+    const authSession = await requireOwnerOrCashier();
     const body = await req.json();
     const data = openDrawerSchema.parse(body);
 

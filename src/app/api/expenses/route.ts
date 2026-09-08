@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAuth, requireOwner } from "@/lib/auth";
+import { requireAuth } from "@/lib/auth";
+import { expenseSchema } from "@/lib/validations";
 
 export async function GET(req: NextRequest) {
   try {
@@ -21,9 +22,25 @@ export async function GET(req: NextRequest) {
           : {}),
       },
       orderBy: { date: "desc" },
+      include: {
+        purchaseInvoice: { select: { id: true, number: true } },
+        supplierPayment: { select: { id: true } },
+      },
     });
 
-    return NextResponse.json(expenses);
+    return NextResponse.json(
+      expenses.map((e) => ({
+        id: e.id,
+        date: e.date,
+        amount: e.amount,
+        reason: e.reason,
+        paymentMethod: e.paymentMethod,
+        category: e.category,
+        // Expenses posted automatically by a purchase or a supplier payment are
+        // edited from the warehouse screens, not here.
+        locked: Boolean(e.purchaseInvoice || e.supplierPayment),
+      }))
+    );
   } catch (err: unknown) {
     if (err instanceof Error && err.message.includes("Unauthorized")) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -36,18 +53,15 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     await requireAuth();
-    const body = await req.json();
-    const { date, amount, reason } = body;
-
-    if (!date || !amount || !reason) {
-      return NextResponse.json({ error: "date, amount, and reason are required" }, { status: 400 });
-    }
+    const data = expenseSchema.parse(await req.json());
 
     const expense = await prisma.expense.create({
       data: {
-        date: new Date(date),
-        amount: parseFloat(amount),
-        reason: String(reason).trim(),
+        date: new Date(data.date),
+        amount: data.amount,
+        reason: data.reason.trim(),
+        paymentMethod: data.paymentMethod,
+        category: data.category?.trim() || null,
       },
     });
 
@@ -56,6 +70,6 @@ export async function POST(req: NextRequest) {
     if (err instanceof Error && err.message.includes("Unauthorized")) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    return NextResponse.json({ error: "Failed to create expense" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to create expense" }, { status: 400 });
   }
 }

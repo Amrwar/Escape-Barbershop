@@ -73,6 +73,92 @@ export const salarySettingsSchema = z.object({
   commissionValue: z.number().min(0, "Commission value must be non-negative"),
 });
 
+export const payMethodSchema = z.enum(["CASH", "CARD"]);
+
+export const expenseSchema = z.object({
+  date: z.string().min(1, "Date is required"),
+  amount: z.number().min(0.01, "Amount must be greater than 0"),
+  reason: z.string().min(1, "Reason is required").max(500),
+  paymentMethod: payMethodSchema.default("CASH"),
+  category: z.string().max(100).nullable().optional(),
+});
+
+export const advanceSchema = z.object({
+  barberId: z.string().min(1, "Barber is required"),
+  date: z.string().min(1, "Date is required"),
+  amount: z.number().min(0.01, "Amount must be greater than 0"),
+  paymentMethod: payMethodSchema.default("CASH"),
+  notes: z.string().max(500).nullable().optional().or(z.literal("")),
+});
+
+export const supplierSchema = z.object({
+  name: z.string().min(1, "Name is required").max(100),
+  phone: z.string().max(20).optional().or(z.literal("")),
+  notes: z.string().max(500).optional().or(z.literal("")),
+  isActive: z.boolean().optional().default(true),
+});
+
+export const purchaseItemSchema = z.object({
+  productId: z.string().min(1, "Product is required"),
+  quantity: z.number().min(0.0001, "Quantity must be greater than 0"),
+  unitCost: z.number().min(0, "Cost must be non-negative"),
+});
+
+export const purchaseInvoiceSchema = z.object({
+  number: z.string().max(50).optional().or(z.literal("")),
+  supplierId: z.string().nullable().optional().or(z.literal("")),
+  date: z.string().min(1, "Date is required"),
+  paymentType: z.enum(["CASH", "CARD", "CREDIT"]),
+  notes: z.string().max(500).optional().or(z.literal("")),
+  items: z.array(purchaseItemSchema).min(1, "At least one product is required"),
+});
+
+export const supplierPaymentSchema = z.object({
+  supplierId: z.string().min(1, "Supplier is required"),
+  date: z.string().min(1, "Date is required"),
+  amount: z.number().min(0.01, "Amount must be greater than 0"),
+  paymentMethod: payMethodSchema.default("CASH"),
+  notes: z.string().max(500).optional().or(z.literal("")),
+});
+
+export const stockTransferSchema = z.object({
+  number: z.string().max(50).optional().or(z.literal("")),
+  date: z.string().min(1, "Date is required"),
+  fromLocation: z.enum(["MAIN", "BRANCH"]).default("MAIN"),
+  toLocation: z.enum(["MAIN", "BRANCH"]).default("BRANCH"),
+  notes: z.string().max(500).optional().or(z.literal("")),
+  items: z
+    .array(
+      z.object({
+        productId: z.string().min(1, "Product is required"),
+        quantity: z.number().min(0.0001, "Quantity must be greater than 0"),
+      })
+    )
+    .min(1, "At least one product is required"),
+});
+
+export const stockCountSchema = z.object({
+  date: z.string().min(1, "Date is required"),
+  location: z.enum(["MAIN", "BRANCH"]).default("BRANCH"),
+  notes: z.string().max(500).optional().or(z.literal("")),
+  items: z
+    .array(
+      z.object({
+        productId: z.string().min(1, "Product is required"),
+        countedQty: z.number().min(0, "Counted quantity must be non-negative"),
+      })
+    )
+    .min(1, "At least one product is required"),
+});
+
+export type ExpenseInput = z.infer<typeof expenseSchema>;
+export type AdvanceInput = z.infer<typeof advanceSchema>;
+export type SupplierInput = z.infer<typeof supplierSchema>;
+export type PurchaseInvoiceInput = z.infer<typeof purchaseInvoiceSchema>;
+export type SupplierPaymentInput = z.infer<typeof supplierPaymentSchema>;
+export type StockTransferInput = z.infer<typeof stockTransferSchema>;
+export type StockCountInput = z.infer<typeof stockCountSchema>;
+
 export type LoginInput = z.infer<typeof loginSchema>;
 export type CustomerInput = z.infer<typeof customerSchema>;
 export type ServiceInput = z.infer<typeof serviceSchema>;

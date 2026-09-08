@@ -2,18 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireOwner } from "@/lib/auth";
 
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     await requireOwner();
-    const { name, unit, isActive } = await req.json();
+    const { name, unit, costPrice, isActive } = await req.json();
     const product = await prisma.product.update({
       where: { id: params.id },
       data: {
         ...(name !== undefined && { name: String(name).trim() }),
         ...(unit !== undefined && { unit: String(unit).trim() }),
+        ...(costPrice !== undefined && { costPrice: parseFloat(costPrice) || 0 }),
         ...(isActive !== undefined && { isActive: Boolean(isActive) }),
       },
     });
@@ -22,19 +20,21 @@ export async function PATCH(
     if (err instanceof Error && err.message.includes("Unauthorized"))
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     if (err instanceof Error && err.message.includes("Unique constraint"))
-      return NextResponse.json({ error: "Product name already exists" }, { status: 409 });
+      return NextResponse.json({ error: "name_exists" }, { status: 409 });
     return NextResponse.json({ error: "Failed" }, { status: 500 });
   }
 }
 
-export async function DELETE(
-  _req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+// A product that already moved through the warehouse is deactivated, never
+// deleted, so historical invoices and stocktakes stay readable.
+export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
   try {
     await requireOwner();
-    const count = await prisma.productUsage.count({ where: { productId: params.id } });
-    if (count > 0) {
+    const [movements, usages] = await Promise.all([
+      prisma.stockMovement.count({ where: { productId: params.id } }),
+      prisma.productUsage.count({ where: { productId: params.id } }),
+    ]);
+    if (movements > 0 || usages > 0) {
       const product = await prisma.product.update({
         where: { id: params.id },
         data: { isActive: false },

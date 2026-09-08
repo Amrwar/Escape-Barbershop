@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireOwner } from "@/lib/auth";
+import { requireOwnerOrCashier } from "@/lib/auth";
 import { cashMovementSchema } from "@/lib/validations";
 
 export async function POST(req: NextRequest) {
   try {
-    const authSession = await requireOwner();
+    const authSession = await requireOwnerOrCashier();
     const body = await req.json();
     const data = cashMovementSchema.parse(body);
 

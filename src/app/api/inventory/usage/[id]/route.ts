@@ -8,7 +8,10 @@ export async function DELETE(
 ) {
   try {
     await requireAuth();
-    await prisma.productUsage.delete({ where: { id: params.id } });
+    await prisma.$transaction(async (tx) => {
+      await tx.stockMovement.deleteMany({ where: { refId: params.id, type: "USAGE" } });
+      await tx.productUsage.delete({ where: { id: params.id } });
+    });
     return NextResponse.json({ deleted: true });
   } catch (err: unknown) {
     if (err instanceof Error && err.message.includes("Unauthorized"))

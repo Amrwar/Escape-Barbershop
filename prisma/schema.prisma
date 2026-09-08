@@ -29,6 +29,7 @@ model Barber {
   isActive       Boolean               @default(true)
   createdAt      DateTime              @default(now())
   updatedAt      DateTime              @updatedAt
+  advances       Advance[]
   attendance     Attendance[]
   salarySettings BarberSalarySettings?
   penalties      Penalty[]
@@ -84,26 +85,26 @@ model Customer {
 }
 
 model Visit {
-  id            String             @id @default(cuid())
-  customerId    String
-  barberId      String?
-  visitAt       DateTime           @default(now())
-  paymentMethod PaymentMethod      @default(CASH)
-  discount      Float              @default(0)
-  total         Float
-  notes         String?
-  createdAt     DateTime           @default(now())
-  updatedAt     DateTime           @updatedAt
-  cardAmount       Float?
-  cashAmount       Float?
-  tip              Float              @default(0)
-  sessionId        String?
-  sessionSequence  Int?
-  barber        Barber?            @relation(fields: [barberId], references: [id])
-  customer      Customer           @relation(fields: [customerId], references: [id])
-  session       CashDrawerSession? @relation(fields: [sessionId], references: [id])
-  items         VisitItem[]
-  tipMovements  CashMovement[]
+  id              String             @id @default(cuid())
+  customerId      String
+  barberId        String?
+  visitAt         DateTime           @default(now())
+  paymentMethod   PaymentMethod      @default(CASH)
+  discount        Float              @default(0)
+  total           Float
+  notes           String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  cardAmount      Float?
+  cashAmount      Float?
+  tip             Float              @default(0)
+  sessionId       String?
+  sessionSequence Int?
+  barber          Barber?            @relation(fields: [barberId], references: [id])
+  customer        Customer           @relation(fields: [customerId], references: [id])
+  session         CashDrawerSession? @relation(fields: [sessionId], references: [id])
+  items           VisitItem[]
+  tipMovements    CashMovement[]
 }
 
 model CashDrawerSession {
@@ -158,31 +159,175 @@ model Penalty {
 }
 
 model Expense {
-  id        String   @id @default(cuid())
-  date      DateTime
-  amount    Float
-  reason    String
-  createdAt DateTime @default(now())
+  id            String    @id @default(cuid())
+  date          DateTime
+  amount        Float
+  reason        String
+  paymentMethod PayMethod @default(CASH)
+  category      String?
+  createdAt     DateTime  @default(now())
+
+  purchaseInvoice PurchaseInvoice?
+  supplierPayment SupplierPayment?
+}
+
+/// Salary advance paid to a barber (سلفة).
+/// Cash advances leave the drawer, but an advance is NOT an operating expense:
+/// it is recovered from the barber's payroll, so it never reduces daily revenue.
+model Advance {
+  id            String    @id @default(cuid())
+  barberId      String
+  date          DateTime
+  amount        Float
+  paymentMethod PayMethod @default(CASH)
+  notes         String?
+  createdAt     DateTime  @default(now())
+  barber        Barber    @relation(fields: [barberId], references: [id])
+
+  @@index([barberId, date])
 }
 
 model Product {
-  id        String         @id @default(cuid())
-  name      String         @unique
-  unit      String         @default("pcs")
-  isActive  Boolean        @default(true)
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
-  usages    ProductUsage[]
+  id            String              @id @default(cuid())
+  name          String              @unique
+  unit          String              @default("pcs")
+  costPrice     Float               @default(0)
+  isActive      Boolean             @default(true)
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  usages        ProductUsage[]
+  purchaseItems PurchaseItem[]
+  transferItems StockTransferItem[]
+  countItems    StockCountItem[]
+  movements     StockMovement[]
+}
+
+model Supplier {
+  id        String            @id @default(cuid())
+  name      String            @unique
+  phone     String?
+  notes     String?
+  isActive  Boolean           @default(true)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  invoices  PurchaseInvoice[]
+  payments  SupplierPayment[]
+}
+
+/// Purchase invoice (فاتورة مشتريات) — always received into the MAIN store.
+/// CASH/CARD invoices post an Expense immediately; CREDIT invoices post nothing
+/// until the supplier is paid (SupplierPayment).
+model PurchaseInvoice {
+  id          String          @id @default(cuid())
+  number      String?
+  supplierId  String?
+  date        DateTime
+  paymentType PurchasePayment @default(CASH)
+  total       Float           @default(0)
+  notes       String?
+  expenseId   String?         @unique
+  createdAt   DateTime        @default(now())
+  supplier    Supplier?       @relation(fields: [supplierId], references: [id])
+  expense     Expense?        @relation(fields: [expenseId], references: [id])
+  items       PurchaseItem[]
+}
+
+model PurchaseItem {
+  id        String          @id @default(cuid())
+  invoiceId String
+  productId String
+  quantity  Float
+  unitCost  Float
+  total     Float
+  invoice   PurchaseInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  product   Product         @relation(fields: [productId], references: [id])
+}
+
+/// Payment against a credit purchase account (سداد مورّد).
+model SupplierPayment {
+  id            String    @id @default(cuid())
+  supplierId    String
+  date          DateTime
+  amount        Float
+  paymentMethod PayMethod @default(CASH)
+  notes         String?
+  expenseId     String?   @unique
+  createdAt     DateTime  @default(now())
+  supplier      Supplier  @relation(fields: [supplierId], references: [id])
+  expense       Expense?  @relation(fields: [expenseId], references: [id])
+}
+
+/// Issue note (إذن صرف) moving stock from the main store to the branch.
+model StockTransfer {
+  id           String              @id @default(cuid())
+  number       String?
+  date         DateTime
+  fromLocation StockLocation       @default(MAIN)
+  toLocation   StockLocation       @default(BRANCH)
+  notes        String?
+  createdAt    DateTime            @default(now())
+  items        StockTransferItem[]
+}
+
+model StockTransferItem {
+  id         String        @id @default(cuid())
+  transferId String
+  productId  String
+  quantity   Float
+  transfer   StockTransfer @relation(fields: [transferId], references: [id], onDelete: Cascade)
+  product    Product       @relation(fields: [productId], references: [id])
+}
+
+/// Stocktake (جرد) — counted quantity vs. book quantity, per location.
+model StockCount {
+  id        String           @id @default(cuid())
+  date      DateTime
+  location  StockLocation    @default(BRANCH)
+  notes     String?
+  createdAt DateTime         @default(now())
+  items     StockCountItem[]
+}
+
+model StockCountItem {
+  id         String     @id @default(cuid())
+  countId    String
+  productId  String
+  systemQty  Float
+  countedQty Float
+  unitCost   Float      @default(0)
+  count      StockCount @relation(fields: [countId], references: [id], onDelete: Cascade)
+  product    Product    @relation(fields: [productId], references: [id])
+}
+
+/// Single ledger every stock balance is derived from. Quantity is signed:
+/// positive adds to the location, negative removes from it.
+model StockMovement {
+  id        String        @id @default(cuid())
+  productId String
+  date      DateTime
+  location  StockLocation
+  type      StockMoveType
+  quantity  Float
+  unitCost  Float         @default(0)
+  refId     String?
+  notes     String?
+  createdAt DateTime      @default(now())
+  product   Product       @relation(fields: [productId], references: [id])
+
+  @@index([productId, location])
+  @@index([refId])
+  @@index([date])
 }
 
 model ProductUsage {
-  id        String   @id @default(cuid())
+  id        String        @id @default(cuid())
   productId String
   quantity  Float
+  location  StockLocation @default(BRANCH)
   date      DateTime
   notes     String?
-  createdAt DateTime @default(now())
-  product   Product  @relation(fields: [productId], references: [id])
+  createdAt DateTime      @default(now())
+  product   Product       @relation(fields: [productId], references: [id])
 }
 
 enum Role {
@@ -209,4 +354,29 @@ enum SessionStatus {
 enum MovementType {
   IN
   OUT
+}
+
+enum PayMethod {
+  CASH
+  CARD
+}
+
+enum PurchasePayment {
+  CASH
+  CARD
+  CREDIT
+}
+
+enum StockLocation {
+  MAIN
+  BRANCH
+}
+
+enum StockMoveType {
+  PURCHASE
+  TRANSFER_IN
+  TRANSFER_OUT
+  USAGE
+  ADJUSTMENT
+  RETURN
 }

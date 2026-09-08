@@ -9,6 +9,9 @@ import { useTranslation } from "@/lib/i18n";
 import { LanguageToggle } from "@/components/ui/LanguageToggle";
 import type { TranslationKey } from "../../../messages/en";
 
+// The cashier runs the floor: visits, the drawer, expenses, and issuing stock to
+// the branch. Everything with a margin, a payroll or a purchase in it sits behind
+// the owner-only admin area.
 const NAV_ITEMS: {
   href: string;
   labelKey: TranslationKey;
@@ -18,13 +21,16 @@ const NAV_ITEMS: {
   { href: "/dashboard",   labelKey: "nav.dashboard",  icon: "📊", roles: ["OWNER","CASHIER"] },
   { href: "/visits/new",  labelKey: "nav.newVisit",   icon: "➕", roles: ["OWNER","CASHIER"] },
   { href: "/visits",      labelKey: "nav.visits",     icon: "📋", roles: ["OWNER","CASHIER"] },
-  { href: "/reports",     labelKey: "nav.reports",    icon: "📈", roles: ["OWNER","CASHIER"] },
-  { href: "/services",    labelKey: "nav.services",   icon: "✂️", roles: ["OWNER"] },
-  { href: "/barbers",     labelKey: "nav.barbers",    icon: "💈", roles: ["OWNER"] },
-  { href: "/salaries",    labelKey: "nav.salaries",   icon: "💰", roles: ["OWNER"] },
   { href: "/cash-drawer", labelKey: "nav.cashDrawer", icon: "🗃️", roles: ["OWNER","CASHIER"] },
-  { href: "/inventory",   labelKey: "nav.inventory",  icon: "📦", roles: ["OWNER","CASHIER"] },
   { href: "/expenses",    labelKey: "nav.expenses",   icon: "💸", roles: ["OWNER","CASHIER"] },
+  { href: "/issue-notes", labelKey: "nav.transfers",  icon: "📤", roles: ["OWNER","CASHIER"] },
+  { href: "/admin",       labelKey: "nav.admin",      icon: "🛡️", roles: ["OWNER"] },
+  { href: "/reports",     labelKey: "nav.reports",    icon: "📈", roles: ["OWNER"] },
+  { href: "/salaries",    labelKey: "nav.salaries",   icon: "💰", roles: ["OWNER"] },
+  { href: "/advances",    labelKey: "nav.advances",   icon: "🤝", roles: ["OWNER"] },
+  { href: "/warehouse",   labelKey: "nav.warehouse",  icon: "📦", roles: ["OWNER"] },
+  { href: "/barbers",     labelKey: "nav.barbers",    icon: "💈", roles: ["OWNER"] },
+  { href: "/services",    labelKey: "nav.services",   icon: "✂️", roles: ["OWNER"] },
   { href: "/settings/receipt", labelKey: "nav.settings", icon: "⚙️", roles: ["OWNER"] },
 ];
 

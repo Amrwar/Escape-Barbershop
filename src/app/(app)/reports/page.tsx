@@ -87,6 +87,7 @@ ${shop.shopAddress ? `<p>${shop.shopAddress}</p>` : ""}
 ${(summary.tipsTotal ?? 0) > 0 ? `<div class="row"><span>Tips (deducted):</span><span>-${fmt(summary.tipsTotal)}</span></div>` : ""}
 ${summary.discountsTotal > 0 ? `<div class="row"><span>Discounts:</span><span>-${fmt(summary.discountsTotal)}</span></div>` : ""}
 <div class="row bold" style="border-top:1px solid #000;padding-top:4px;margin-top:2px"><span>Total Revenue:</span><span>${fmt(summary.totalRevenue)}</span></div>
+${summary.visaCommission > 0 ? `<div class="row"><span>Visa Commission (${summary.visaPercent}%):</span><span>-${fmt(summary.visaCommission)}</span></div>` : ""}
 ${isOwner && summary.expensesTotal > 0 ? `<div class="row"><span>Expenses:</span><span>-${fmt(summary.expensesTotal)}</span></div>` : ""}
 ${isOwner ? `<div class="row bold"><span>Net Revenue:</span><span>${fmt(summary.netRevenue)}</span></div>` : ""}
 ${topServicesHtml}
@@ -149,6 +150,17 @@ interface Expense {
   date: string;
   amount: number;
   reason: string;
+  paymentMethod: string;
+  category: string | null;
+}
+
+interface Advance {
+  id: string;
+  date: string;
+  barberName: string;
+  amount: number;
+  paymentMethod: string;
+  notes: string | null;
 }
 
 interface Summary {
@@ -159,7 +171,14 @@ interface Summary {
   tipsTotal: number;
   discountsTotal: number;
   expensesTotal: number;
+  cashExpenses: number;
+  cardExpenses: number;
+  visaPercent: number;
+  visaCommission: number;
+  cardNet: number;
   netRevenue: number;
+  advancesTotal: number;
+  penaltiesTotal: number;
   topServices: TopService[];
 }
 
@@ -169,6 +188,7 @@ interface ReportData {
   perBarber: PerBarber[];
   penalties: Penalty[];
   expenses: Expense[];
+  advances: Advance[];
 }
 
 type Preset = "today" | "week" | "month" | "custom";
@@ -259,8 +279,14 @@ export default function ReportsPage() {
       { Field: t("reports.cashRevenue"), Value: data.summary.cashTotal },
       { Field: t("reports.cardRevenue"), Value: data.summary.cardTotal },
       { Field: t("reports.discounts"), Value: data.summary.discountsTotal },
+      { Field: t("reports.visaCommission"), Value: data.summary.visaCommission ?? 0 },
+      { Field: t("reports.cardNet"), Value: data.summary.cardNet ?? 0 },
+      { Field: t("reports.cashExpenses"), Value: data.summary.cashExpenses ?? 0 },
+      { Field: t("reports.cardExpenses"), Value: data.summary.cardExpenses ?? 0 },
       { Field: t("expenses.totalExpenses"), Value: data.summary.expensesTotal },
       { Field: t("expenses.netRevenue"), Value: data.summary.netRevenue },
+      { Field: t("reports.advancesTotal"), Value: data.summary.advancesTotal ?? 0 },
+      { Field: t("salaries.penalties"), Value: data.summary.penaltiesTotal ?? 0 },
       { Field: "Visits", Value: data.summary.visitCount },
       {},
       { Field: "Top Services", Value: "" },
@@ -308,9 +334,23 @@ export default function ReportsPage() {
       const expensesRows = data.expenses.map((e) => ({
         Date: new Date(e.date).toLocaleDateString(),
         Reason: e.reason,
+        "Paid by": e.paymentMethod === "CARD" ? "Visa" : "Cash",
         Amount: e.amount,
       }));
       sheets.push({ name: "Expenses", rows: expensesRows });
+    }
+
+    if ((data.advances?.length ?? 0) > 0) {
+      sheets.push({
+        name: "Advances",
+        rows: data.advances.map((a) => ({
+          Date: new Date(a.date).toLocaleDateString(),
+          Barber: a.barberName,
+          "Paid by": a.paymentMethod === "CARD" ? "Visa" : "Cash",
+          Amount: a.amount,
+          Notes: a.notes ?? "",
+        })),
+      });
     }
 
     downloadExcel(`report-${from}-to-${to}.xlsx`, sheets);
@@ -409,6 +449,36 @@ export default function ReportsPage() {
               <SummaryCard label={t("newVisit.tip")} value={`-${fmtCurrency(data.summary.tipsTotal)}`} danger />
             )}
           </div>
+
+          {/* What the card machine takes, and what is left on the card account */}
+          {(data.summary.cardTotal > 0 || (data.summary.visaCommission ?? 0) > 0) && (
+            <div className="card p-5">
+              <h2 className="text-sm font-semibold text-gray-900 mb-3">{t("finance.cardAccount")}</h2>
+              <div className="space-y-2 text-sm max-w-sm">
+                <div className="flex justify-between text-gray-600">
+                  <span>{t("reports.cardRevenue")}</span>
+                  <span className="text-blue-700">+{fmtCurrency(data.summary.cardTotal)}</span>
+                </div>
+                <div className="flex justify-between text-gray-600">
+                  <span>
+                    {t("reports.visaCommission")}
+                    <span className="text-gray-400"> ({data.summary.visaPercent ?? 0}%)</span>
+                  </span>
+                  <span className="text-red-600">-{fmtCurrency(data.summary.visaCommission ?? 0)}</span>
+                </div>
+                {(data.summary.cardExpenses ?? 0) > 0 && (
+                  <div className="flex justify-between text-gray-600">
+                    <span>{t("reports.cardExpenses")}</span>
+                    <span className="text-red-600">-{fmtCurrency(data.summary.cardExpenses)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between font-bold text-gray-900 pt-2 border-t border-gray-200">
+                  <span>{t("reports.cardNet")}</span>
+                  <span>{fmtCurrency(data.summary.cardNet ?? 0)}</span>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Top services */}
           {data.summary.topServices.length > 0 && (
@@ -564,8 +634,13 @@ export default function ReportsPage() {
           {/* Penalties */}
           {data.penalties.length > 0 && (
             <div className="card overflow-hidden">
-              <div className="px-4 py-3 border-b border-gray-100 font-semibold text-gray-700">
-                {t("reports.penaltiesList")} ({data.penalties.length})
+              <div className="px-4 py-3 border-b border-gray-100">
+                <span className="font-semibold text-gray-700">
+                  {t("reports.penaltiesList")} ({data.penalties.length})
+                </span>
+                <span className="block text-xs font-normal text-gray-500 mt-0.5">
+                  {t("reports.payrollOnlyNote")}
+                </span>
               </div>
               <table className="w-full text-sm">
                 <thead>
@@ -590,6 +665,45 @@ export default function ReportsPage() {
             </div>
           )}
 
+          {/* Advances: shown for the record, never subtracted from revenue */}
+          {isOwner && (data.advances?.length ?? 0) > 0 && (
+            <div className="card overflow-hidden">
+              <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+                <span className="font-semibold text-gray-700">
+                  {t("reports.advancesList")} ({data.advances.length})
+                </span>
+                <span className="text-sm font-bold text-gray-700">
+                  {fmtCurrency(data.summary.advancesTotal ?? 0)}
+                </span>
+              </div>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-gray-50 border-b border-gray-100">
+                    <th className="th-start px-4 py-2 font-medium text-gray-500">{t("field.date")}</th>
+                    <th className="th-start px-4 py-2 font-medium text-gray-500">{t("field.barber")}</th>
+                    <th className="th-start px-4 py-2 font-medium text-gray-500">{t("expenses.paidBy")}</th>
+                    <th className="text-end px-4 py-2 font-medium text-gray-500">{t("field.amount")}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {data.advances.map((a) => (
+                    <tr key={a.id} className="hover:bg-gray-50">
+                      <td className="px-4 py-2 text-gray-500 text-xs whitespace-nowrap">{fmtDate(a.date)}</td>
+                      <td className="px-4 py-2">{a.barberName}</td>
+                      <td className="px-4 py-2 text-gray-500 text-xs">
+                        {a.paymentMethod === "CARD" ? t("common.card") : t("common.cash")}
+                      </td>
+                      <td className="px-4 py-2 text-end font-medium text-gray-900">{fmtCurrency(a.amount)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div className="px-4 py-2 text-xs text-gray-500 bg-gray-50 border-t border-gray-100">
+                {t("reports.payrollOnlyNote")}
+              </div>
+            </div>
+          )}
+
           {/* Expenses */}
           {isOwner && data.expenses.length > 0 && (
             <div className="card overflow-hidden">
@@ -606,6 +720,7 @@ export default function ReportsPage() {
                   <tr className="bg-gray-50 border-b border-gray-100">
                     <th className="th-start px-4 py-2 font-medium text-gray-500">{t("field.date")}</th>
                     <th className="th-start px-4 py-2 font-medium text-gray-500">{t("field.reason")}</th>
+                    <th className="th-start px-4 py-2 font-medium text-gray-500">{t("expenses.paidBy")}</th>
                     <th className="text-end px-4 py-2 font-medium text-gray-500">{t("expenses.amount")}</th>
                   </tr>
                 </thead>
@@ -614,10 +729,23 @@ export default function ReportsPage() {
                     <tr key={e.id} className="hover:bg-gray-50">
                       <td className="px-4 py-2 text-gray-500 text-xs whitespace-nowrap">{fmtDate(e.date)}</td>
                       <td className="px-4 py-2 text-gray-900">{e.reason}</td>
+                      <td className="px-4 py-2 text-gray-500 text-xs">
+                        {e.paymentMethod === "CARD" ? t("common.card") : t("common.cash")}
+                      </td>
                       <td className="px-4 py-2 text-end font-semibold text-red-600">-{fmtCurrency(e.amount)}</td>
                     </tr>
                   ))}
                 </tbody>
+                <tfoot>
+                  <tr className="bg-gray-50 border-t border-gray-100 text-xs text-gray-600">
+                    <td colSpan={2} className="px-4 py-2">{t("reports.cashExpenses")}</td>
+                    <td colSpan={2} className="px-4 py-2 text-end">-{fmtCurrency(data.summary.cashExpenses ?? 0)}</td>
+                  </tr>
+                  <tr className="bg-gray-50 text-xs text-gray-600">
+                    <td colSpan={2} className="px-4 py-2">{t("reports.cardExpenses")}</td>
+                    <td colSpan={2} className="px-4 py-2 text-end">-{fmtCurrency(data.summary.cardExpenses ?? 0)}</td>
+                  </tr>
+                </tfoot>
               </table>
             </div>
           )}

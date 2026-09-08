@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
+import { getJournalOutflows, getVisaCommissionPercent, visaCommissionOn, round2 } from "@/lib/finance";
 
 export async function GET(
   _req: NextRequest,
@@ -46,6 +47,10 @@ export async function GET(
       .filter((v) => v.paymentMethod === "MIXED")
       .reduce((s, v) => s + (v.cashAmount ?? 0) + (v.tip ?? 0), 0);
 
+    const mixedCardAmount = session.visits
+      .filter((v) => v.paymentMethod === "MIXED")
+      .reduce((s, v) => s + (v.cardAmount ?? 0), 0);
+
     const discountsTotal = session.visits.reduce((s, v) => {
       const subtotal = v.items.reduce(
         (sum, i) => sum + i.priceAtTime * i.quantity,
@@ -64,20 +69,25 @@ export async function GET(
       .filter((m) => m.type === "OUT")
       .reduce((s, m) => s + m.amount, 0);
 
-    // Expenses logged during this session's time window
-    const expenseRows = await prisma.expense.findMany({
-      where: {
-        date: {
-          gte: session.openedAt,
-          lte: session.closedAt ?? new Date(),
-        },
-      },
-    });
-    const expensesTotal = expenseRows.reduce((s, e) => s + e.amount, 0);
+    // Expenses and advances inside this session window. Only the cash ones can
+    // move the drawer; the card ones settle on the card account.
+    const outflows = await getJournalOutflows(session.openedAt, session.closedAt ?? new Date());
 
-    const expectedCash = session.openingCash + cashSales + cashIn - cashOut - expensesTotal;
+    const cardSales = cardTotal + mixedCardAmount;
+    const visaPercent = await getVisaCommissionPercent();
+    const visaCommission = visaCommissionOn(cardSales, visaPercent);
+    const cardNet = round2(cardSales - visaCommission - outflows.cardExpenses - outflows.cardAdvances);
+
+    const expectedCash = round2(
+      session.openingCash +
+        cashSales +
+        cashIn -
+        cashOut -
+        outflows.cashExpenses -
+        outflows.cashAdvances
+    );
     const countedCash = session.closingCashCounted ?? null;
-    const difference = countedCash !== null ? countedCash - expectedCash : null;
+    const difference = countedCash !== null ? round2(countedCash - expectedCash) : null;
 
     // Revenue per barber
     const barberMap = new Map<
@@ -140,7 +150,17 @@ export async function GET(
         discountsTotal,
         cashIn,
         cashOut,
-        expensesTotal,
+        expensesTotal: outflows.expensesTotal,
+        cashExpenses: outflows.cashExpenses,
+        cardExpenses: outflows.cardExpenses,
+        cashAdvances: outflows.cashAdvances,
+        cardAdvances: outflows.cardAdvances,
+        advancesTotal: outflows.advancesTotal,
+        mixedCardAmount,
+        cardSales,
+        visaPercent,
+        visaCommission,
+        cardNet,
         cashSales,
         expectedCash,
         countedCash,

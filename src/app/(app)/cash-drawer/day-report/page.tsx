@@ -27,22 +27,68 @@ interface Summary {
   cashTotal: number;
   cardTotal: number;
   mixedCashAmount: number;
+  mixedCardAmount: number;
   discountsTotal: number;
   cashIn: number;
   cashOut: number;
   expensesTotal: number;
+  cashExpenses: number;
+  cardExpenses: number;
+  advancesTotal: number;
+  cashAdvances: number;
+  cardAdvances: number;
+  visaPercent: number;
+  visaCommission: number;
   cashSales: number;
+  cardSales: number;
+  cardNet: number;
   totalRevenue: number;
+  netRevenue?: number;
   totalOpeningCash: number;
   expectedCash: number;
   totalCountedCash: number | null;
   difference: number | null;
 }
 
+interface ExpenseRow {
+  id: string;
+  date: string;
+  amount: number;
+  reason: string;
+  paymentMethod: string;
+  category: string | null;
+}
+
+interface AdvanceRow {
+  id: string;
+  date: string;
+  amount: number;
+  paymentMethod: string;
+  barberName: string;
+  notes: string | null;
+}
+
+interface PurchasesBlock {
+  summary: { total: number; cash: number; card: number; credit: number };
+  rows: {
+    id: string;
+    date: string;
+    number: string | null;
+    supplierName: string | null;
+    paymentType: string;
+    total: number;
+  }[];
+}
+
 interface DayReport {
   date: string;
+  isOwner: boolean;
   sessions: SessionRow[];
   summary: Summary;
+  expenses: ExpenseRow[];
+  advances?: AdvanceRow[];
+  purchases?: PurchasesBlock;
+  transfersCount: number;
   topServices: { name: string; count: number }[];
 }
 
@@ -113,7 +159,8 @@ ${shop.shopAddress ? `<p>${shop.shopAddress}</p>` : ""}
 <div class="bold">REVENUE</div>
 <div class="row"><span>Total Visits:</span><span>${summary.totalVisits}</span></div>
 <div class="row"><span>Cash Sales:</span><span>${fmt(summary.cashSales)}</span></div>
-<div class="row"><span>Card Sales:</span><span>${fmt(summary.cardTotal)}</span></div>
+<div class="row"><span>Card Sales:</span><span>${fmt(summary.cardSales)}</span></div>
+${summary.visaCommission > 0 ? `<div class="row"><span>Visa Commission (${summary.visaPercent}%):</span><span>-${fmt(summary.visaCommission)}</span></div>` : ""}
 ${summary.discountsTotal > 0 ? `<div class="row"><span>Discounts:</span><span>-${fmt(summary.discountsTotal)}</span></div>` : ""}
 <div class="row bold" style="border-top:1px solid #000;padding-top:4px;margin-top:2px"><span>Total Revenue:</span><span>${fmt(summary.totalRevenue)}</span></div>
 <hr />
@@ -122,10 +169,24 @@ ${summary.discountsTotal > 0 ? `<div class="row"><span>Discounts:</span><span>-$
 <div class="row"><span>+ Cash Sales:</span><span>${fmt(summary.cashSales)}</span></div>
 ${summary.cashIn > 0 ? `<div class="row"><span>+ Cash In:</span><span>${fmt(summary.cashIn)}</span></div>` : ""}
 ${summary.cashOut > 0 ? `<div class="row"><span>- Cash Out:</span><span>${fmt(summary.cashOut)}</span></div>` : ""}
-${summary.expensesTotal > 0 ? `<div class="row"><span>- Expenses:</span><span>${fmt(summary.expensesTotal)}</span></div>` : ""}
+${summary.cashExpenses > 0 ? `<div class="row"><span>- Cash Expenses:</span><span>${fmt(summary.cashExpenses)}</span></div>` : ""}
+${summary.cashAdvances > 0 ? `<div class="row"><span>- Advances:</span><span>${fmt(summary.cashAdvances)}</span></div>` : ""}
 <div class="row bold"><span>Expected:</span><span>${fmt(summary.expectedCash)}</span></div>
 ${summary.totalCountedCash !== null ? `<div class="row"><span>Counted:</span><span>${fmt(summary.totalCountedCash)}</span></div>` : ""}
 ${summary.difference !== null ? `<div class="row bold"><span>Difference:</span><span>${diffLine}</span></div>` : ""}
+<hr />
+<div class="bold">CARD ACCOUNT</div>
+<div class="row"><span>Card Sales:</span><span>${fmt(summary.cardSales)}</span></div>
+${summary.visaCommission > 0 ? `<div class="row"><span>- Visa Commission:</span><span>${fmt(summary.visaCommission)}</span></div>` : ""}
+${summary.cardExpenses > 0 ? `<div class="row"><span>- Visa Expenses:</span><span>${fmt(summary.cardExpenses)}</span></div>` : ""}
+${summary.cardAdvances > 0 ? `<div class="row"><span>- Advances (visa):</span><span>${fmt(summary.cardAdvances)}</span></div>` : ""}
+<div class="row bold"><span>Net Card:</span><span>${fmt(summary.cardNet)}</span></div>
+${
+  summary.netRevenue !== undefined
+    ? `<hr /><div class="row bold"><span>Net Revenue:</span><span>${fmt(summary.netRevenue)}</span></div>`
+    : ""
+}
+${summary.advancesTotal > 0 ? `<div class="row"><span>Advances (payroll):</span><span>${fmt(summary.advancesTotal)}</span></div>` : ""}
 ${topServices.length > 0 ? `<hr /><div class="bold">TOP SERVICES</div><table>${servicesHtml}</table>` : ""}
 ${sessions.length > 1 ? `<hr /><div class="bold">SESSIONS</div><table>${sessionsHtml}</table>` : ""}
 <hr />
@@ -229,7 +290,7 @@ function DayReportContent() {
             </div>
             <div className="card p-4 text-center">
               <div className="text-xs text-gray-500">{t("cashDrawer.cardSales")}</div>
-              <div className="text-2xl font-bold text-blue-700">{fmtCurrency(s!.cardTotal)}</div>
+              <div className="text-2xl font-bold text-blue-700">{fmtCurrency(s!.cardSales)}</div>
             </div>
           </div>
 
@@ -257,10 +318,16 @@ function DayReportContent() {
                   <span className="text-red-600">-{fmtCurrency(s!.cashOut)}</span>
                 </div>
               )}
-              {s!.expensesTotal > 0 && (
+              {s!.cashExpenses > 0 && (
                 <div className="flex justify-between text-gray-600">
-                  <span>{t("expenses.title")}</span>
-                  <span className="text-red-600">-{fmtCurrency(s!.expensesTotal)}</span>
+                  <span>{t("cashDrawer.cashExpenses")}</span>
+                  <span className="text-red-600">-{fmtCurrency(s!.cashExpenses)}</span>
+                </div>
+              )}
+              {s!.cashAdvances > 0 && (
+                <div className="flex justify-between text-gray-600">
+                  <span>{t("cashDrawer.advances")}</span>
+                  <span className="text-red-600">-{fmtCurrency(s!.cashAdvances)}</span>
                 </div>
               )}
               <div className="flex justify-between font-bold text-gray-900 pt-2 border-t border-gray-200">
@@ -285,6 +352,103 @@ function DayReportContent() {
               )}
             </div>
           </div>
+
+          {/* Card account: what the machine actually leaves in the bank */}
+          <div className="card p-5">
+            <h2 className="text-sm font-semibold text-gray-900 mb-4">{t("cashDrawer.cardAccount")}</h2>
+            <div className="space-y-2 text-sm max-w-sm">
+              <div className="flex justify-between text-gray-600">
+                <span>{t("cashDrawer.cardSales")}</span>
+                <span className="text-blue-700">+{fmtCurrency(s!.cardSales)}</span>
+              </div>
+              {s!.visaCommission > 0 && (
+                <div className="flex justify-between text-gray-600">
+                  <span>
+                    {t("cashDrawer.visaCommission")}
+                    <span className="text-gray-400"> ({s!.visaPercent}%)</span>
+                  </span>
+                  <span className="text-red-600">-{fmtCurrency(s!.visaCommission)}</span>
+                </div>
+              )}
+              {s!.cardExpenses > 0 && (
+                <div className="flex justify-between text-gray-600">
+                  <span>{t("cashDrawer.cardExpenses")}</span>
+                  <span className="text-red-600">-{fmtCurrency(s!.cardExpenses)}</span>
+                </div>
+              )}
+              {s!.cardAdvances > 0 && (
+                <div className="flex justify-between text-gray-600">
+                  <span>{t("cashDrawer.advances")}</span>
+                  <span className="text-red-600">-{fmtCurrency(s!.cardAdvances)}</span>
+                </div>
+              )}
+              <div className="flex justify-between font-bold text-gray-900 pt-2 border-t border-gray-200">
+                <span>{t("cashDrawer.cardNet")}</span>
+                <span>{fmtCurrency(s!.cardNet)}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Owner view: the profit line and the warehouse money for the day */}
+          {report.isOwner && (
+            <div className="card p-5">
+              <h2 className="text-sm font-semibold text-gray-900 mb-4">{t("cashDrawer.netRevenue")}</h2>
+              <div className="space-y-2 text-sm max-w-sm">
+                <div className="flex justify-between text-gray-600">
+                  <span>{t("reports.totalRevenue")}</span>
+                  <span>{fmtCurrency(s!.totalRevenue)}</span>
+                </div>
+                <div className="flex justify-between text-gray-600">
+                  <span>{t("expenses.totalExpenses")}</span>
+                  <span className="text-red-600">-{fmtCurrency(s!.expensesTotal)}</span>
+                </div>
+                {s!.visaCommission > 0 && (
+                  <div className="flex justify-between text-gray-600">
+                    <span>{t("cashDrawer.visaCommission")}</span>
+                    <span className="text-red-600">-{fmtCurrency(s!.visaCommission)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between font-bold text-gray-900 pt-2 border-t border-gray-200">
+                  <span>{t("cashDrawer.netRevenue")}</span>
+                  <span>{fmtCurrency(s!.netRevenue ?? 0)}</span>
+                </div>
+              </div>
+
+              {/* Money that moved but is not a cost of the day */}
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                  {t("cashDrawer.memoTitle")}
+                </div>
+                <div className="flex justify-between text-sm text-gray-600 max-w-sm">
+                  <span>{t("cashDrawer.advancesMemo")}</span>
+                  <span>{fmtCurrency(s!.advancesTotal)}</span>
+                </div>
+                <div className="text-xs text-gray-400 mt-1">{t("cashDrawer.penaltiesMemo")}</div>
+              </div>
+
+              {report.purchases && report.purchases.summary.total > 0 && (
+                <div className="mt-4 pt-4 border-t border-gray-100">
+                  <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                    {t("cashDrawer.purchases")}
+                  </div>
+                  <div className="space-y-1 text-sm max-w-sm">
+                    <div className="flex justify-between text-gray-600">
+                      <span>{t("purchases.cashTotal")}</span>
+                      <span>{fmtCurrency(report.purchases.summary.cash)}</span>
+                    </div>
+                    <div className="flex justify-between text-gray-600">
+                      <span>{t("purchases.cardTotal")}</span>
+                      <span>{fmtCurrency(report.purchases.summary.card)}</span>
+                    </div>
+                    <div className="flex justify-between text-gray-600">
+                      <span>{t("purchases.creditTotal")}</span>
+                      <span>{fmtCurrency(report.purchases.summary.credit)}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Top services */}
           {report.topServices.length > 0 && (

@@ -1,10 +1,10 @@
-import { requireOwnerOrCashierPage } from "@/lib/guards";
+import { requireOwnerPage } from "@/lib/guards";
 
 export default async function AttendanceLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  await requireOwnerOrCashierPage();
+  await requireOwnerPage();
   return <>{children}</>;
 }

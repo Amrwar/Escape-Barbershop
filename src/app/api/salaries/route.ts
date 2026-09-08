@@ -38,6 +38,10 @@ export async function GET(req: NextRequest) {
           where: { date: { gte: periodStart, lte: periodEnd } },
           select: { amount: true, reason: true, date: true, id: true },
         },
+        advances: {
+          where: { date: { gte: periodStart, lte: periodEnd } },
+          select: { amount: true, paymentMethod: true, notes: true, date: true, id: true },
+        },
         attendance: {
           where: { date: { gte: periodStart, lte: periodEnd } },
         },
@@ -71,11 +75,14 @@ export async function GET(req: NextRequest) {
 
       const baseSalary = settings?.baseSalary ?? 0;
       const gross = baseSalary + commission;
+      // Penalties and advances are recovered here and nowhere else: neither one
+      // is ever charged against daily revenue.
       const penaltiesTotal = barber.penalties.reduce((s, p) => s + p.amount, 0);
+      const advancesTotal = barber.advances.reduce((s, a) => s + a.amount, 0);
       const absentDays = barber.attendance.length;
       const dailyRate = baseSalary / 30;
       const attendanceDeduction = absentDays * dailyRate;
-      const net = gross - penaltiesTotal - attendanceDeduction;
+      const net = gross - penaltiesTotal - advancesTotal - attendanceDeduction;
 
       return {
         barberId: barber.id,
@@ -91,6 +98,8 @@ export async function GET(req: NextRequest) {
         gross,
         penaltiesTotal,
         penalties: barber.penalties,
+        advancesTotal,
+        advances: barber.advances,
         absentDays,
         dailyRate,
         attendanceDeduction,

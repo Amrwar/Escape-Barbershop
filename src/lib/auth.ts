@@ -74,6 +74,15 @@ export async function requireOwner() {
   return session;
 }
 
+/** Running the till is a floor job: the cashier does it, the owner can too. */
+export async function requireOwnerOrCashier() {
+  const session = await getSession();
+  if (!session || (session.user.role !== "OWNER" && session.user.role !== "CASHIER")) {
+    throw new Error("Unauthorized: Owner or cashier access required");
+  }
+  return session;
+}
+
 export async function requireAuth() {
   const session = await getSession();
   if (!session) {

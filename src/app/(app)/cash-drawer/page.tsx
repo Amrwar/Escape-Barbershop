@@ -32,6 +32,15 @@ interface SessionData {
     cashIn: number;
     cashOut: number;
     expensesTotal: number;
+    cashExpenses: number;
+    cardExpenses: number;
+    cashAdvances: number;
+    cardAdvances: number;
+    advancesTotal: number;
+    cardSales: number;
+    cardNet: number;
+    visaPercent: number;
+    visaCommission: number;
     expectedCash: number;
   };
 }
@@ -57,6 +66,9 @@ interface DayGroup {
 export default function CashDrawerPage() {
   const { data: authSession } = useSession();
   const isOwner = authSession?.user?.role === "OWNER";
+  // Opening, closing and recording cash movements is floor work; deleting
+  // movements or sessions stays with the owner.
+  const canOperate = isOwner || authSession?.user?.role === "CASHIER";
   const { t, fmtCurrency } = useTranslation();
 
   const [session, setSession] = useState<SessionData | null | undefined>(undefined);
@@ -329,7 +341,7 @@ export default function CashDrawerPage() {
           <div className="card p-8 text-center">
             <div className="text-4xl mb-3">🗃️</div>
             <p className="text-gray-500 mb-6">{t("cashDrawer.noOpenSession")}</p>
-            {isOwner && (
+            {canOperate && (
               <button onClick={() => setOpenModal(true)} className="btn-primary">
                 {t("cashDrawer.openDrawer")}
               </button>
@@ -391,11 +403,19 @@ export default function CashDrawerPage() {
                   </span>
                 </div>
               )}
-              {session.visitSummary.expensesTotal > 0 && (
+              {session.visitSummary.cashAdvances > 0 && (
+                <div className="flex justify-between text-gray-600">
+                  <span>{t("cashDrawer.advances")}</span>
+                  <span className="text-red-600">
+                    -{fmtCurrency(session.visitSummary.cashAdvances)}
+                  </span>
+                </div>
+              )}
+              {session.visitSummary.cashExpenses > 0 && (
                 <div className="flex justify-between text-gray-600">
                   <span>{t("expenses.title")}</span>
                   <span className="text-red-600">
-                    -{fmtCurrency(session.visitSummary.expensesTotal)}
+                    -{fmtCurrency(session.visitSummary.cashExpenses)}
                   </span>
                 </div>
               )}
@@ -470,8 +490,8 @@ export default function CashDrawerPage() {
           {/* Recent days */}
           {recentDays.length > 0 && <RecentDays days={recentDays} isOwner={isOwner} onDelete={(id) => { setDeleteSessionId(id); setDeletePin(""); setDeleteError(""); setDeleteModal(true); }} viewDayLabel={t("cashDrawer.viewDayReport")} viewReportLabel={t("cashDrawer.viewReport")} deleteLabel={t("action.delete")} />}
 
-          {/* Owner actions */}
-          {isOwner && (
+          {/* Drawer actions */}
+          {canOperate && (
             <div className="flex flex-wrap gap-3">
               <button
                 onClick={() => {

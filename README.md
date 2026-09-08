@@ -86,17 +86,40 @@ DATABASE_URL="your-prod-url" npm run db:seed
 
 ## Features
 
-| Feature | OWNER | BARBER |
-|---------|-------|--------|
-| Dashboard (stats + charts) | ✅ | ✅ (own data) |
-| New Visit | ✅ | ✅ |
-| View Visits | ✅ (all) | ✅ (own) |
-| Customers | ✅ | ✅ |
-| Services catalog | ✅ | — |
-| Barbers management | ✅ | — |
-| Salaries & Penalties | ✅ | — |
+| Feature | OWNER | CASHIER |
+|---------|-------|---------|
+| Dashboard | full | today only |
+| New visit / visits | yes | yes |
+| Cash drawer | yes | yes (read) |
+| Expenses (cash or visa) | yes | yes |
+| Issue notes (main store to branch) | yes | yes |
+| Admin console | yes | no |
+| Reports, day journal | yes | no |
+| Salaries, penalties, advances | yes | no |
+| Purchases, suppliers, stocktake, stock balances | yes | no |
+| Services, barbers, settings | yes | no |
 
----
+Everything an owner needs is gathered on `/admin`.
+
+## How the money is accounted for
+
+Four rules decide where every figure lands:
+
+1. **Expenses and advances are paid in cash or by visa.** Cash ones reduce the
+   drawer, visa ones reduce the card account. Both are visible split in the day
+   journal.
+2. **Penalties never touch the daily journal.** A penalty is deducted in the
+   payroll sheet only. The same is true of a salary advance: the money leaves
+   the drawer, but it is recovered from payroll, so it is never an expense.
+3. **The warehouse feeds the journal.** A cash or visa purchase invoice posts an
+   expense on its own date; a credit invoice posts nothing until the supplier is
+   paid. Stock balances come from a single movement ledger (purchases in, issue
+   notes between locations, usage out, stocktake adjustments), so a deleted
+   document always reverses cleanly. A stocktake difference is reported at cost
+   but never posted as an expense — the purchase was already expensed.
+4. **Visa collections carry a commission.** Set the rate once in
+   Settings → Finance; it is deducted from the card account and from net revenue
+   everywhere. Cash pays no commission.
 
 ## Useful Scripts
 

@@ -8,11 +8,16 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { EditPinModal } from "@/components/ui/EditPinModal";
 import { useTranslation } from "@/lib/i18n";
 
+type PayMethod = "CASH" | "CARD";
+
 interface Expense {
   id: string;
   date: string;
   amount: number;
   reason: string;
+  paymentMethod: PayMethod;
+  category: string | null;
+  locked: boolean;
 }
 
 export default function ExpensesPage() {
@@ -29,7 +34,12 @@ export default function ExpensesPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   // Add form
-  const [form, setForm] = useState({ date: today, amount: "", reason: "" });
+  const [form, setForm] = useState<{ date: string; amount: string; reason: string; paymentMethod: PayMethod }>({
+    date: today,
+    amount: "",
+    reason: "",
+    paymentMethod: "CASH",
+  });
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
 
@@ -66,13 +76,16 @@ export default function ExpensesPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          date: form.date,
+          // A same-day entry carries the current time, otherwise it lands at
+          // midnight and falls outside the open drawer session window.
+          date: form.date === today ? new Date().toISOString() : form.date,
           amount: parseFloat(form.amount),
           reason: form.reason.trim(),
+          paymentMethod: form.paymentMethod,
         }),
       });
       if (res.ok) {
-        setForm({ date: today, amount: "", reason: "" });
+        setForm({ date: today, amount: "", reason: "", paymentMethod: form.paymentMethod });
         load();
       } else {
         const d = await res.json();
@@ -99,8 +112,14 @@ export default function ExpensesPage() {
 
   const doDelete = async (id: string) => {
     setDeletingId(id);
-    await fetch(`/api/expenses/${id}`, { method: "DELETE" });
+    const res = await fetch(`/api/expenses/${id}`, { method: "DELETE" });
     setDeletingId(null);
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}));
+      if (d.error === "linked_to_purchase" || d.error === "linked_to_supplier_payment") {
+        alert(t("expenses.lockedDelete"));
+      }
+    }
     load();
   };
 
@@ -110,6 +129,13 @@ export default function ExpensesPage() {
   };
 
   const total = expenses.reduce((s, e) => s + e.amount, 0);
+  const cashTotal = expenses.filter((e) => e.paymentMethod !== "CARD").reduce((s, e) => s + e.amount, 0);
+  const cardTotal = expenses.filter((e) => e.paymentMethod === "CARD").reduce((s, e) => s + e.amount, 0);
+
+  const METHODS: { value: PayMethod; label: string; icon: string }[] = [
+    { value: "CASH", label: t("common.cash"), icon: "💵" },
+    { value: "CARD", label: t("common.card"), icon: "💳" },
+  ];
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
@@ -155,6 +181,29 @@ export default function ExpensesPage() {
               required
             />
           </div>
+
+          {/* Cash or visa — this decides which account the money leaves */}
+          <div className="sm:col-span-3">
+            <label className="label">{t("expenses.paidBy")}</label>
+            <div className="flex gap-2">
+              {METHODS.map((m) => (
+                <button
+                  key={m.value}
+                  type="button"
+                  onClick={() => setForm((p) => ({ ...p, paymentMethod: m.value }))}
+                  className={`flex-1 sm:flex-none sm:min-w-32 px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                    form.paymentMethod === m.value
+                      ? "bg-primary-50 border-primary-300 text-primary-700"
+                      : "border-gray-200 text-gray-600 hover:bg-gray-50"
+                  }`}
+                >
+                  <span className="me-1.5">{m.icon}</span>
+                  {m.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {formError && (
             <div className="sm:col-span-3 text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">
               {formError}
@@ -166,6 +215,12 @@ export default function ExpensesPage() {
             </button>
           </div>
         </form>
+
+        {/* Penalties and advances have their own screens; logging them here would
+            charge the day twice. */}
+        <p className="mt-4 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+          ⚠️ {t("expenses.notHereNote")}
+        </p>
       </div>
 
       {/* Filter */}
@@ -181,6 +236,20 @@ export default function ExpensesPage() {
         <button onClick={load} className="btn-primary">{t("action.filter")}</button>
       </div>
 
+      {/* Cash vs visa split */}
+      {!loading && expenses.length > 0 && (
+        <div className="grid grid-cols-2 gap-3 mb-4">
+          <div className="card p-4">
+            <div className="text-xs text-gray-500">{t("expenses.cashTotal")}</div>
+            <div className="text-lg font-bold text-red-600">-{fmtCurrency(cashTotal)}</div>
+          </div>
+          <div className="card p-4">
+            <div className="text-xs text-gray-500">{t("expenses.cardTotal")}</div>
+            <div className="text-lg font-bold text-red-600">-{fmtCurrency(cardTotal)}</div>
+          </div>
+        </div>
+      )}
+
       {/* List */}
       {loading ? (
         <div className="space-y-2">
@@ -194,12 +263,13 @@ export default function ExpensesPage() {
           <div className="text-sm">{t("expenses.noExpenses")}</div>
         </div>
       ) : (
-        <div className="card overflow-hidden">
+        <div className="card overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200">
                 <th className="th-start px-4 py-3 font-medium text-gray-600">{t("field.date")}</th>
                 <th className="th-start px-4 py-3 font-medium text-gray-600">{t("field.reason")}</th>
+                <th className="th-start px-4 py-3 font-medium text-gray-600">{t("expenses.paidBy")}</th>
                 <th className="text-end px-4 py-3 font-medium text-gray-600">{t("expenses.amount")}</th>
                 <th className="px-4 py-3" />
               </tr>
@@ -208,28 +278,47 @@ export default function ExpensesPage() {
               {expenses.map((e) => (
                 <tr key={e.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{fmtDate(e.date)}</td>
-                  <td className="px-4 py-3 text-gray-900">{e.reason}</td>
-                  <td className="px-4 py-3 text-end font-semibold text-red-600">
+                  <td className="px-4 py-3 text-gray-900">
+                    {e.reason}
+                    {e.locked && (
+                      <span className="block text-xs text-gray-400 mt-0.5">{t("expenses.lockedHint")}</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
+                        e.paymentMethod === "CARD"
+                          ? "bg-blue-50 text-blue-700"
+                          : "bg-green-50 text-green-700"
+                      }`}
+                    >
+                      {e.paymentMethod === "CARD" ? "💳" : "💵"}
+                      {e.paymentMethod === "CARD" ? t("common.card") : t("common.cash")}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-end font-semibold text-red-600 whitespace-nowrap">
                     -{fmtCurrency(e.amount)}
                   </td>
                   <td className="px-4 py-3 text-end">
-                    <button
-                      onClick={() => handleDelete(e.id)}
-                      disabled={deletingId === e.id}
-                      className="text-xs text-red-400 hover:text-red-600"
-                    >
-                      {deletingId === e.id ? "…" : t("action.delete")}
-                    </button>
+                    {!e.locked && (
+                      <button
+                        onClick={() => handleDelete(e.id)}
+                        disabled={deletingId === e.id}
+                        className="text-xs text-red-400 hover:text-red-600"
+                      >
+                        {deletingId === e.id ? "…" : t("action.delete")}
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
             </tbody>
             <tfoot>
               <tr className="bg-gray-50 border-t border-gray-200">
-                <td colSpan={2} className="px-4 py-3 font-semibold text-gray-700">
+                <td colSpan={3} className="px-4 py-3 font-semibold text-gray-700">
                   {t("expenses.totalExpenses")}
                 </td>
-                <td className="px-4 py-3 text-end font-bold text-red-600 text-base">
+                <td className="px-4 py-3 text-end font-bold text-red-600 text-base whitespace-nowrap">
                   -{fmtCurrency(total)}
                 </td>
                 <td />

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
+import { getJournalOutflows, getVisaCommissionPercent, visaCommissionOn, round2 } from "@/lib/finance";
 
 export async function GET(req: NextRequest) {
   try {
@@ -22,9 +23,9 @@ export async function GET(req: NextRequest) {
 
     const barberFilter = {};
 
-    const isOwner = session.user.role === "OWNER" || session.user.role === "CASHIER";
+    const isOwner = session.user.role === "OWNER";
 
-    const [todayVisits, monthVisits, topServices, revenuePerBarber, todayExpenses, monthExpenses] =
+    const [todayVisits, monthVisits, topServices, revenuePerBarber, todayOutflows, monthOutflows, visaPercent] =
       await Promise.all([
         prisma.visit.findMany({
           where: { visitAt: { gte: todayStart }, ...barberFilter },
@@ -58,13 +59,10 @@ export async function GET(req: NextRequest) {
               _count: { id: true },
             })
           : Promise.resolve([]),
-        // Wrapped in try-catch so a missing Expense table never breaks the dashboard
-        isOwner
-          ? prisma.expense.findMany({ where: { date: { gte: todayStart } }, select: { amount: true } }).catch(() => [])
-          : Promise.resolve([]),
-        isOwner
-          ? prisma.expense.findMany({ where: { date: { gte: monthStart, lte: monthEnd } }, select: { amount: true } }).catch(() => [])
-          : Promise.resolve([]),
+        // Expenses and advances, split by how they were paid
+        getJournalOutflows(todayStart, new Date(8640000000000000)),
+        getJournalOutflows(monthStart, monthEnd),
+        getVisaCommissionPercent(),
       ]);
 
     // Enrich top services with names
@@ -108,7 +106,15 @@ export async function GET(req: NextRequest) {
           .reduce((s, v) => s + (v.cashAmount ?? (v.paymentMethod === "CASH" ? v.total : 0)), 0);
         const cashIn = openSession.movements.filter((m) => m.type === "IN").reduce((s, m) => s + m.amount, 0);
         const cashOut = openSession.movements.filter((m) => m.type === "OUT").reduce((s, m) => s + m.amount, 0);
-        const expectedCash = openSession.openingCash + cashSales + cashIn - cashOut;
+        const drawerOutflows = await getJournalOutflows(openSession.openedAt, new Date());
+        const expectedCash = round2(
+          openSession.openingCash +
+            cashSales +
+            cashIn -
+            cashOut -
+            drawerOutflows.cashExpenses -
+            drawerOutflows.cashAdvances
+        );
         drawerStatus = { isOpen: true, expectedCash, openSessionId: openSession.id };
       } else {
         const lastClosed = await prisma.cashDrawerSession.findFirst({
@@ -122,16 +128,16 @@ export async function GET(req: NextRequest) {
             .reduce((s, v) => s + (v.cashAmount ?? (v.paymentMethod === "CASH" ? v.total : 0)), 0);
           const cashIn = lastClosed.movements.filter((m) => m.type === "IN").reduce((s, m) => s + m.amount, 0);
           const cashOut = lastClosed.movements.filter((m) => m.type === "OUT").reduce((s, m) => s + m.amount, 0);
-          const expectedCash = lastClosed.openingCash + cashSales + cashIn - cashOut;
-          drawerStatus = { isOpen: false, lastDifference: lastClosed.closingCashCounted - expectedCash };
+          const expectedCash = round2(lastClosed.openingCash + cashSales + cashIn - cashOut);
+          drawerStatus = { isOpen: false, lastDifference: round2(lastClosed.closingCashCounted - expectedCash) };
         }
       }
     } catch {
       // Cash drawer tables not available yet — return default closed status
     }
 
-    const todayExpensesTotal = (todayExpenses as { amount: number }[]).reduce((s, e) => s + e.amount, 0);
-    const monthExpensesTotal = (monthExpenses as { amount: number }[]).reduce((s, e) => s + e.amount, 0);
+    const todayExpensesTotal = todayOutflows.expensesTotal;
+    const monthExpensesTotal = monthOutflows.expensesTotal;
 
     // Compute cash/card breakdown
     const computeBreakdown = (visits: { total: number; cashAmount: number | null; cardAmount: number | null; paymentMethod: string; tip: number }[]) => {
@@ -147,17 +153,34 @@ export async function GET(req: NextRequest) {
     const { cash: todayCash, card: todayCard, tips: todayTips } = computeBreakdown(todayVisits);
     const { cash: monthCash, card: monthCard, tips: monthTips } = computeBreakdown(monthVisits);
 
+    // The card machine takes its cut off the card sales, so it comes out of the
+    // day's revenue exactly like an expense does.
+    const todayVisaCommission = visaCommissionOn(todayCard, visaPercent);
+    const monthVisaCommission = visaCommissionOn(monthCard, visaPercent);
+
     return NextResponse.json({
-      todayRevenue: todayVisits.reduce((s, v) => s + v.total, 0) - todayExpensesTotal,
-      monthRevenue: monthVisits.reduce((s, v) => s + v.total, 0) - monthExpensesTotal,
+      todayRevenue: round2(
+        todayVisits.reduce((s, v) => s + v.total, 0) - todayExpensesTotal - todayVisaCommission
+      ),
+      monthRevenue: round2(
+        monthVisits.reduce((s, v) => s + v.total, 0) - monthExpensesTotal - monthVisaCommission
+      ),
       todayCash,
       todayCard,
       todayTips,
       todayExpenses: todayExpensesTotal,
+      todayCashExpenses: todayOutflows.cashExpenses,
+      todayCardExpenses: todayOutflows.cardExpenses,
+      todayAdvances: todayOutflows.advancesTotal,
+      todayVisaCommission,
+      todayCardNet: round2(todayCard - todayVisaCommission - todayOutflows.cardExpenses),
       monthCash,
       monthCard,
       monthTips,
       monthExpenses: monthExpensesTotal,
+      monthAdvances: monthOutflows.advancesTotal,
+      monthVisaCommission,
+      visaPercent,
       visitsToday: todayVisits.length,
       visitsThisMonth: monthVisits.length,
       topServices: topServices.map((s) => ({

@@ -1,10 +1,10 @@
-import { requireAuthPage } from "@/lib/guards";
+import { requireOwnerPage } from "@/lib/guards";
 
 export default async function ReportsLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  await requireAuthPage();
+  await requireOwnerPage();
   return <>{children}</>;
 }

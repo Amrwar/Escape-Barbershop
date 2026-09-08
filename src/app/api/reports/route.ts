@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAuth } from "@/lib/auth";
+import { requireOwner } from "@/lib/auth";
+import { getVisaCommissionPercent, visaCommissionOn, round2 } from "@/lib/finance";
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await requireAuth();
+    await requireOwner();
     const { searchParams } = req.nextUrl;
     const from = searchParams.get("from");
     const to = searchParams.get("to");
@@ -21,7 +22,7 @@ export async function GET(req: NextRequest) {
       lte: new Date(to),
     };
 
-    const [visits, penalties, expenses] = await Promise.all([
+    const [visits, penalties, expenses, advances] = await Promise.all([
       prisma.visit.findMany({
         where: {
           visitAt: dateFilter,
@@ -46,6 +47,14 @@ export async function GET(req: NextRequest) {
       !effectiveBarberId
         ? prisma.expense.findMany({ where: { date: dateFilter }, orderBy: { date: "desc" } }).catch(() => [])
         : Promise.resolve([]),
+      // Advances are a payroll matter: listed here as a memo, never as an expense
+      prisma.advance
+        .findMany({
+          where: { date: dateFilter, ...(effectiveBarberId ? { barberId: effectiveBarberId } : {}) },
+          orderBy: { date: "desc" },
+          include: { barber: { select: { name: true } } },
+        })
+        .catch(() => []),
     ]);
 
     // Compute summary
@@ -154,13 +163,56 @@ export async function GET(req: NextRequest) {
       reason: p.reason,
     }));
 
-    const expensesTotal = (expenses as { amount: number }[]).reduce((s, e) => s + e.amount, 0);
-    const expensesOut = (expenses as { id: string; date: Date; amount: number; reason: string }[]).map((e) => ({
+    type ExpenseRow = {
+      id: string;
+      date: Date;
+      amount: number;
+      reason: string;
+      paymentMethod?: string;
+      category?: string | null;
+    };
+    const expenseRows = expenses as ExpenseRow[];
+    const cashExpenses = expenseRows
+      .filter((e) => e.paymentMethod !== "CARD")
+      .reduce((s, e) => s + e.amount, 0);
+    const cardExpenses = expenseRows
+      .filter((e) => e.paymentMethod === "CARD")
+      .reduce((s, e) => s + e.amount, 0);
+    const expensesTotal = cashExpenses + cardExpenses;
+    const expensesOut = expenseRows.map((e) => ({
       id: e.id,
       date: e.date,
       amount: e.amount,
       reason: e.reason,
+      paymentMethod: e.paymentMethod ?? "CASH",
+      category: e.category ?? null,
     }));
+
+    // Card-machine commission on everything collected by card in the period.
+    const visaPercent = await getVisaCommissionPercent();
+    const visaCommission = visaCommissionOn(cardTotal, visaPercent);
+
+    type AdvanceRow = {
+      id: string;
+      date: Date;
+      amount: number;
+      barberId: string;
+      paymentMethod: string;
+      notes: string | null;
+      barber: { name: string } | null;
+    };
+    const advanceRows = advances as AdvanceRow[];
+    const advancesTotal = advanceRows.reduce((s, a) => s + a.amount, 0);
+    const advancesOut = advanceRows.map((a) => ({
+      id: a.id,
+      date: a.date,
+      barberId: a.barberId,
+      barberName: a.barber?.name ?? "",
+      amount: a.amount,
+      paymentMethod: a.paymentMethod,
+      notes: a.notes,
+    }));
+    const penaltiesTotal = penaltiesOut.reduce((s, p) => s + p.amount, 0);
 
     return NextResponse.json({
       visits,
@@ -172,12 +224,23 @@ export async function GET(req: NextRequest) {
         tipsTotal,
         discountsTotal,
         expensesTotal,
-        netRevenue: totalRevenue - expensesTotal,
+        cashExpenses,
+        cardExpenses,
+        visaPercent,
+        visaCommission,
+        cardNet: round2(cardTotal - visaCommission - cardExpenses),
+        // Net revenue carries the two real costs of the period: what was spent,
+        // and what the card machine took. Advances and penalties are payroll
+        // items and are reported separately below.
+        netRevenue: round2(totalRevenue - expensesTotal - visaCommission),
+        advancesTotal,
+        penaltiesTotal,
         topServices,
       },
       perBarber,
       penalties: penaltiesOut,
       expenses: expensesOut,
+      advances: advancesOut,
     });
   } catch (err: unknown) {
     if (err instanceof Error && err.message.includes("Unauthorized")) {
