@@ -79,6 +79,7 @@ export const ADMIN_NAV: NavGroup[] = [
       { href: "/inventory", labelKey: "nav.inventory", icon: "pie" },
       { href: "/settings/receipt", labelKey: "nav.settings", icon: "cog" },
       { href: "/settings/finance", labelKey: "finance.visaCommission", icon: "card" },
+      { href: "/account", labelKey: "nav.accounts", icon: "users" },
     ],
   },
 ];
@@ -99,6 +100,7 @@ const ADMIN_PREFIXES = [
   "/settings",
   "/expenses",
   "/issue-notes",
+  "/account",
   "/cash-drawer/day-report",
   "/cash-drawer/report",
 ];

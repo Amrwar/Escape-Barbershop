@@ -596,6 +596,36 @@ const en = {
   "warehouse.outOfStock": "Out of stock",
   "warehouse.negative": "Negative balance",
   "warehouse.noMatches": "No product matches that search",
+
+  // ===== Added: account and staff logins =====
+
+  // Account and staff logins
+  "nav.accounts": "Accounts",
+  "account.title": "Account",
+  "account.subtitle": "Your login, and who else can sign in",
+  "account.myLogin": "My login",
+  "account.changePassword": "Change password",
+  "account.currentPassword": "Current password",
+  "account.newPassword": "New password",
+  "account.confirmPassword": "Confirm new password",
+  "account.passwordChanged": "Password changed",
+  "account.passwordTooShort": "Password must be at least 8 characters",
+  "account.passwordMismatch": "The two passwords do not match",
+  "account.currentWrong": "Current password is wrong",
+  "account.passwordHint": "At least 8 characters. Only you should know it.",
+  "account.saveFailed": "Could not save",
+  "account.staffTitle": "Staff logins",
+  "account.staffSubtitle": "An owner sees the admin side; a cashier only sees the till",
+  "account.addAccount": "Add account",
+  "account.role": "Role",
+  "account.roleHint": "Cashier: visits, drawer, expenses and issue notes. Owner: everything.",
+  "account.resetPassword": "Reset password",
+  "account.resetHint": "The person can change it themselves afterwards.",
+  "account.you": "you",
+  "account.emailExists": "That email already has an account",
+  "account.lastOwner": "This is the last owner account, so it cannot be removed or demoted",
+  "account.cannotDeleteSelf": "You cannot delete the account you are signed in with",
+  "account.hasHistory": "This account has drawer history, so it is kept for the audit trail",
 } as const;
 
 export type TranslationKey = keyof typeof en;

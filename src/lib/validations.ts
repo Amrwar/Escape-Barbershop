@@ -159,6 +159,34 @@ export type SupplierPaymentInput = z.infer<typeof supplierPaymentSchema>;
 export type StockTransferInput = z.infer<typeof stockTransferSchema>;
 export type StockCountInput = z.infer<typeof stockCountSchema>;
 
+export const passwordChangeSchema = z.object({
+  currentPassword: z.string().min(1, "Current password is required"),
+  newPassword: z.string().min(8, "Password must be at least 8 characters"),
+});
+
+export const profileSchema = z.object({
+  name: z.string().min(1, "Name is required").max(100).optional(),
+  email: z.string().email("Invalid email address").optional(),
+});
+
+export const userCreateSchema = z.object({
+  name: z.string().min(1, "Name is required").max(100),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  role: z.enum(["OWNER", "CASHIER"]),
+});
+
+export const userUpdateSchema = z.object({
+  name: z.string().min(1).max(100).optional(),
+  email: z.string().email("Invalid email address").optional(),
+  password: z.string().min(8, "Password must be at least 8 characters").optional(),
+  role: z.enum(["OWNER", "CASHIER"]).optional(),
+});
+
+export type PasswordChangeInput = z.infer<typeof passwordChangeSchema>;
+export type UserCreateInput = z.infer<typeof userCreateSchema>;
+export type UserUpdateInput = z.infer<typeof userUpdateSchema>;
+
 export type LoginInput = z.infer<typeof loginSchema>;
 export type CustomerInput = z.infer<typeof customerSchema>;
 export type ServiceInput = z.infer<typeof serviceSchema>;

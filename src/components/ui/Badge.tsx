@@ -1,5 +1,5 @@
 interface BadgeProps {
-  variant?: "green" | "red" | "blue" | "yellow" | "gray" | "purple";
+  variant?: "green" | "red" | "blue" | "yellow" | "gray" | "purple" | "ink";
   children: React.ReactNode;
 }
 
@@ -10,6 +10,7 @@ const variants = {
   yellow: "bg-yellow-100 text-yellow-700",
   gray: "bg-gray-100 text-gray-700",
   purple: "bg-purple-100 text-purple-700",
+  ink: "bg-primary-100 text-primary-800",
 };
 
 export function Badge({ variant = "gray", children }: BadgeProps) {

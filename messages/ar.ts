@@ -598,6 +598,36 @@ const ar: Record<TranslationKey, string> = {
   "warehouse.outOfStock": "نفد",
   "warehouse.negative": "رصيد سالب",
   "warehouse.noMatches": "لا يوجد صنف مطابق للبحث",
+
+  // ===== Added: account and staff logins =====
+
+  // Account and staff logins
+  "nav.accounts": "الحسابات والدخول",
+  "account.title": "الحساب",
+  "account.subtitle": "بيانات دخولك، ومن يمكنه الدخول أيضا",
+  "account.myLogin": "بيانات دخولي",
+  "account.changePassword": "تغيير كلمة المرور",
+  "account.currentPassword": "كلمة المرور الحالية",
+  "account.newPassword": "كلمة المرور الجديدة",
+  "account.confirmPassword": "تأكيد كلمة المرور",
+  "account.passwordChanged": "تم تغيير كلمة المرور",
+  "account.passwordTooShort": "كلمة المرور 8 أحرف على الأقل",
+  "account.passwordMismatch": "كلمتا المرور غير متطابقتين",
+  "account.currentWrong": "كلمة المرور الحالية غير صحيحة",
+  "account.passwordHint": "8 أحرف على الأقل، ولا يعرفها غيرك.",
+  "account.saveFailed": "لم يتم الحفظ",
+  "account.staffTitle": "حسابات الدخول",
+  "account.staffSubtitle": "المالك يرى شاشات الإدارة، والكاشير يرى شاشة الكاشير فقط",
+  "account.addAccount": "إضافة حساب",
+  "account.role": "الصلاحية",
+  "account.roleHint": "كاشير: الزيارات والدرج والمصاريف وأذون الصرف. مالك: كل شيء.",
+  "account.resetPassword": "تعيين كلمة مرور",
+  "account.resetHint": "يمكن للشخص تغييرها بنفسه بعد ذلك.",
+  "account.you": "أنت",
+  "account.emailExists": "هذا البريد له حساب بالفعل",
+  "account.lastOwner": "هذا آخر حساب مالك، فلا يمكن حذفه أو تغيير صلاحيته",
+  "account.cannotDeleteSelf": "لا يمكنك حذف الحساب الذي تستخدمه الآن",
+  "account.hasHistory": "هذا الحساب له حركة على الدرج، فيتم الاحتفاظ به للمراجعة",
 };
 
 export default ar;

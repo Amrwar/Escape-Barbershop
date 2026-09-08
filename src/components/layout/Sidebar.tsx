@@ -25,7 +25,13 @@ function UserFooter({ dark }: { dark: boolean }) {
     <div className={`px-4 py-4 border-t space-y-3 ${dark ? "border-white/10" : "border-gray-100"}`}>
       <LanguageToggle />
 
-      <div className="flex items-center gap-3">
+      <Link
+        href="/account"
+        className={`flex items-center gap-3 rounded-lg px-2 py-1.5 -mx-2 transition-colors ${
+          dark ? "hover:bg-white/10" : "hover:bg-gray-50"
+        }`}
+        title={t("account.title")}
+      >
         <div
           className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shrink-0 ${
             dark ? "bg-white/10 text-white" : "bg-primary-100 text-primary-700"
@@ -41,7 +47,7 @@ function UserFooter({ dark }: { dark: boolean }) {
             {role === "OWNER" ? t("common.owner") : t("common.cashier")}
           </div>
         </div>
-      </div>
+      </Link>
 
       <button
         onClick={() => signOut({ callbackUrl: "/login" })}

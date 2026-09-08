@@ -1,3 +1,4 @@
+import { randomBytes } from "crypto";
 import { PrismaClient, CommissionType } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
@@ -66,9 +67,12 @@ async function main() {
   });
   console.log("Default discount PIN seeded (1234)");
 
-  // Create default owner
+  // Create default owner.
+  // A password committed to the repository is a password everybody knows, so the
+  // seed takes it from the environment and otherwise generates a one-off and
+  // prints it. Change it in the app (Account) after the first sign-in.
   const ownerEmail = process.env.SEED_OWNER_EMAIL ?? "Admin@escape.com";
-  const ownerPassword = process.env.SEED_OWNER_PASSWORD ?? "yousef1234";
+  const ownerPassword = process.env.SEED_OWNER_PASSWORD ?? randomBytes(9).toString("base64url");
   const hashedPassword = await bcrypt.hash(ownerPassword, 12);
 
   await prisma.user.upsert({
@@ -82,6 +86,9 @@ async function main() {
     },
   });
   console.log(`Owner account: ${ownerEmail} / ${ownerPassword}`);
+  if (!process.env.SEED_OWNER_PASSWORD) {
+    console.log("  ^ generated for this run only. Existing accounts are never overwritten.");
+  }
 
   // Create a sample barber
   const barber = await prisma.barber.upsert({
@@ -106,8 +113,9 @@ async function main() {
     },
   });
 
-  // Create barber user account
-  const barberPassword = await bcrypt.hash("012345", 12);
+  // Create the sample cashier the same way: no password lives in this file.
+  const cashierPlain = process.env.SEED_CASHIER_PASSWORD ?? randomBytes(9).toString("base64url");
+  const barberPassword = await bcrypt.hash(cashierPlain, 12);
   await prisma.user.upsert({
     where: { email: "cashier@escape.com" },
     update: {},
@@ -119,7 +127,7 @@ async function main() {
       barberId: barber.id,
     },
   });
-  console.log("Sample cashier account: cashier@escape.com / 012345");
+  console.log(`Sample cashier account: cashier@escape.com / ${cashierPlain}`);
 
   console.log("Seeding complete!");
 }

@@ -58,12 +58,15 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000)
 
-**Default accounts created by seed:**
+**Accounts:** the seed creates an owner (`Admin@escape.com`) and a sample
+cashier (`cashier@escape.com`). No password is stored in this repository — the
+seed prints the one it generates, or uses `SEED_OWNER_PASSWORD` /
+`SEED_CASHIER_PASSWORD` if you set them. Existing accounts are never
+overwritten.
 
-| Email | Password | Role |
-|-------|----------|------|
-| owner@barbershop.com | changeme123 | OWNER |
-| ahmed@barbershop.com | barber123 | BARBER |
+Change passwords and add or remove staff logins inside the app, on the
+**Account** screen. An owner sees the admin side; a cashier only ever sees the
+till.
 
 ---
 
