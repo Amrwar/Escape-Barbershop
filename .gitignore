@@ -43,5 +43,3 @@ public/workbox-*.js.map
 # PWA build artifact
 public/swe-worker-*.js
 
-# local Claude Code settings
-.claude/settings.local.json
