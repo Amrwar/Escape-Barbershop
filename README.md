@@ -11,6 +11,36 @@ A production-ready web app to manage your barbershop — visits, customers, sala
 
 ---
 
+## Run it with Docker
+
+Nothing to sign up for and no API keys — the compose file brings its own
+database:
+
+```bash
+docker compose up --build
+```
+
+Then open <http://localhost:3000>. On first boot the container pushes the schema,
+seeds the services and accounts, and seeds six weeks of demo data, so the app
+opens on a populated shop rather than empty tables. The accounts are printed in
+the log and are, by default:
+
+| Email | Password | Sees |
+|-------|----------|------|
+| `Admin@escape.com` | `demo-owner-1234` | Admin side and the till |
+| `cashier@escape.com` | `demo-cashier-1234` | The till only |
+
+Change those by setting `SEED_OWNER_PASSWORD` / `SEED_CASHIER_PASSWORD` in
+`docker-compose.yml`, and set `SEED_DEMO: "0"` there to start with an empty shop
+instead. `docker compose down -v` removes the database volume so the next boot
+starts over.
+
+The demo seed refuses to run against a database that already contains visits, so
+it cannot quietly land on a real shop. Override with `DEMO_FORCE=1` only if that
+is genuinely what you want.
+
+---
+
 ## Quick Start (Local)
 
 ### 1. Prerequisites
@@ -131,6 +161,7 @@ npm run dev          # Start development server
 npm run build        # Production build
 npm run db:push      # Sync Prisma schema → DB
 npm run db:seed      # Seed services + default accounts
+npm run db:seed:demo # Add six weeks of demo visits, expenses, purchases, payroll
 npm run db:studio    # Open Prisma Studio (DB GUI)
 npm run db:generate  # Regenerate Prisma client
 ```

@@ -1,0 +1,49 @@
+# Everything the app needs, with nothing to sign up for:
+#
+#   docker compose up --build
+#
+# then open http://localhost:3000. The database schema is pushed and the demo
+# data is seeded on first boot; the accounts to sign in with are printed in the
+# app container's log.
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: escape
+      POSTGRES_PASSWORD: escape
+      POSTGRES_DB: escape
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U escape -d escape"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    # published so you can inspect the data with any client; drop this line if
+    # port 5432 is already in use on your machine
+    ports:
+      - "5432:5432"
+
+  app:
+    build:
+      context: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://escape:escape@db:5432/escape?schema=public
+      # local-only secret; set your own for anything reachable from outside
+      NEXTAUTH_SECRET: docker-compose-development-secret-change-me
+      NEXTAUTH_URL: http://localhost:3000
+      # the two seeds, both idempotent and both refusing to overwrite real data
+      SEED_ON_START: "1"
+      SEED_DEMO: "1"
+      # fixed demo credentials so the log always shows the same ones
+      SEED_OWNER_PASSWORD: demo-owner-1234
+      SEED_CASHIER_PASSWORD: demo-cashier-1234
+    ports:
+      - "3000:3000"
+
+volumes:
+  db-data:
