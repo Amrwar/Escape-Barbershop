@@ -62,6 +62,7 @@ export async function GET(
     const visaPercent = await getVisaCommissionPercent();
     const visaCommission = visaCommissionOn(cardSales, visaPercent);
     const cardNet = round2(cardSales - visaCommission - outflows.cardExpenses - outflows.cardAdvances);
+    const instapayNet = round2(sales.instapaySales - outflows.instapayExpenses - outflows.instapayAdvances);
 
     const expectedCash = round2(
       session.openingCash +
@@ -142,8 +143,11 @@ export async function GET(
         expensesTotal: outflows.expensesTotal,
         cashExpenses: outflows.cashExpenses,
         cardExpenses: outflows.cardExpenses,
+        instapayExpenses: outflows.instapayExpenses,
         cashAdvances: outflows.cashAdvances,
         cardAdvances: outflows.cardAdvances,
+        instapayAdvances: outflows.instapayAdvances,
+        instapayNet,
         advancesTotal: outflows.advancesTotal,
         cardSales,
         visaPercent,

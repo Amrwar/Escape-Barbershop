@@ -1,4 +1,5 @@
 import { prisma } from "./prisma";
+import { outflowAccount } from "./payments";
 
 /**
  * Money model used across the drawer, day report, reports and dashboard.
@@ -9,9 +10,10 @@ import { prisma } from "./prisma";
  *                       revenue, and never touches the cash drawer.
  *  - Expenses         = real operating costs, split by how they were paid:
  *                       CASH expenses reduce drawer cash, CARD expenses reduce the
- *                       card account. Both reduce net revenue.
+ *                       card account, INSTAPAY expenses reduce the InstaPay
+ *                       account. All of them reduce net revenue.
  *  - Advances (سلف)   = money handed to a barber against a future salary. It leaves
- *                       the drawer (or the card account) but it is NOT an expense:
+ *                       the drawer (or the card or InstaPay account) but it is NOT an expense:
  *                       it is recovered in the payroll sheet, so it never reduces
  *                       revenue.
  *  - Penalties (جزاءات) = payroll-only. They never appear in any daily total.
@@ -42,18 +44,22 @@ export function visaCommissionOn(cardAmount: number, percent: number): number {
 export interface JournalOutflows {
   cashExpenses: number;
   cardExpenses: number;
+  instapayExpenses: number;
   expensesTotal: number;
   cashAdvances: number;
   cardAdvances: number;
+  instapayAdvances: number;
   advancesTotal: number;
 }
 
 const EMPTY_OUTFLOWS: JournalOutflows = {
   cashExpenses: 0,
   cardExpenses: 0,
+  instapayExpenses: 0,
   expensesTotal: 0,
   cashAdvances: 0,
   cardAdvances: 0,
+  instapayAdvances: 0,
   advancesTotal: 0,
 };
 
@@ -84,14 +90,14 @@ export async function getJournalOutflows(from: Date, to?: Date): Promise<Journal
   ]);
 
   const out = { ...EMPTY_OUTFLOWS };
+  const expenseKey = { cash: "cashExpenses", card: "cardExpenses", instapay: "instapayExpenses" } as const;
+  const advanceKey = { cash: "cashAdvances", card: "cardAdvances", instapay: "instapayAdvances" } as const;
   for (const e of expenses) {
-    if (e.paymentMethod === "CARD") out.cardExpenses += e.amount;
-    else out.cashExpenses += e.amount;
+    out[expenseKey[outflowAccount(e.paymentMethod)]] += e.amount;
     out.expensesTotal += e.amount;
   }
   for (const a of advances) {
-    if (a.paymentMethod === "CARD") out.cardAdvances += a.amount;
-    else out.cashAdvances += a.amount;
+    out[advanceKey[outflowAccount(a.paymentMethod)]] += a.amount;
     out.advancesTotal += a.amount;
   }
   return out;

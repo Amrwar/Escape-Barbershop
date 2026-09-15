@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireOwner } from "@/lib/auth";
 import { getVisaCommissionPercent, visaCommissionOn, round2 } from "@/lib/finance";
-import { paymentSplit } from "@/lib/payments";
+import { outflowAccount, paymentSplit } from "@/lib/payments";
 
 export async function GET(req: NextRequest) {
   try {
@@ -172,13 +172,12 @@ export async function GET(req: NextRequest) {
       category?: string | null;
     };
     const expenseRows = expenses as ExpenseRow[];
-    const cashExpenses = expenseRows
-      .filter((e) => e.paymentMethod !== "CARD")
-      .reduce((s, e) => s + e.amount, 0);
-    const cardExpenses = expenseRows
-      .filter((e) => e.paymentMethod === "CARD")
-      .reduce((s, e) => s + e.amount, 0);
-    const expensesTotal = cashExpenses + cardExpenses;
+    const expensesFrom = (account: "cash" | "card" | "instapay") =>
+      expenseRows.filter((e) => outflowAccount(e.paymentMethod ?? "CASH") === account).reduce((s, e) => s + e.amount, 0);
+    const cashExpenses = expensesFrom("cash");
+    const cardExpenses = expensesFrom("card");
+    const instapayExpenses = expensesFrom("instapay");
+    const expensesTotal = cashExpenses + cardExpenses + instapayExpenses;
     const expensesOut = expenseRows.map((e) => ({
       id: e.id,
       date: e.date,
@@ -227,6 +226,8 @@ export async function GET(req: NextRequest) {
         expensesTotal,
         cashExpenses,
         cardExpenses,
+        instapayExpenses,
+        instapayNet: round2(instapayTotal - instapayExpenses),
         visaPercent,
         visaCommission,
         cardNet: round2(cardTotal - visaCommission - cardExpenses),

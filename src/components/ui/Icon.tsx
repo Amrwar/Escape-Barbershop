@@ -21,6 +21,7 @@ export type IconName =
   | "clipboard-check"
   | "cog"
   | "card"
+  | "phone"
   | "plus"
   | "list"
   | "drawer"
@@ -121,6 +122,12 @@ const PATHS: Record<IconName, React.ReactNode> = {
     <>
       <rect x="3" y="6" width="18" height="12" rx="2" />
       <path d="M3 10h18M7 15h3" />
+    </>
+  ),
+  phone: (
+    <>
+      <rect x="7" y="3" width="10" height="18" rx="2" />
+      <path d="M11 17.5h2" />
     </>
   ),
   plus: <path d="M12 5v14M5 12h14" />,

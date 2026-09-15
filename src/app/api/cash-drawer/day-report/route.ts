@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { getVisaCommissionPercent, visaCommissionOn, round2 } from "@/lib/finance";
-import { drawerSales } from "@/lib/payments";
+import { drawerSales, outflowAccount } from "@/lib/payments";
 
 export async function GET(req: NextRequest) {
   try {
@@ -59,12 +59,16 @@ export async function GET(req: NextRequest) {
         .catch(() => [] as { id: string; date: Date; amount: number; paymentMethod: string; notes: string | null; barber: { name: string } }[]),
     ]);
 
-    const cashExpenses = expenseRows.filter((e) => e.paymentMethod !== "CARD").reduce((s, e) => s + e.amount, 0);
-    const cardExpenses = expenseRows.filter((e) => e.paymentMethod === "CARD").reduce((s, e) => s + e.amount, 0);
-    const expensesTotal = cashExpenses + cardExpenses;
-    const cashAdvances = advanceRows.filter((a) => a.paymentMethod !== "CARD").reduce((s, a) => s + a.amount, 0);
-    const cardAdvances = advanceRows.filter((a) => a.paymentMethod === "CARD").reduce((s, a) => s + a.amount, 0);
-    const advancesTotal = cashAdvances + cardAdvances;
+    const sumFrom = (rows: { amount: number; paymentMethod: string }[], account: "cash" | "card" | "instapay") =>
+      rows.filter((r) => outflowAccount(r.paymentMethod) === account).reduce((s, r) => s + r.amount, 0);
+    const cashExpenses = sumFrom(expenseRows, "cash");
+    const cardExpenses = sumFrom(expenseRows, "card");
+    const instapayExpenses = sumFrom(expenseRows, "instapay");
+    const expensesTotal = cashExpenses + cardExpenses + instapayExpenses;
+    const cashAdvances = sumFrom(advanceRows, "cash");
+    const cardAdvances = sumFrom(advanceRows, "card");
+    const instapayAdvances = sumFrom(advanceRows, "instapay");
+    const advancesTotal = cashAdvances + cardAdvances + instapayAdvances;
 
     let totalVisits = 0;
     let discountsTotal = 0;
@@ -106,6 +110,7 @@ export async function GET(req: NextRequest) {
     const visaPercent = await getVisaCommissionPercent();
     const visaCommission = visaCommissionOn(cardSales, visaPercent);
     const cardNet = round2(cardSales - visaCommission - cardExpenses - cardAdvances);
+    const instapayNet = round2(instapaySales - instapayExpenses - instapayAdvances);
 
     const expectedCash = round2(
       totalOpeningCash + cashSales + cashIn - cashOut - cashExpenses - cashAdvances
@@ -197,14 +202,17 @@ export async function GET(req: NextRequest) {
         expensesTotal,
         cashExpenses,
         cardExpenses,
+        instapayExpenses,
         advancesTotal,
         cashAdvances,
         cardAdvances,
+        instapayAdvances,
         visaPercent,
         visaCommission,
         cashSales,
         cardSales,
         instapaySales,
+        instapayNet,
         cardNet,
         totalRevenue,
         ...(isOwner ? { netRevenue } : {}),

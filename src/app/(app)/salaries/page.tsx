@@ -6,6 +6,7 @@ import { Modal } from "@/components/ui/Modal";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Badge } from "@/components/ui/Badge";
 import { useTranslation } from "@/lib/i18n";
+import { paymentMethodKey } from "@/lib/payments";
 import { Note } from "@/components/ui/Note";
 import { ExportButton } from "@/components/ui/ExportButton";
 
@@ -166,7 +167,7 @@ export default function SalariesPage() {
                       [t("common.barber")]: b.name,
                       [t("field.date")]: fmtDate(a.date),
                       [t("field.amount")]: a.amount,
-                      [t("expenses.paidBy")]: a.paymentMethod === "CARD" ? t("common.card") : t("common.cash"),
+                      [t("expenses.paidBy")]: t(paymentMethodKey(a.paymentMethod)),
                       [t("field.notes")]: a.notes ?? "",
                     }))
                   ),
@@ -377,7 +378,7 @@ export default function SalariesPage() {
                     <div key={a.id} className="flex items-center gap-3 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
                       <div className="flex-1 min-w-0">
                         <div className="text-sm text-gray-900">
-                          {a.notes || (a.paymentMethod === "CARD" ? t("common.card") : t("common.cash"))}
+                          {a.notes || t(paymentMethodKey(a.paymentMethod))}
                         </div>
                         <div className="text-xs text-gray-400">{fmtDate(a.date)}</div>
                       </div>

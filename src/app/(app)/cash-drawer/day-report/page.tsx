@@ -7,6 +7,8 @@ import { DateNavInput } from "@/components/ui/DateNavInput";
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { useTranslation } from "@/lib/i18n";
+import { paymentMethodKey } from "@/lib/payments";
+import { InstapayAccountLines } from "@/components/ui/InstapayAccount";
 import { Note } from "@/components/ui/Note";
 import { ExportButton } from "@/components/ui/ExportButton";
 
@@ -36,14 +38,17 @@ interface Summary {
   expensesTotal: number;
   cashExpenses: number;
   cardExpenses: number;
+  instapayExpenses: number;
   advancesTotal: number;
   cashAdvances: number;
   cardAdvances: number;
+  instapayAdvances: number;
   visaPercent: number;
   visaCommission: number;
   cashSales: number;
   cardSales: number;
   instapaySales: number;
+  instapayNet: number;
   cardNet: number;
   totalRevenue: number;
   netRevenue?: number;
@@ -185,6 +190,12 @@ ${summary.visaCommission > 0 ? `<div class="row"><span>- Visa Commission:</span>
 ${summary.cardExpenses > 0 ? `<div class="row"><span>- Visa Expenses:</span><span>${fmt(summary.cardExpenses)}</span></div>` : ""}
 ${summary.cardAdvances > 0 ? `<div class="row"><span>- Advances (visa):</span><span>${fmt(summary.cardAdvances)}</span></div>` : ""}
 <div class="row bold"><span>Net Card:</span><span>${fmt(summary.cardNet)}</span></div>
+${summary.instapaySales > 0 || summary.instapayExpenses > 0 || summary.instapayAdvances > 0 ? `<hr />
+<div class="bold">INSTAPAY ACCOUNT</div>
+<div class="row"><span>InstaPay Sales:</span><span>${fmt(summary.instapaySales)}</span></div>
+${summary.instapayExpenses > 0 ? `<div class="row"><span>- InstaPay Expenses:</span><span>${fmt(summary.instapayExpenses)}</span></div>` : ""}
+${summary.instapayAdvances > 0 ? `<div class="row"><span>- Advances (InstaPay):</span><span>${fmt(summary.instapayAdvances)}</span></div>` : ""}
+<div class="row bold"><span>Net InstaPay:</span><span>${fmt(summary.instapayNet)}</span></div>` : ""}
 ${
   summary.netRevenue !== undefined
     ? `<hr /><div class="row bold"><span>Net Revenue:</span><span>${fmt(summary.netRevenue)}</span></div>`
@@ -264,6 +275,8 @@ function DayReportContent() {
                     [t("cashDrawer.cardNet"), s!.cardNet],
                     [t("cashDrawer.cashExpenses"), -s!.cashExpenses],
                     [t("cashDrawer.cardExpenses"), -s!.cardExpenses],
+                    [t("cashDrawer.instapayExpenses"), -s!.instapayExpenses],
+                    [t("cashDrawer.instapayNet"), s!.instapayNet],
                     [t("cashDrawer.advances"), s!.advancesTotal],
                     [t("cashDrawer.openingBalance"), s!.totalOpeningCash],
                     [t("cashDrawer.cashIn"), s!.cashIn],
@@ -280,7 +293,7 @@ function DayReportContent() {
                   rows: (report.expenses ?? []).map((e) => ({
                     [t("field.date")]: fmtDate(e.date),
                     [t("field.reason")]: e.reason,
-                    [t("expenses.paidBy")]: e.paymentMethod === "CARD" ? t("common.card") : t("common.cash"),
+                    [t("expenses.paidBy")]: t(paymentMethodKey(e.paymentMethod)),
                     [t("expenses.amount")]: e.amount,
                   })),
                 },
@@ -289,7 +302,7 @@ function DayReportContent() {
                   rows: (report.advances ?? []).map((a) => ({
                     [t("field.date")]: fmtDate(a.date),
                     [t("field.barber")]: a.barberName,
-                    [t("expenses.paidBy")]: a.paymentMethod === "CARD" ? t("common.card") : t("common.cash"),
+                    [t("expenses.paidBy")]: t(paymentMethodKey(a.paymentMethod)),
                     [t("field.amount")]: a.amount,
                   })),
                 },
@@ -469,6 +482,19 @@ function DayReportContent() {
               </div>
             </div>
           </div>
+
+          {/* InstaPay account: transfers in, less what was paid out of it */}
+          {(s!.instapaySales > 0 || s!.instapayExpenses > 0 || s!.instapayAdvances > 0) && (
+            <div className="card p-5">
+              <h2 className="text-sm font-semibold text-gray-900 mb-4">{t("finance.instapayAccount")}</h2>
+              <InstapayAccountLines
+                sales={s!.instapaySales}
+                expenses={s!.instapayExpenses}
+                advances={s!.instapayAdvances}
+                net={s!.instapayNet}
+              />
+            </div>
+          )}
 
           {/* Owner view: the profit line and the warehouse money for the day */}
           {report.isOwner && (

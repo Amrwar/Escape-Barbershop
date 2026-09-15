@@ -119,6 +119,17 @@ export function resolvePaymentAmounts(
   }
 }
 
+/**
+ * Expenses and advances leave one of three accounts. Supplier payments are still
+ * cash or card only. Anything unrecognised is treated as cash, as it always was.
+ */
+export const OUTFLOW_METHODS = ["CASH", "CARD", "INSTAPAY"] as const;
+export type OutflowMethod = (typeof OUTFLOW_METHODS)[number];
+
+export function outflowAccount(method: string): "cash" | "card" | "instapay" {
+  return method === "CARD" ? "card" : method === "INSTAPAY" ? "instapay" : "cash";
+}
+
 /** Translation key for a payment method's name. */
 export function paymentMethodKey(method: string) {
   return method === "CARD"

@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { useTranslation } from "@/lib/i18n";
 import { paymentMethodKey, paymentMethodName } from "@/lib/payments";
 import { Note } from "@/components/ui/Note";
+import { InstapayAccountLines } from "@/components/ui/InstapayAccount";
 import { format, startOfWeek, startOfMonth } from "date-fns";
 
 interface ShopSettings {
@@ -177,6 +178,8 @@ interface Summary {
   expensesTotal: number;
   cashExpenses: number;
   cardExpenses: number;
+  instapayExpenses: number;
+  instapayNet: number;
   visaPercent: number;
   visaCommission: number;
   cardNet: number;
@@ -286,6 +289,8 @@ export default function ReportsPage() {
       { Field: t("reports.cardNet"), Value: data.summary.cardNet ?? 0 },
       { Field: t("reports.cashExpenses"), Value: data.summary.cashExpenses ?? 0 },
       { Field: t("reports.cardExpenses"), Value: data.summary.cardExpenses ?? 0 },
+      { Field: t("reports.instapayExpenses"), Value: data.summary.instapayExpenses ?? 0 },
+      { Field: t("cashDrawer.instapayNet"), Value: data.summary.instapayNet ?? 0 },
       { Field: t("expenses.totalExpenses"), Value: data.summary.expensesTotal },
       { Field: t("expenses.netRevenue"), Value: data.summary.netRevenue },
       { Field: t("reports.advancesTotal"), Value: data.summary.advancesTotal ?? 0 },
@@ -337,7 +342,7 @@ export default function ReportsPage() {
       const expensesRows = data.expenses.map((e) => ({
         Date: new Date(e.date).toLocaleDateString(),
         Reason: e.reason,
-        "Paid by": e.paymentMethod === "CARD" ? "Visa" : "Cash",
+        "Paid by": e.paymentMethod === "CARD" ? "Visa" : paymentMethodName(e.paymentMethod),
         Amount: e.amount,
       }));
       sheets.push({ name: "Expenses", rows: expensesRows });
@@ -349,7 +354,7 @@ export default function ReportsPage() {
         rows: data.advances.map((a) => ({
           Date: new Date(a.date).toLocaleDateString(),
           Barber: a.barberName,
-          "Paid by": a.paymentMethod === "CARD" ? "Visa" : "Cash",
+          "Paid by": a.paymentMethod === "CARD" ? "Visa" : paymentMethodName(a.paymentMethod),
           Amount: a.amount,
           Notes: a.notes ?? "",
         })),
@@ -484,6 +489,18 @@ export default function ReportsPage() {
                   <span>{fmtCurrency(data.summary.cardNet ?? 0)}</span>
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* InstaPay: transfers in, less what was paid out of the account */}
+          {((data.summary.instapayTotal ?? 0) > 0 || (data.summary.instapayExpenses ?? 0) > 0) && (
+            <div className="card p-5">
+              <h2 className="text-sm font-semibold text-gray-900 mb-3">{t("finance.instapayAccount")}</h2>
+              <InstapayAccountLines
+                sales={data.summary.instapayTotal ?? 0}
+                expenses={data.summary.instapayExpenses ?? 0}
+                net={data.summary.instapayNet ?? 0}
+              />
             </div>
           )}
 
@@ -696,7 +713,7 @@ export default function ReportsPage() {
                       <td className="px-4 py-2 text-gray-500 text-xs whitespace-nowrap">{fmtDate(a.date)}</td>
                       <td className="px-4 py-2">{a.barberName}</td>
                       <td className="px-4 py-2 text-gray-500 text-xs">
-                        {a.paymentMethod === "CARD" ? t("common.card") : t("common.cash")}
+                        {t(paymentMethodKey(a.paymentMethod))}
                       </td>
                       <td className="px-4 py-2 text-end font-medium text-gray-900">{fmtCurrency(a.amount)}</td>
                     </tr>
@@ -735,7 +752,7 @@ export default function ReportsPage() {
                       <td className="px-4 py-2 text-gray-500 text-xs whitespace-nowrap">{fmtDate(e.date)}</td>
                       <td className="px-4 py-2 text-gray-900">{e.reason}</td>
                       <td className="px-4 py-2 text-gray-500 text-xs">
-                        {e.paymentMethod === "CARD" ? t("common.card") : t("common.cash")}
+                        {t(paymentMethodKey(e.paymentMethod))}
                       </td>
                       <td className="px-4 py-2 text-end font-semibold text-red-600">-{fmtCurrency(e.amount)}</td>
                     </tr>
@@ -750,6 +767,12 @@ export default function ReportsPage() {
                     <td colSpan={2} className="px-4 py-2">{t("reports.cardExpenses")}</td>
                     <td colSpan={2} className="px-4 py-2 text-end">-{fmtCurrency(data.summary.cardExpenses ?? 0)}</td>
                   </tr>
+                  {(data.summary.instapayExpenses ?? 0) > 0 && (
+                    <tr className="bg-gray-50 text-xs text-gray-600">
+                      <td colSpan={2} className="px-4 py-2">{t("reports.instapayExpenses")}</td>
+                      <td colSpan={2} className="px-4 py-2 text-end">-{fmtCurrency(data.summary.instapayExpenses)}</td>
+                    </tr>
+                  )}
                 </tfoot>
               </table>
             </div>

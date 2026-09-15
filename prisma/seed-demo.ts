@@ -363,14 +363,14 @@ async function main() {
       });
     }
 
-    // an expense on roughly half the days, cash or visa
+    // an expense on roughly half the days, cash, visa or InstaPay
     if (chance(0.5)) {
       await prisma.expense.create({
         data: {
           date: new Date(Math.min(opened.getTime() + 4 * 60 * 60 * 1000, now.getTime())),
           amount: between(1, 12) * 50,
           reason: pick(EXPENSE_REASONS),
-          paymentMethod: chance(0.75) ? "CASH" : "CARD",
+          paymentMethod: chance(0.75) ? "CASH" : chance(0.5) ? "CARD" : "INSTAPAY",
         },
       });
     }
@@ -400,7 +400,7 @@ async function main() {
           barberId: barber.id,
           date: dayStart(between(5, 25), 15),
           amount: between(2, 10) * 100,
-          paymentMethod: chance(0.8) ? "CASH" : "CARD",
+          paymentMethod: chance(0.8) ? "CASH" : chance(0.5) ? "CARD" : "INSTAPAY",
           notes: "Advance on salary",
         },
       });

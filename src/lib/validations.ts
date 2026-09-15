@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { VISIT_PAYMENT_METHODS } from "./payments";
+import { OUTFLOW_METHODS, VISIT_PAYMENT_METHODS } from "./payments";
 
 export const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -76,12 +76,14 @@ export const salarySettingsSchema = z.object({
 });
 
 export const payMethodSchema = z.enum(["CASH", "CARD"]);
+/** Expenses and advances can also go out by InstaPay. */
+export const outflowMethodSchema = z.enum(OUTFLOW_METHODS);
 
 export const expenseSchema = z.object({
   date: z.string().min(1, "Date is required"),
   amount: z.number().min(0.01, "Amount must be greater than 0"),
   reason: z.string().min(1, "Reason is required").max(500),
-  paymentMethod: payMethodSchema.default("CASH"),
+  paymentMethod: outflowMethodSchema.default("CASH"),
   category: z.string().max(100).nullable().optional(),
 });
 
@@ -89,7 +91,7 @@ export const advanceSchema = z.object({
   barberId: z.string().min(1, "Barber is required"),
   date: z.string().min(1, "Date is required"),
   amount: z.number().min(0.01, "Amount must be greater than 0"),
-  paymentMethod: payMethodSchema.default("CASH"),
+  paymentMethod: outflowMethodSchema.default("CASH"),
   notes: z.string().max(500).nullable().optional().or(z.literal("")),
 });
 

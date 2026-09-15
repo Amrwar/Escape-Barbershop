@@ -5,11 +5,12 @@ import { format } from "date-fns";
 import { DateNavInput } from "@/components/ui/DateNavInput";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { useTranslation } from "@/lib/i18n";
-import { Icon, type IconName } from "@/components/ui/Icon";
+import { PayMethodBadge, PayMethodPicker } from "@/components/ui/PayMethod";
+import { paymentMethodKey, type OutflowMethod } from "@/lib/payments";
 import { Note } from "@/components/ui/Note";
 import { ExportButton } from "@/components/ui/ExportButton";
 
-type PayMethod = "CASH" | "CARD";
+type PayMethod = OutflowMethod;
 
 interface Advance {
   id: string;
@@ -109,10 +110,6 @@ export default function AdvancesPage() {
   };
 
   const total = advances.reduce((s, a) => s + a.amount, 0);
-  const METHODS: { value: PayMethod; label: string; icon: IconName }[] = [
-    { value: "CASH", label: t("common.cash"), icon: "banknote" },
-    { value: "CARD", label: t("common.card"), icon: "card" },
-  ];
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
@@ -129,7 +126,7 @@ export default function AdvancesPage() {
                 rows: advances.map((a) => ({
                   [t("field.date")]: fmtDate(a.date),
                   [t("field.barber")]: a.barber?.name ?? "",
-                  [t("expenses.paidBy")]: a.paymentMethod === "CARD" ? t("common.card") : t("common.cash"),
+                  [t("expenses.paidBy")]: t(paymentMethodKey(a.paymentMethod)),
                   [t("field.notes")]: a.notes ?? "",
                   [t("field.amount")]: a.amount,
                 })),
@@ -181,23 +178,7 @@ export default function AdvancesPage() {
 
           <div className="sm:col-span-3">
             <label className="label">{t("expenses.paidBy")}</label>
-            <div className="flex gap-2">
-              {METHODS.map((m) => (
-                <button
-                  key={m.value}
-                  type="button"
-                  onClick={() => setForm((p) => ({ ...p, paymentMethod: m.value }))}
-                  className={`flex-1 sm:flex-none sm:min-w-32 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
-                    form.paymentMethod === m.value
-                      ? "bg-primary-50 border-primary-300 text-primary-700"
-                      : "border-gray-200 text-gray-600 hover:bg-gray-50"
-                  }`}
-                >
-                  <Icon name={m.icon} />
-                  {m.label}
-                </button>
-              ))}
-            </div>
+            <PayMethodPicker value={form.paymentMethod} onChange={(m) => setForm((p) => ({ ...p, paymentMethod: m }))} />
           </div>
 
           <div className="sm:col-span-3">
@@ -267,14 +248,7 @@ export default function AdvancesPage() {
                   <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{fmtDate(a.date)}</td>
                   <td className="px-4 py-3 font-medium text-gray-900">{a.barber?.name ?? "—"}</td>
                   <td className="px-4 py-3">
-                    <span
-                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
-                        a.paymentMethod === "CARD" ? "bg-blue-50 text-blue-700" : "bg-green-50 text-green-700"
-                      }`}
-                    >
-                      <Icon name={a.paymentMethod === "CARD" ? "card" : "banknote"} className="w-3.5 h-3.5" />
-                      {a.paymentMethod === "CARD" ? t("common.card") : t("common.cash")}
-                    </span>
+                    <PayMethodBadge method={a.paymentMethod} />
                   </td>
                   <td className="px-4 py-3 text-gray-500">{a.notes ?? ""}</td>
                   <td className="px-4 py-3 text-end font-semibold text-gray-900 whitespace-nowrap">

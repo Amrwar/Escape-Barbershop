@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { useTranslation } from "@/lib/i18n";
 import { paymentMethodKey } from "@/lib/payments";
+import { InstapayAccountLines } from "@/components/ui/InstapayAccount";
 
 interface ShopSettings {
   shopName: string;
@@ -85,6 +86,12 @@ ${summary.cashAdvances > 0 ? `<div class="row"><span>- Advances:</span><span>${f
 <div class="row bold"><span>Expected:</span><span>${fmt(summary.expectedCash)}</span></div>
 ${summary.countedCash !== null ? `<div class="row"><span>Counted:</span><span>${fmt(summary.countedCash)}</span></div>` : ""}
 ${summary.difference !== null ? `<div class="row bold"><span>Difference:</span><span>${diffLine}</span></div>` : ""}
+${summary.instapaySales > 0 || summary.instapayExpenses > 0 || summary.instapayAdvances > 0 ? `<hr />
+<div class="bold">INSTAPAY ACCOUNT</div>
+<div class="row"><span>InstaPay Sales:</span><span>${fmt(summary.instapaySales)}</span></div>
+${summary.instapayExpenses > 0 ? `<div class="row"><span>- InstaPay Expenses:</span><span>${fmt(summary.instapayExpenses)}</span></div>` : ""}
+${summary.instapayAdvances > 0 ? `<div class="row"><span>- Advances (InstaPay):</span><span>${fmt(summary.instapayAdvances)}</span></div>` : ""}
+<div class="row bold"><span>Net InstaPay:</span><span>${fmt(summary.instapayNet)}</span></div>` : ""}
 ${movements.length > 0 ? `<hr /><div class="bold">MOVEMENTS</div>${movementsHtml}` : ""}
 ${topServices.length > 0 ? `<hr /><div class="bold">TOP SERVICES</div>${servicesHtml}` : ""}
 <hr />
@@ -154,6 +161,9 @@ interface ReportData {
     cardExpenses: number;
     cashAdvances: number;
     cardAdvances: number;
+    instapayExpenses: number;
+    instapayAdvances: number;
+    instapayNet: number;
     advancesTotal: number;
     mixedCashAmount: number;
     instapayTotal: number;
@@ -383,6 +393,19 @@ export default function ReportPage() {
               <span className="text-blue-700 tabular-nums">{fmtCurrency(summary.cardNet)}</span>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* 3b. InstaPay account — a bank transfer, so it never reaches the drawer either */}
+      {(summary.instapaySales > 0 || summary.instapayExpenses > 0 || summary.instapayAdvances > 0) && (
+        <div className="card p-5 mb-6">
+          <h2 className="text-sm font-semibold text-gray-900 mb-4">{t("finance.instapayAccount")}</h2>
+          <InstapayAccountLines
+            sales={summary.instapaySales}
+            expenses={summary.instapayExpenses}
+            advances={summary.instapayAdvances}
+            net={summary.instapayNet}
+          />
         </div>
       )}
 

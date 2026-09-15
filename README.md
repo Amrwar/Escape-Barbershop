@@ -138,9 +138,9 @@ Everything an owner needs is gathered on `/admin`.
 
 Five rules decide where every figure lands:
 
-1. **Expenses and advances are paid in cash or by visa.** Cash ones reduce the
-   drawer, visa ones reduce the card account. Both are visible split in the day
-   journal.
+1. **Expenses and advances are paid in cash, by visa or by InstaPay.** Cash ones
+   reduce the drawer, visa ones the card account, InstaPay ones the InstaPay
+   account. All three are visible split in the day journal.
 2. **Penalties never touch the daily journal.** A penalty is deducted in the
    payroll sheet only. The same is true of a salary advance: the money leaves
    the drawer, but it is recovered from payroll, so it is never an expense.

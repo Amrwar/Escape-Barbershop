@@ -386,6 +386,7 @@ enum MovementType {
 enum PayMethod {
   CASH
   CARD
+  INSTAPAY
 }
 
 enum PurchasePayment {

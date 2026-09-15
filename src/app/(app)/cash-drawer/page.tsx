@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Modal } from "@/components/ui/Modal";
 import { useTranslation } from "@/lib/i18n";
+import { InstapayAccountLines } from "@/components/ui/InstapayAccount";
 
 interface Movement {
   id: string;
@@ -41,6 +42,9 @@ interface SessionData {
     mixedCard: number;
     instapaySales: number;
     mixedInstapay: number;
+    instapayExpenses: number;
+    instapayAdvances: number;
+    instapayNet: number;
     cardNet: number;
     visaPercent: number;
     visaCommission: number;
@@ -511,6 +515,23 @@ export default function CashDrawerPage() {
                 </div>
               </div>
             </div>
+
+            {/* InstaPay: a bank transfer, so like visa it never touches the drawer */}
+            {(session.visitSummary.instapaySales > 0 ||
+              session.visitSummary.instapayExpenses > 0 ||
+              session.visitSummary.instapayAdvances > 0) && (
+              <div className="mt-5 pt-4 border-t border-green-200">
+                <div className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2">
+                  {t("finance.instapayAccount")}
+                </div>
+                <InstapayAccountLines
+                  sales={session.visitSummary.instapaySales}
+                  expenses={session.visitSummary.instapayExpenses}
+                  advances={session.visitSummary.instapayAdvances}
+                  net={session.visitSummary.instapayNet}
+                />
+              </div>
+            )}
           </div>
 
           {/* Drawer actions */}

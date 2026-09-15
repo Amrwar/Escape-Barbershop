@@ -14,7 +14,8 @@ interface DashboardStats {
   todayRevenue: number;
   todayCash: number;
   todayCardNet: number;
-  todayInstapay: number;
+  todayInstapayNet: number;
+  todayInstapayExpenses: number;
   todayExpenses: number;
   todayVisaCommission: number;
   visitsToday: number;
@@ -180,10 +181,14 @@ export default function AdminPage() {
           />
           <Figure
             loading={loading}
-            label={t("common.instapay")}
-            value={money(stats?.todayInstapay)}
+            label={t("admin.instapayNet")}
+            value={money(stats?.todayInstapayNet)}
             tone="instapay"
-            hint={t("cashDrawer.instapayHint")}
+            hint={
+              (stats?.todayInstapayExpenses ?? 0) > 0
+                ? `${t("cashDrawer.instapayExpenses")} -${money(stats?.todayInstapayExpenses)}`
+                : t("cashDrawer.instapayHint")
+            }
           />
           <Figure
             loading={loading}

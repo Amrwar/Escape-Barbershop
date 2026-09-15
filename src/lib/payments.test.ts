@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { paymentSplit, resolvePaymentAmounts, sumPayments, tipPaidInCash, type PaidVisit } from './payments';
+import { outflowAccount, paymentSplit, resolvePaymentAmounts, sumPayments, tipPaidInCash, type PaidVisit } from './payments';
 
 function visit(overrides: Partial<PaidVisit> = {}): PaidVisit {
   return { paymentMethod: 'CASH', total: 100, cashAmount: null, cardAmount: null, instapayAmount: null, tip: 0, ...overrides };
@@ -41,6 +41,18 @@ describe('sumPayments', () => {
       visit({ paymentMethod: 'MIXED', cashAmount: 50, cardAmount: 0, instapayAmount: 50, tip: 3 }),
     ]);
     expect(totals).toEqual({ cash: 150, card: 0, instapay: 150, cashTips: 13 });
+  });
+});
+
+describe('outflowAccount', () => {
+  it('takes an expense or advance out of the account it was paid from', () => {
+    expect(outflowAccount('CASH')).toBe('cash');
+    expect(outflowAccount('CARD')).toBe('card');
+    expect(outflowAccount('INSTAPAY')).toBe('instapay');
+  });
+
+  it('never lets an InstaPay outflow reduce the drawer', () => {
+    expect(outflowAccount('INSTAPAY')).not.toBe('cash');
   });
 });
 
