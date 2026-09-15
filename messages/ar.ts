@@ -28,6 +28,9 @@ const ar: Record<TranslationKey, string> = {
   "auth.loginSubtitle": "سجّل دخولك للمتابعة",
   "auth.emailPlaceholder": "you@barbershop.com",
   "auth.passwordPlaceholder": "••••••••",
+  "auth.endedIdle": "تم تسجيل خروجك بعد 30 دقيقة بدون نشاط.",
+  "auth.endedMax": "مدة تسجيل الدخول ساعتان كحد أقصى. من فضلك سجّل دخولك مرة أخرى.",
+  "auth.endedExpired": "انتهت جلستك. من فضلك سجّل دخولك مرة أخرى.",
 
   // Actions
   "action.save": "حفظ",

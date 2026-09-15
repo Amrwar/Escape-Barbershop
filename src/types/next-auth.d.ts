@@ -14,6 +14,8 @@ declare module "next-auth" {
       role: string;
       barberId?: string;
     };
+    /** When this login started (ms since epoch). */
+    loginAt: number;
   }
 }
 
@@ -21,5 +23,6 @@ declare module "next-auth/jwt" {
   interface JWT {
     role: string;
     barberId?: string;
+    loginAt: number;
   }
 }

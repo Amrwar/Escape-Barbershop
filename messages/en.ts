@@ -26,6 +26,9 @@ const en = {
   "auth.loginSubtitle": "Sign in to continue",
   "auth.emailPlaceholder": "you@barbershop.com",
   "auth.passwordPlaceholder": "••••••••",
+  "auth.endedIdle": "You were signed out after 30 minutes without activity.",
+  "auth.endedMax": "Sign-ins last up to 2 hours. Please sign in again.",
+  "auth.endedExpired": "Your session ended. Please sign in again.",
 
   // Actions
   "action.save": "Save",

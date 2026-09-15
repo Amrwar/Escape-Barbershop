@@ -1,11 +1,21 @@
 import { NextAuthOptions, getServerSession } from "next-auth";
+import { encode } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
+import { IDLE_TIMEOUT_MS, isPastMaxSession, tokenLifetimeSeconds } from "./session-policy";
 
 export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
+    // The token is re-issued each time an active browser checks in, so this is
+    // the inactivity limit; the jwt callback and encode below add the hard cap.
+    maxAge: IDLE_TIMEOUT_MS / 1000,
+  },
+  jwt: {
+    // Expiry is baked into the token, so the middleware turns away a login past
+    // its cap too, not only the pages that read the session.
+    encode: (params) => encode({ ...params, maxAge: tokenLifetimeSeconds(params.token?.loginAt) }),
   },
   pages: {
     signIn: "/login",
@@ -50,6 +60,12 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.role = user.role;
         token.barberId = user.barberId;
+        token.loginAt = Date.now();
+      }
+      // Throwing, not returning null, is what makes NextAuth drop the cookie.
+      // Tokens from before this rule have no loginAt and are ended here too.
+      if (isPastMaxSession(token.loginAt)) {
+        throw new Error("Session reached its maximum length");
       }
       return token;
     },
@@ -58,6 +74,7 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.sub!;
         session.user.role = token.role as string;
         session.user.barberId = token.barberId as string | undefined;
+        session.loginAt = token.loginAt;
       }
       return session;
     },

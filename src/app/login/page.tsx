@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -16,6 +16,13 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [ended, setEnded] = useState<string | null>(null);
+
+  // Why the last session ended, when it was the timeout rather than the user.
+  useEffect(() => {
+    const reason = new URLSearchParams(window.location.search).get("ended");
+    if (reason === "idle" || reason === "max" || reason === "expired") setEnded(reason);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,6 +73,12 @@ export default function LoginPage() {
 
         <div className="bg-white rounded-2xl shadow-2xl p-8">
           <form onSubmit={handleSubmit} className="space-y-5">
+            {ended && !error && (
+              <div className="bg-amber-50 text-amber-800 text-sm px-4 py-3 rounded-lg border border-amber-200">
+                {t(ended === "idle" ? "auth.endedIdle" : ended === "max" ? "auth.endedMax" : "auth.endedExpired")}
+              </div>
+            )}
+
             <div>
               <label className="label" htmlFor="email">
                 {t("auth.email")}
