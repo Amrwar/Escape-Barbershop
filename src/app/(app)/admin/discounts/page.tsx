@@ -8,6 +8,7 @@ import { Note } from "@/components/ui/Note";
 import { Badge } from "@/components/ui/Badge";
 import { ExportButton } from "@/components/ui/ExportButton";
 import { useTranslation } from "@/lib/i18n";
+import { paymentMethodKey } from "@/lib/payments";
 
 interface DiscountItem {
   name: string;
@@ -80,8 +81,7 @@ export default function DiscountsPage() {
   useEffect(() => { load(); }, [load]);
 
   const serviceName = (i: DiscountItem) => (lang === "ar" && i.arabicName ? i.arabicName : i.name);
-  const payLabel = (m: string) =>
-    m === "CASH" ? t("common.cash") : m === "CARD" ? t("common.card") : t("common.mixed");
+  const payLabel = (m: string) => t(paymentMethodKey(m));
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6">

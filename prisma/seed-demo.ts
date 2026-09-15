@@ -313,12 +313,14 @@ async function main() {
       if (discount > 0) discountCount++;
       const total = r2(subtotal - (subtotal * discount) / 100);
 
-      const method = chance(0.55) ? "CARD" : chance(0.85) ? "CASH" : "MIXED";
+      const method = chance(0.45) ? "CARD" : chance(0.6) ? "CASH" : chance(0.7) ? "INSTAPAY" : "MIXED";
       const tip = method === "CASH" && chance(0.2) ? between(1, 4) * 25 : 0;
       let cashAmount = 0;
       let cardAmount = 0;
+      let instapayAmount = 0;
       if (method === "CASH") cashAmount = total;
       else if (method === "CARD") cardAmount = total;
+      else if (method === "INSTAPAY") instapayAmount = total;
       else {
         cashAmount = r2(Math.floor(total / 2));
         cardAmount = r2(total - cashAmount);
@@ -330,11 +332,12 @@ async function main() {
           customerId: chance(0.45) ? walkIn.id : pick(customers).id,
           barberId: pick(barbers).id,
           visitAt: at,
-          paymentMethod: method as "CASH" | "CARD" | "MIXED",
+          paymentMethod: method as "CASH" | "CARD" | "INSTAPAY" | "MIXED",
           discount,
           total,
           cashAmount,
           cardAmount,
+          instapayAmount,
           tip,
           notes: discount === 100 ? "On the house" : discount > 0 ? "Regular customer" : null,
           sessionId: session.id,

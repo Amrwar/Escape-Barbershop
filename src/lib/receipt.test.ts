@@ -21,6 +21,7 @@ function baseVisit(overrides: Partial<ReceiptVisit> = {}): ReceiptVisit {
     paymentMethod: 'CASH',
     cashAmount: 50,
     cardAmount: null,
+    instapayAmount: null,
     discount: 0,
     total: 50,
     notes: null,

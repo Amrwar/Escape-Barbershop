@@ -6,6 +6,8 @@ import { useSession } from "next-auth/react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Modal } from "@/components/ui/Modal";
 import { useTranslation } from "@/lib/i18n";
+import { PaymentFields, NO_PAYMENT_AMOUNTS, type PaymentAmounts } from "@/components/ui/PaymentFields";
+import { resolvePaymentAmounts, tipPaidInCash, type VisitPaymentMethod } from "@/lib/payments";
 
 interface Service { id: string; name: string; arabicName: string | null; defaultPrice: number; isActive: boolean; }
 interface Barber  { id: string; name: string; }
@@ -32,15 +34,14 @@ function NewVisitInner() {
 
   const [barberId,       setBarberId]       = useState(session?.user?.barberId ?? "");
   const [visitAt,        setVisitAt]        = useState(() => { const n = new Date(); const p = (x: number) => String(x).padStart(2, "0"); return `${n.getFullYear()}-${p(n.getMonth()+1)}-${p(n.getDate())}T${p(n.getHours())}:${p(n.getMinutes())}`; });
-  const [paymentMethod,  setPaymentMethod]  = useState<"CASH"|"CARD"|"MIXED">("CASH");
+  const [paymentMethod,  setPaymentMethod]  = useState<VisitPaymentMethod>("CASH");
   const [discount,       setDiscount]       = useState(0);
   const [notes,          setNotes]          = useState("");
   const [cart,           setCart]           = useState<CartItem[]>([]);
   const [submitting,     setSubmitting]     = useState(false);
   const [error,          setError]          = useState("");
-  const [cashAmount,     setCashAmount]     = useState(0);
-  const [cardAmount,     setCardAmount]     = useState(0);
-  const [tip,            setTip]            = useState(0);
+  const [amounts,        setAmounts]        = useState<PaymentAmounts>(NO_PAYMENT_AMOUNTS);
+  const [tip,           setTip]            = useState(0);
 
   // Discount PIN gate
   const [discountUnlocked, setDiscountUnlocked] = useState(false);
@@ -165,6 +166,9 @@ function NewVisitInner() {
     if (!selectedCustomer) { setError(t("newVisit.noCustomer")); return; }
     if (!barberId)          { setError(t("newVisit.noBarber"));   return; }
     if (cart.length === 0)  { setError(t("newVisit.noServices")); return; }
+    if (paymentMethod === "MIXED" && !resolvePaymentAmounts("MIXED", total, amounts)) {
+      setError(t("newVisit.splitMustEqualTotal")); return;
+    }
 
     setSubmitting(true);
     try {
@@ -180,7 +184,7 @@ function NewVisitInner() {
           notes,
           tip,
           items: cart.map((i) => ({ serviceId: i.serviceId, quantity: i.quantity, priceAtTime: i.priceAtTime })),
-          ...(paymentMethod === "MIXED" ? { cashAmount, cardAmount } : {}),
+          ...(paymentMethod === "MIXED" ? amounts : {}),
         }),
       });
       if (res.ok) { const data = await res.json(); router.push("/visits/" + data.id); }
@@ -265,45 +269,13 @@ function NewVisitInner() {
               <input type="datetime-local" className="input" value={visitAt} onChange={(e) => setVisitAt(e.target.value)} />
             </div>
 
-            <div>
-              <label className="label">{t("field.paymentMethod")}</label>
-              <select className="input" value={paymentMethod} onChange={(e) => {
-                setPaymentMethod(e.target.value as "CASH"|"CARD"|"MIXED");
-                if (e.target.value !== "MIXED") { setCashAmount(0); setCardAmount(0); }
-              }}>
-                <option value="CASH">{t("common.cash")}</option>
-                <option value="CARD">{t("common.card")}</option>
-                <option value="MIXED">{t("common.mixed")}</option>
-              </select>
-            </div>
-
-            {paymentMethod === "MIXED" && (
-              <>
-                <div>
-                  <label className="label">{t("newVisit.cashAmount")}</label>
-                  <input type="number" min="0" step="0.01" className="input"
-                    value={cashAmount}
-                    onChange={(e) => {
-                      const v = parseFloat(e.target.value) || 0;
-                      setCashAmount(v);
-                      setCardAmount(Math.max(0, parseFloat((total - v).toFixed(2))));
-                    }} />
-                </div>
-                <div>
-                  <label className="label">{t("newVisit.cardAmount")}</label>
-                  <input type="number" min="0" step="0.01" className="input"
-                    value={cardAmount}
-                    onChange={(e) => {
-                      const v = parseFloat(e.target.value) || 0;
-                      setCardAmount(v);
-                      setCashAmount(Math.max(0, parseFloat((total - v).toFixed(2))));
-                    }} />
-                  {Math.abs(cashAmount + cardAmount - total) > 0.01 && (
-                    <p className="text-xs text-amber-600 mt-1">{t("newVisit.splitMustEqualTotal")}</p>
-                  )}
-                </div>
-              </>
-            )}
+            <PaymentFields
+              method={paymentMethod}
+              onMethodChange={setPaymentMethod}
+              amounts={amounts}
+              onAmountsChange={setAmounts}
+              total={total}
+            />
           </div>
         </div>
 
@@ -428,7 +400,7 @@ function NewVisitInner() {
                 onChange={(e) => setTip(parseFloat(e.target.value) || 0)}
               />
             </div>
-            {paymentMethod === "CARD" && tip > 0 && (
+            {!tipPaidInCash({ paymentMethod, cashAmount: amounts.cashAmount }) && tip > 0 && (
               <p className="text-xs text-amber-600">{t("newVisit.cardTipNote")}</p>
             )}
           </div>

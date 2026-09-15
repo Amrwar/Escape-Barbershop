@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { VISIT_PAYMENT_METHODS } from "./payments";
 
 export const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -35,12 +36,13 @@ export const visitSchema = z.object({
   customerId: z.string().min(1, "Customer is required"),
   barberId: z.string().min(1, "Barber is required"),
   visitAt: z.string().optional(),
-  paymentMethod: z.enum(["CASH", "CARD", "MIXED"]),
+  paymentMethod: z.enum(VISIT_PAYMENT_METHODS),
   discount: z.number().min(0).max(100).optional().default(0),
   notes: z.string().max(500).nullable().optional().or(z.literal("")),
   items: z.array(visitItemSchema).min(1, "At least one service is required"),
   cashAmount: z.number().min(0).optional(),
   cardAmount: z.number().min(0).optional(),
+  instapayAmount: z.number().min(0).optional(),
   tip: z.number().min(0).optional().default(0),
 });
 

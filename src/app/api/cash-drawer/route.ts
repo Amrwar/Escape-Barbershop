@@ -4,6 +4,7 @@ import { requireAuth, requireOwnerOrCashier } from "@/lib/auth";
 import { openDrawerSchema } from "@/lib/validations";
 import { recordAudit } from "@/lib/audit";
 import { getJournalOutflows, getVisaCommissionPercent, visaCommissionOn, round2 } from "@/lib/finance";
+import { drawerSales } from "@/lib/payments";
 
 export async function GET() {
   try {
@@ -23,6 +24,7 @@ export async function GET() {
             total: true,
             cashAmount: true,
             cardAmount: true,
+            instapayAmount: true,
             tip: true,
             paymentMethod: true,
           },
@@ -32,25 +34,9 @@ export async function GET() {
 
     if (!session) return NextResponse.json(null);
 
-    // Cash tips (CASH/MIXED) flow directly into the drawer; card tips are auto-deducted as CashMovement OUT
-    const cashTotal = session.visits
-      .filter((v) => v.paymentMethod === "CASH")
-      .reduce((s, v) => s + (v.cashAmount ?? v.total) + (v.tip ?? 0), 0);
-
-    const cardTotal = session.visits
-      .filter((v) => v.paymentMethod === "CARD")
-      .reduce((s, v) => s + (v.cardAmount ?? v.total), 0);
-
-    const mixedCash = session.visits
-      .filter((v) => v.paymentMethod === "MIXED")
-      .reduce((s, v) => s + (v.cashAmount ?? 0) + (v.tip ?? 0), 0);
-
-    const mixedCard = session.visits
-      .filter((v) => v.paymentMethod === "MIXED")
-      .reduce((s, v) => s + (v.cardAmount ?? 0), 0);
-
-    const cashSales = cashTotal + mixedCash;
-    const cardSales = cardTotal + mixedCard;
+    // InstaPay goes to the bank, so only the cash side can move the drawer
+    const sales = drawerSales(session.visits);
+    const { cashSales, cardSales } = sales;
 
     const cashIn = session.movements
       .filter((m) => m.type === "IN")
@@ -80,13 +66,8 @@ export async function GET() {
     return NextResponse.json({
       ...session,
       visitSummary: {
-        cashTotal,
-        cardTotal,
-        mixedCash,
-        mixedCard,
+        ...sales,
         visitCount: session.visits.length,
-        cashSales,
-        cardSales,
         cashIn,
         cashOut,
         // `expensesTotal` stays the all-in figure for existing callers

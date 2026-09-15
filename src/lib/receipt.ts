@@ -1,3 +1,5 @@
+import { paymentMethodName, type VisitPaymentMethod } from "./payments";
+
 export interface ReceiptShopSettings {
   shopName: string;
   shopPhone: string | null;
@@ -17,9 +19,10 @@ export interface ReceiptVisit {
   visitAt: string;
   customer: { name: string; phone: string | null };
   barber: { name: string } | null;
-  paymentMethod: "CASH" | "CARD" | "MIXED";
+  paymentMethod: VisitPaymentMethod;
   cashAmount: number | null;
   cardAmount: number | null;
+  instapayAmount: number | null;
   discount: number;
   total: number;
   notes: string | null;
@@ -109,18 +112,14 @@ function buildReceiptBlock(
       </table>
       ${SEP}
       <div style="font-size:15px;margin:5px 0;color:#000;">
-        <strong>Payment:</strong> ${
-          visit.paymentMethod === "CASH"
-            ? "Cash"
-            : visit.paymentMethod === "CARD"
-            ? "Card"
-            : "Mixed"
-        }
+        <strong>Payment:</strong> ${paymentMethodName(visit.paymentMethod)}
         ${
           visit.paymentMethod === "MIXED"
             ? `<div style="padding-left:12px;color:#000;">
                 Cash: ${fmtMoney(visit.cashAmount ?? 0)}<br/>
-                Card: ${fmtMoney(visit.cardAmount ?? 0)}
+                Card: ${fmtMoney(visit.cardAmount ?? 0)}${
+                  (visit.instapayAmount ?? 0) > 0 ? `<br/>InstaPay: ${fmtMoney(visit.instapayAmount ?? 0)}` : ""
+                }
               </div>`
             : ""
         }
@@ -184,10 +183,7 @@ export function buildWhatsAppText(
     })
     .join("\n");
 
-  const payStr =
-    visit.paymentMethod === "CASH" ? "Cash"
-    : visit.paymentMethod === "CARD" ? "Card"
-    : "Mixed";
+  const payStr = paymentMethodName(visit.paymentMethod);
 
   const parts: string[] = [
     `*${shop.shopName}*`,
@@ -323,10 +319,7 @@ export async function downloadReceiptPdf(
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(15);
-  const payStr =
-    visit.paymentMethod === "CASH" ? "Cash"
-    : visit.paymentMethod === "CARD" ? "Card"
-    : "Mixed";
+  const payStr = paymentMethodName(visit.paymentMethod);
   doc.text(`Payment: ${payStr}`, margin, y);
   y += lh;
 

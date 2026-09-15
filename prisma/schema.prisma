@@ -118,6 +118,8 @@ model Visit {
   updatedAt       DateTime           @updatedAt
   cardAmount      Float?
   cashAmount      Float?
+  /// Paid by InstaPay transfer; lands in the bank, never in the drawer.
+  instapayAmount  Float?
   tip             Float              @default(0)
   sessionId       String?
   sessionSequence Int?
@@ -367,6 +369,7 @@ enum CommissionType {
 enum PaymentMethod {
   CASH
   CARD
+  INSTAPAY
   MIXED
 }
 

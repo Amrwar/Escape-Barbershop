@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/Badge";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useTranslation } from "@/lib/i18n";
+import { PAYMENT_BADGE, paymentMethodKey } from "@/lib/payments";
 import { Pagination } from "@/components/ui/Pagination";
 
 interface VisitItem {
@@ -36,9 +37,6 @@ interface Customer {
   visits: Visit[];
 }
 
-const paymentBadge: Record<string, "green" | "blue" | "yellow"> = {
-  CASH: "green", CARD: "blue", MIXED: "yellow",
-};
 
 export default function CustomerDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -134,8 +132,8 @@ export default function CustomerDetailPage() {
                   <div className="text-xs text-gray-500">{t("common.barber")}: {v.barber?.name ?? "—"}</div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <Badge variant={paymentBadge[v.paymentMethod] ?? "gray"}>
-                    {v.paymentMethod === "CASH" ? t("common.cash") : v.paymentMethod === "CARD" ? t("common.card") : t("common.mixed")}
+                  <Badge variant={PAYMENT_BADGE[v.paymentMethod] ?? "gray"}>
+                    {t(paymentMethodKey(v.paymentMethod))}
                   </Badge>
                   <span className="font-bold text-gray-900">{fmtCurrency(v.total)}</span>
                 </div>

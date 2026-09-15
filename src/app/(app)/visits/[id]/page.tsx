@@ -8,16 +8,18 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
 import { Modal } from "@/components/ui/Modal";
 import { useTranslation } from "@/lib/i18n";
+import { PAYMENT_BADGE, paymentMethodKey, type VisitPaymentMethod } from "@/lib/payments";
 import { printReceipt, buildWhatsAppText, downloadReceiptPdf, type ReceiptVisit, type ReceiptShopSettings } from "@/lib/receipt";
 
 interface VisitDetail {
   id: string;
   visitAt: string;
-  paymentMethod: "CASH" | "CARD" | "MIXED";
+  paymentMethod: VisitPaymentMethod;
   discount: number;
   total: number;
   cashAmount: number | null;
   cardAmount: number | null;
+  instapayAmount: number | null;
   tip: number;
   notes: string | null;
   sessionSequence: number | null;
@@ -30,12 +32,6 @@ interface VisitDetail {
     priceAtTime: number;
   }[];
 }
-
-const paymentBadge: Record<string, "green" | "blue" | "yellow"> = {
-  CASH: "green",
-  CARD: "blue",
-  MIXED: "yellow",
-};
 
 export default function VisitDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -91,7 +87,7 @@ export default function VisitDetailPage() {
     if (!visit || !shopSettings) return;
     const receiptVisit: ReceiptVisit = {
       id: visit.id, visitAt: visit.visitAt, customer: visit.customer, barber: visit.barber,
-      paymentMethod: visit.paymentMethod, cashAmount: visit.cashAmount, cardAmount: visit.cardAmount,
+      paymentMethod: visit.paymentMethod, cashAmount: visit.cashAmount, cardAmount: visit.cardAmount, instapayAmount: visit.instapayAmount,
       discount: visit.discount, total: visit.total, notes: visit.notes,
       sessionSequence: visit.sessionSequence, items: visit.items,
     };
@@ -106,7 +102,7 @@ export default function VisitDetailPage() {
     try {
       const receiptVisit: ReceiptVisit = {
         id: visit.id, visitAt: visit.visitAt, customer: visit.customer, barber: visit.barber,
-        paymentMethod: visit.paymentMethod, cashAmount: visit.cashAmount, cardAmount: visit.cardAmount,
+        paymentMethod: visit.paymentMethod, cashAmount: visit.cashAmount, cardAmount: visit.cardAmount, instapayAmount: visit.instapayAmount,
         discount: visit.discount, total: visit.total, notes: visit.notes,
         sessionSequence: visit.sessionSequence, items: visit.items,
       };
@@ -126,6 +122,7 @@ export default function VisitDetailPage() {
       paymentMethod: visit.paymentMethod,
       cashAmount: visit.cashAmount,
       cardAmount: visit.cardAmount,
+      instapayAmount: visit.instapayAmount,
       discount: visit.discount,
       total: visit.total,
       notes: visit.notes,
@@ -233,17 +230,19 @@ export default function VisitDetailPage() {
           </div>
           <div>
             <div className="label mb-0.5">{t("field.paymentMethod")}</div>
-            <Badge variant={paymentBadge[visit.paymentMethod] ?? "gray"}>
-              {visit.paymentMethod === "CASH"
-                ? t("common.cash")
-                : visit.paymentMethod === "CARD"
-                ? t("common.card")
-                : t("common.mixed")}
+            <Badge variant={PAYMENT_BADGE[visit.paymentMethod] ?? "gray"}>
+              {t(paymentMethodKey(visit.paymentMethod))}
             </Badge>
             {visit.paymentMethod === "MIXED" && (
               <div className="text-xs text-gray-500 mt-1">
                 {t("common.cash")}: {fmtCurrency(visit.cashAmount ?? 0)}<br />
                 {t("common.card")}: {fmtCurrency(visit.cardAmount ?? 0)}
+                {(visit.instapayAmount ?? 0) > 0 && (
+                  <>
+                    <br />
+                    {t("common.instapay")}: {fmtCurrency(visit.instapayAmount ?? 0)}
+                  </>
+                )}
               </div>
             )}
           </div>

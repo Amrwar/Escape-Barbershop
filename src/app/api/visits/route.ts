@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { visitSchema } from "@/lib/validations";
+import { paymentMethodName, resolvePaymentAmounts, tipPaidInCash } from "@/lib/payments";
 
 export async function GET(req: NextRequest) {
   try {
@@ -54,19 +55,10 @@ export async function POST(req: NextRequest) {
 
     const tip = data.tip ?? 0;
 
-    // Derive cash/card amounts (tip is stored separately, not included in cashAmount/cardAmount)
-    let cashAmount: number;
-    let cardAmount: number;
-    if (data.paymentMethod === "CASH") {
-      cashAmount = total;
-      cardAmount = 0;
-    } else if (data.paymentMethod === "CARD") {
-      cashAmount = 0;
-      cardAmount = total;
-    } else {
-      // MIXED — use provided values or default split
-      cashAmount = data.cashAmount ?? 0;
-      cardAmount = data.cardAmount ?? total - cashAmount;
+    // The tip is stored separately, never inside the payment amounts.
+    const amounts = resolvePaymentAmounts(data.paymentMethod, total, data);
+    if (!amounts) {
+      return NextResponse.json({ error: "The payment split must add up to the total" }, { status: 400 });
     }
 
     // Link to open cash drawer session and assign sequential receipt number
@@ -98,8 +90,7 @@ export async function POST(req: NextRequest) {
           paymentMethod: data.paymentMethod,
           discount: data.discount ?? 0,
           total,
-          cashAmount,
-          cardAmount,
+          ...amounts,
           tip,
           notes: data.notes || null,
           createdByUserId: authSession.user.id,
@@ -119,14 +110,14 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      // Card tip: auto-deduct from cash drawer (barber gets paid tip in cash)
-      if (data.paymentMethod === "CARD" && tip > 0 && sessionId) {
+      // A tip paid by card or InstaPay: the barber is paid it in cash from the drawer
+      if (!tipPaidInCash({ paymentMethod: data.paymentMethod, cashAmount: amounts.cashAmount }) && tip > 0 && sessionId) {
         await tx.cashMovement.create({
           data: {
             sessionId,
             type: "OUT",
             amount: tip,
-            reason: `Card tip — ${newVisit.barber?.name ?? ""}`,
+            reason: `${paymentMethodName(data.paymentMethod)} tip — ${newVisit.barber?.name ?? ""}`,
             createdByUserId: authSession.user.id,
             visitId: newVisit.id,
           },

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { getJournalOutflows, getVisaCommissionPercent, visaCommissionOn, round2 } from "@/lib/finance";
+import { drawerSales } from "@/lib/payments";
 
 export async function GET(
   _req: NextRequest,
@@ -34,22 +35,9 @@ export async function GET(
       return NextResponse.json({ error: "Session not found" }, { status: 404 });
     }
 
-    // Revenue totals — cash tips (CASH/MIXED) flow into drawer; card tips are deducted as CashMovement OUT
-    const cashTotal = session.visits
-      .filter((v) => v.paymentMethod === "CASH")
-      .reduce((s, v) => s + (v.cashAmount ?? v.total) + (v.tip ?? 0), 0);
-
-    const cardTotal = session.visits
-      .filter((v) => v.paymentMethod === "CARD")
-      .reduce((s, v) => s + (v.cardAmount ?? v.total), 0);
-
-    const mixedCashAmount = session.visits
-      .filter((v) => v.paymentMethod === "MIXED")
-      .reduce((s, v) => s + (v.cashAmount ?? 0) + (v.tip ?? 0), 0);
-
-    const mixedCardAmount = session.visits
-      .filter((v) => v.paymentMethod === "MIXED")
-      .reduce((s, v) => s + (v.cardAmount ?? 0), 0);
+    // InstaPay goes to the bank, so only the cash side can move the drawer
+    const sales = drawerSales(session.visits);
+    const { cashSales, cardSales } = sales;
 
     const discountsTotal = session.visits.reduce((s, v) => {
       const subtotal = v.items.reduce(
@@ -58,8 +46,6 @@ export async function GET(
       );
       return s + ((subtotal * v.discount) / 100);
     }, 0);
-
-    const cashSales = cashTotal + mixedCashAmount;
 
     const cashIn = session.movements
       .filter((m) => m.type === "IN")
@@ -73,7 +59,6 @@ export async function GET(
     // move the drawer; the card ones settle on the card account.
     const outflows = await getJournalOutflows(session.openedAt, session.closedAt ?? new Date());
 
-    const cardSales = cardTotal + mixedCardAmount;
     const visaPercent = await getVisaCommissionPercent();
     const visaCommission = visaCommissionOn(cardSales, visaPercent);
     const cardNet = round2(cardSales - visaCommission - outflows.cardExpenses - outflows.cardAdvances);
@@ -144,9 +129,13 @@ export async function GET(
       },
       summary: {
         visitCount: session.visits.length,
-        cashTotal,
-        cardTotal,
-        mixedCashAmount,
+        cashTotal: sales.cashTotal,
+        cardTotal: sales.cardTotal,
+        instapayTotal: sales.instapayTotal,
+        mixedCashAmount: sales.mixedCash,
+        mixedCardAmount: sales.mixedCard,
+        mixedInstapayAmount: sales.mixedInstapay,
+        instapaySales: sales.instapaySales,
         discountsTotal,
         cashIn,
         cashOut,
@@ -156,7 +145,6 @@ export async function GET(
         cashAdvances: outflows.cashAdvances,
         cardAdvances: outflows.cardAdvances,
         advancesTotal: outflows.advancesTotal,
-        mixedCardAmount,
         cardSales,
         visaPercent,
         visaCommission,

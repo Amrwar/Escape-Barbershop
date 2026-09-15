@@ -10,6 +10,7 @@ import { Modal } from "@/components/ui/Modal";
 import { Pagination } from "@/components/ui/Pagination";
 import { useSession } from "next-auth/react";
 import { useTranslation } from "@/lib/i18n";
+import { PAYMENT_BADGE, paymentMethodKey } from "@/lib/payments";
 import { format } from "date-fns";
 
 interface Visit {
@@ -24,10 +25,6 @@ interface Visit {
 }
 
 interface Barber { id: string; name: string; }
-
-const paymentBadge: Record<string, "green" | "blue" | "yellow"> = {
-  CASH: "green", CARD: "blue", MIXED: "yellow",
-};
 
 export default function VisitsPage() {
   const { data: session } = useSession();
@@ -156,8 +153,8 @@ export default function VisitsPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 flex-wrap">
                     <span className="font-semibold text-gray-900">{fmtCustomerName(v.customer.name)}</span>
-                    <Badge variant={paymentBadge[v.paymentMethod] ?? "gray"}>
-                      {v.paymentMethod === "CASH" ? t("common.cash") : v.paymentMethod === "CARD" ? t("common.card") : t("common.mixed")}
+                    <Badge variant={PAYMENT_BADGE[v.paymentMethod] ?? "gray"}>
+                      {t(paymentMethodKey(v.paymentMethod))}
                     </Badge>
                     {isOwner && (
                       <span className="text-xs text-gray-500">{t("common.by")} {v.barber?.name ?? "—"}</span>

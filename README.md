@@ -136,7 +136,7 @@ Everything an owner needs is gathered on `/admin`.
 
 ## How the money is accounted for
 
-Four rules decide where every figure lands:
+Five rules decide where every figure lands:
 
 1. **Expenses and advances are paid in cash or by visa.** Cash ones reduce the
    drawer, visa ones reduce the card account. Both are visible split in the day
@@ -153,6 +153,10 @@ Four rules decide where every figure lands:
 4. **Visa collections carry a commission.** Set the rate once in
    Settings → Finance; it is deducted from the card account and from net revenue
    everywhere. Cash pays no commission.
+5. **Customers pay cash, visa, InstaPay, or any mix of the three.** InstaPay is a
+   bank transfer: it pays no commission and never reaches the drawer, so it counts
+   towards revenue but not towards the cash the drawer should hold. A tip that
+   was not handed over in cash is paid to the barber out of the drawer.
 
 ## Useful Scripts
 

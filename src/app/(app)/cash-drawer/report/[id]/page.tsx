@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { useTranslation } from "@/lib/i18n";
+import { paymentMethodKey } from "@/lib/payments";
 
 interface ShopSettings {
   shopName: string;
@@ -70,6 +71,7 @@ ${session.closedBy ? `<div class="row"><span>Closed by:</span><span>${session.cl
 <div class="row"><span>Visits:</span><span>${summary.visitCount}</span></div>
 <div class="row"><span>Cash Sales:</span><span>${fmt(summary.cashSales)}</span></div>
 <div class="row"><span>Card Sales:</span><span>${fmt(summary.cardSales)}</span></div>
+${summary.instapaySales > 0 ? `<div class="row"><span>InstaPay Sales:</span><span>${fmt(summary.instapaySales)}</span></div>` : ""}
 ${summary.visaCommission > 0 ? `<div class="row"><span>Visa Commission (${summary.visaPercent}%):</span><span>-${fmt(summary.visaCommission)}</span></div><div class="row bold"><span>Net Card:</span><span>${fmt(summary.cardNet)}</span></div>` : ""}
 ${summary.discountsTotal > 0 ? `<div class="row"><span>Discounts:</span><span>-${fmt(summary.discountsTotal)}</span></div>` : ""}
 <hr />
@@ -121,6 +123,7 @@ interface Visit {
   total: number;
   cashAmount: number | null;
   cardAmount: number | null;
+  instapayAmount: number | null;
   discount: number;
   customer: { name: string };
   barber: { name: string };
@@ -153,6 +156,8 @@ interface ReportData {
     cardAdvances: number;
     advancesTotal: number;
     mixedCashAmount: number;
+    instapayTotal: number;
+    instapaySales: number;
     discountsTotal: number;
     cashIn: number;
     cashOut: number;
@@ -193,7 +198,7 @@ export default function ReportPage() {
   const exportCsv = () => {
     if (!report) return;
     const rows: string[][] = [
-      ["Type", "Date", "Customer", "Barber", "Services", "Payment", "Total", "Cash", "Card"],
+      ["Type", "Date", "Customer", "Barber", "Services", "Payment", "Total", "Cash", "Card", "InstaPay"],
     ];
     for (const v of report.visits) {
       rows.push([
@@ -206,6 +211,7 @@ export default function ReportPage() {
         v.total.toFixed(2),
         (v.cashAmount ?? "").toString(),
         (v.cardAmount ?? "").toString(),
+        (v.instapayAmount ?? "").toString(),
       ]);
     }
     rows.push([]);
@@ -326,11 +332,16 @@ export default function ReportPage() {
             <div className="text-gray-500 text-xs">{t("cashDrawer.cardSales")}</div>
             <div className="text-xl font-bold text-blue-700">{fmtCurrency(summary.cardTotal)}</div>
           </div>
-          <div className="bg-purple-50 rounded-lg p-3">
+          <div className="bg-yellow-50 rounded-lg p-3">
             <div className="text-gray-500 text-xs">
               {t("cashDrawer.mixedSales")} ({t("common.cash")})
             </div>
-            <div className="text-xl font-bold text-purple-700">{fmtCurrency(summary.mixedCashAmount)}</div>
+            <div className="text-xl font-bold text-yellow-700">{fmtCurrency(summary.mixedCashAmount)}</div>
+          </div>
+          <div className="bg-purple-50 rounded-lg p-3">
+            <div className="text-gray-500 text-xs">{t("cashDrawer.instapaySales")}</div>
+            <div className="text-xl font-bold text-purple-700">{fmtCurrency(summary.instapaySales)}</div>
+            <div className="text-[11px] text-gray-500">{t("cashDrawer.instapayHint")}</div>
           </div>
           <div className="bg-red-50 rounded-lg p-3">
             <div className="text-gray-500 text-xs">{t("reports.discounts")}</div>
@@ -505,9 +516,10 @@ export default function ReportPage() {
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                         v.paymentMethod === "CASH" ? "bg-green-100 text-green-700"
                         : v.paymentMethod === "CARD" ? "bg-blue-100 text-blue-700"
-                        : "bg-purple-100 text-purple-700"
+                        : v.paymentMethod === "INSTAPAY" ? "bg-purple-100 text-purple-700"
+                        : "bg-yellow-100 text-yellow-700"
                       }`}>
-                        {v.paymentMethod}
+                        {t(paymentMethodKey(v.paymentMethod))}
                       </span>
                     </td>
                     <td className="px-3 py-2 text-end font-semibold text-gray-900">{fmtCurrency(v.total)}</td>

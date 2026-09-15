@@ -43,6 +43,7 @@ interface Summary {
   visaCommission: number;
   cashSales: number;
   cardSales: number;
+  instapaySales: number;
   cardNet: number;
   totalRevenue: number;
   netRevenue?: number;
@@ -162,6 +163,7 @@ ${shop.shopAddress ? `<p>${shop.shopAddress}</p>` : ""}
 <div class="row"><span>Total Visits:</span><span>${summary.totalVisits}</span></div>
 <div class="row"><span>Cash Sales:</span><span>${fmt(summary.cashSales)}</span></div>
 <div class="row"><span>Card Sales:</span><span>${fmt(summary.cardSales)}</span></div>
+${summary.instapaySales > 0 ? `<div class="row"><span>InstaPay Sales:</span><span>${fmt(summary.instapaySales)}</span></div>` : ""}
 ${summary.visaCommission > 0 ? `<div class="row"><span>Visa Commission (${summary.visaPercent}%):</span><span>-${fmt(summary.visaCommission)}</span></div>` : ""}
 ${summary.discountsTotal > 0 ? `<div class="row"><span>Discounts:</span><span>-${fmt(summary.discountsTotal)}</span></div>` : ""}
 <div class="row bold" style="border-top:1px solid #000;padding-top:4px;margin-top:2px"><span>Total Revenue:</span><span>${fmt(summary.totalRevenue)}</span></div>
@@ -257,6 +259,7 @@ function DayReportContent() {
                     [t("common.visits"), s!.totalVisits],
                     [t("cashDrawer.cashSales"), s!.cashSales],
                     [t("cashDrawer.cardSales"), s!.cardSales],
+                    [t("cashDrawer.instapaySales"), s!.instapaySales],
                     [t("cashDrawer.visaCommission"), -s!.visaCommission],
                     [t("cashDrawer.cardNet"), s!.cardNet],
                     [t("cashDrawer.cashExpenses"), -s!.cashExpenses],
@@ -348,7 +351,7 @@ function DayReportContent() {
           </Note>
 
           {/* Summary cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
             <div className="card p-4 text-center">
               <div className="text-xs text-gray-500">{t("cashDrawer.sessions")}</div>
               <div className="text-2xl font-bold text-gray-900">{s!.sessionCount}</div>
@@ -364,6 +367,11 @@ function DayReportContent() {
             <div className="card p-4 text-center">
               <div className="text-xs text-gray-500">{t("cashDrawer.cardSales")}</div>
               <div className="text-2xl font-bold text-blue-700">{fmtCurrency(s!.cardSales)}</div>
+            </div>
+            <div className="card p-4 text-center">
+              <div className="text-xs text-gray-500">{t("cashDrawer.instapaySales")}</div>
+              <div className="text-2xl font-bold text-purple-700">{fmtCurrency(s!.instapaySales)}</div>
+              <div className="text-[11px] text-gray-500">{t("cashDrawer.instapayHint")}</div>
             </div>
           </div>
 

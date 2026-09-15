@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { useTranslation } from "@/lib/i18n";
+import { paymentMethodKey, paymentMethodName } from "@/lib/payments";
 import { Pagination } from "@/components/ui/Pagination";
 import { format, startOfDay, startOfWeek, startOfMonth } from "date-fns";
 
@@ -44,6 +45,7 @@ interface Summary {
   totalRevenue: number;
   cashTotal: number;
   cardTotal: number;
+  instapayTotal: number;
   mixedTotal: number;
   discountsTotal: number;
   topServices: TopService[];
@@ -83,8 +85,6 @@ function getPresetRange(preset: Preset): { from: string; to: string } {
   }
   return { from: todayStr, to: todayStr };
 }
-
-const paymentLabel: Record<string, string> = { CASH: "Cash", CARD: "Card", MIXED: "Mixed" };
 
 export default function BarberStatsPage() {
   const params = useParams();
@@ -175,6 +175,7 @@ export default function BarberStatsPage() {
       { Field: t("reports.totalRevenue"), Value: data.summary.totalRevenue },
       { Field: t("reports.cashRevenue"), Value: data.summary.cashTotal },
       { Field: t("reports.cardRevenue"), Value: data.summary.cardTotal },
+      { Field: t("reports.instapayRevenue"), Value: data.summary.instapayTotal },
       { Field: t("reports.mixedRevenue"), Value: data.summary.mixedTotal },
       { Field: t("reports.discounts"), Value: data.summary.discountsTotal },
       { Field: "Visits", Value: data.summary.visitCount },
@@ -198,7 +199,7 @@ export default function BarberStatsPage() {
       Date: new Date(v.visitAt).toLocaleString(),
       Customer: v.customer.name,
       Services: v.items.map((i) => `${i.service.name}${i.quantity > 1 ? ` ×${i.quantity}` : ""}`).join(", "),
-      Payment: paymentLabel[v.paymentMethod] ?? v.paymentMethod,
+      Payment: paymentMethodName(v.paymentMethod),
       Subtotal: v.items.reduce((s, i) => s + i.priceAtTime * i.quantity, 0),
       "Discount%": v.discount,
       Total: v.total,
@@ -376,9 +377,7 @@ export default function BarberStatsPage() {
                         {v.items.map((i) => `${lang === "ar" && i.service.arabicName ? i.service.arabicName : i.service.name}${i.quantity > 1 ? ` ×${i.quantity}` : ""}`).join(", ")}
                       </td>
                       <td className="px-4 py-2 text-gray-600">
-                        {v.paymentMethod === "CASH" ? t("common.cash")
-                          : v.paymentMethod === "CARD" ? t("common.card")
-                          : t("common.mixed")}
+                        {t(paymentMethodKey(v.paymentMethod))}
                       </td>
                       <td className="px-4 py-2 text-end font-semibold">
                         {fmtCurrency(v.total)}

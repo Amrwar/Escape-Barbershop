@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { DateNavInput } from "@/components/ui/DateNavInput";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { useTranslation } from "@/lib/i18n";
+import { paymentMethodKey, paymentMethodName } from "@/lib/payments";
 import { Note } from "@/components/ui/Note";
 import { format, startOfWeek, startOfMonth } from "date-fns";
 
@@ -85,6 +86,7 @@ ${shop.shopAddress ? `<p>${shop.shopAddress}</p>` : ""}
 <div class="row"><span>Total Visits:</span><span>${summary.visitCount}</span></div>
 <div class="row"><span>Cash:</span><span>${fmt(summary.cashTotal)}</span></div>
 <div class="row"><span>Card:</span><span>${fmt(summary.cardTotal)}</span></div>
+${(summary.instapayTotal ?? 0) > 0 ? `<div class="row"><span>InstaPay:</span><span>${fmt(summary.instapayTotal)}</span></div>` : ""}
 ${(summary.tipsTotal ?? 0) > 0 ? `<div class="row"><span>Tips (deducted):</span><span>-${fmt(summary.tipsTotal)}</span></div>` : ""}
 ${summary.discountsTotal > 0 ? `<div class="row"><span>Discounts:</span><span>-${fmt(summary.discountsTotal)}</span></div>` : ""}
 <div class="row bold" style="border-top:1px solid #000;padding-top:4px;margin-top:2px"><span>Total Revenue:</span><span>${fmt(summary.totalRevenue)}</span></div>
@@ -169,6 +171,7 @@ interface Summary {
   totalRevenue: number;
   cashTotal: number;
   cardTotal: number;
+  instapayTotal: number;
   tipsTotal: number;
   discountsTotal: number;
   expensesTotal: number;
@@ -210,8 +213,6 @@ function getPresetRange(preset: Preset): { from: string; to: string } {
   }
   return { from: todayStr, to: todayStr };
 }
-
-const paymentLabel: Record<string, string> = { CASH: "Cash", CARD: "Card", MIXED: "Mixed" };
 
 export default function ReportsPage() {
   const { data: session } = useSession();
@@ -279,6 +280,7 @@ export default function ReportsPage() {
       { Field: t("reports.totalRevenue"), Value: data.summary.totalRevenue },
       { Field: t("reports.cashRevenue"), Value: data.summary.cashTotal },
       { Field: t("reports.cardRevenue"), Value: data.summary.cardTotal },
+      { Field: t("reports.instapayRevenue"), Value: data.summary.instapayTotal ?? 0 },
       { Field: t("reports.discounts"), Value: data.summary.discountsTotal },
       { Field: t("reports.visaCommission"), Value: data.summary.visaCommission ?? 0 },
       { Field: t("reports.cardNet"), Value: data.summary.cardNet ?? 0 },
@@ -303,7 +305,7 @@ export default function ReportsPage() {
       Customer: v.customer.name,
       Barber: v.barber?.name ?? "—",
       Services: v.items.map((i) => `${i.service.name}${i.quantity > 1 ? ` ×${i.quantity}` : ""}`).join(", "),
-      Payment: paymentLabel[v.paymentMethod] ?? v.paymentMethod,
+      Payment: paymentMethodName(v.paymentMethod),
       Subtotal: v.items.reduce((s, i) => s + i.priceAtTime * i.quantity, 0),
       "Discount%": v.discount,
       Total: v.total,
@@ -449,6 +451,7 @@ export default function ReportsPage() {
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <SummaryCard label={t("reports.cashRevenue")} value={`${fmtCurrency(data.summary.cashTotal)}`} />
             <SummaryCard label={t("reports.cardRevenue")} value={`${fmtCurrency(data.summary.cardTotal)}`} />
+            <SummaryCard label={t("reports.instapayRevenue")} value={`${fmtCurrency(data.summary.instapayTotal ?? 0)}`} />
             {(data.summary.tipsTotal ?? 0) > 0 && (
               <SummaryCard label={t("newVisit.tip")} value={`-${fmtCurrency(data.summary.tipsTotal)}`} danger />
             )}
@@ -569,9 +572,7 @@ export default function ReportsPage() {
                             {v.items.map((i) => `${lang === "ar" && i.service.arabicName ? i.service.arabicName : i.service.name}${i.quantity > 1 ? ` ×${i.quantity}` : ""}`).join(", ")}
                           </td>
                           <td className="px-4 py-2 text-gray-600">
-                            {v.paymentMethod === "CASH" ? t("common.cash")
-                              : v.paymentMethod === "CARD" ? t("common.card")
-                              : t("common.mixed")}
+                            {t(paymentMethodKey(v.paymentMethod))}
                           </td>
                           <td className="px-4 py-2 text-end font-semibold">
                             {fmtCurrency(v.total)}

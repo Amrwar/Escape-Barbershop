@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth, requireOwner, requireOwnerOrCashier } from "@/lib/auth";
 import { visitSchema } from "@/lib/validations";
 import { recordAudit, describeVisit } from "@/lib/audit";
+import { paymentMethodName, resolvePaymentAmounts, tipPaidInCash } from "@/lib/payments";
 
 export async function GET(
   _req: NextRequest,
@@ -55,17 +56,9 @@ export async function PATCH(
 
     const tip = data.tip ?? 0;
 
-    let cashAmount: number;
-    let cardAmount: number;
-    if (data.paymentMethod === "CASH") {
-      cashAmount = total;
-      cardAmount = 0;
-    } else if (data.paymentMethod === "CARD") {
-      cashAmount = 0;
-      cardAmount = total;
-    } else {
-      cashAmount = data.cashAmount ?? 0;
-      cardAmount = data.cardAmount ?? total - cashAmount;
+    const amounts = resolvePaymentAmounts(data.paymentMethod, total, data);
+    if (!amounts) {
+      return NextResponse.json({ error: "The payment split must add up to the total" }, { status: 400 });
     }
 
     const visit = await prisma.$transaction(async (tx) => {
@@ -84,8 +77,7 @@ export async function PATCH(
           paymentMethod: data.paymentMethod,
           discount: data.discount ?? 0,
           total,
-          cashAmount,
-          cardAmount,
+          ...amounts,
           tip,
           notes: data.notes || null,
           items: {
@@ -103,14 +95,14 @@ export async function PATCH(
         },
       });
 
-      // Re-create card tip movement if applicable
-      if (data.paymentMethod === "CARD" && tip > 0 && updated.sessionId) {
+      // Re-create the drawer payout for a tip that did not come in as cash
+      if (!tipPaidInCash({ paymentMethod: data.paymentMethod, cashAmount: amounts.cashAmount }) && tip > 0 && updated.sessionId) {
         await tx.cashMovement.create({
           data: {
             sessionId: updated.sessionId,
             type: "OUT",
             amount: tip,
-            reason: `Card tip — ${updated.barber?.name ?? ""}`,
+            reason: `${paymentMethodName(data.paymentMethod)} tip — ${updated.barber?.name ?? ""}`,
             createdByUserId: authSession.user.id,
             visitId: updated.id,
           },

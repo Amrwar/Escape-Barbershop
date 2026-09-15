@@ -8,6 +8,7 @@ import { Note } from "@/components/ui/Note";
 import { Badge } from "@/components/ui/Badge";
 import { ExportButton } from "@/components/ui/ExportButton";
 import { useTranslation } from "@/lib/i18n";
+import { paymentMethodKey } from "@/lib/payments";
 import type { TranslationKey } from "../../../../../messages/en";
 
 type Action = "CREATE" | "UPDATE" | "DELETE";
@@ -434,11 +435,7 @@ function DeletedDetail({ raw }: { raw: string }) {
   if (data.paymentMethod)
     rows.push([
       t("field.paymentMethod"),
-      data.paymentMethod === "CASH"
-        ? t("common.cash")
-        : data.paymentMethod === "CARD"
-        ? t("common.card")
-        : t("common.mixed"),
+      t(paymentMethodKey(data.paymentMethod)),
     ]);
   if (data.discount) rows.push([t("field.discount"), `${data.discount}%`]);
   if (data.tip) rows.push([t("newVisit.tip"), fmtCurrency(data.tip)]);

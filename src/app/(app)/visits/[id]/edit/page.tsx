@@ -4,6 +4,8 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { useTranslation } from "@/lib/i18n";
+import { PaymentFields, NO_PAYMENT_AMOUNTS, type PaymentAmounts } from "@/components/ui/PaymentFields";
+import { resolvePaymentAmounts, tipPaidInCash, type VisitPaymentMethod } from "@/lib/payments";
 
 interface Service { id: string; name: string; defaultPrice: number; isActive: boolean; }
 interface Barber  { id: string; name: string; }
@@ -23,12 +25,11 @@ export default function EditVisitPage() {
 
   const [barberId,      setBarberId]      = useState("");
   const [visitAt,       setVisitAt]       = useState("");
-  const [paymentMethod, setPaymentMethod] = useState<"CASH"|"CARD"|"MIXED">("CASH");
+  const [paymentMethod, setPaymentMethod] = useState<VisitPaymentMethod>("CASH");
   const [discount,      setDiscount]      = useState(0);
   const [notes,         setNotes]         = useState("");
   const [cart,          setCart]          = useState<CartItem[]>([]);
-  const [cashAmount,    setCashAmount]    = useState(0);
-  const [cardAmount,    setCardAmount]    = useState(0);
+  const [amounts,       setAmounts]       = useState<PaymentAmounts>(NO_PAYMENT_AMOUNTS);
   const [tip,           setTip]           = useState(0);
   const [submitting,    setSubmitting]    = useState(false);
   const [error,         setError]         = useState("");
@@ -54,8 +55,11 @@ export default function EditVisitPage() {
     setPaymentMethod(visit.paymentMethod);
     setDiscount(visit.discount);
     setNotes(visit.notes ?? "");
-    setCashAmount(visit.cashAmount ?? 0);
-    setCardAmount(visit.cardAmount ?? 0);
+    setAmounts({
+      cashAmount: visit.cashAmount ?? 0,
+      cardAmount: visit.cardAmount ?? 0,
+      instapayAmount: visit.instapayAmount ?? 0,
+    });
     setTip(visit.tip ?? 0);
     setCart(
       visit.items.map((i: { serviceId: string; service: { name: string }; quantity: number; priceAtTime: number }) => ({
@@ -90,6 +94,9 @@ export default function EditVisitPage() {
     e.preventDefault();
     setError("");
     if (cart.length === 0) { setError(t("newVisit.noServices")); return; }
+    if (paymentMethod === "MIXED" && !resolvePaymentAmounts("MIXED", total, amounts)) {
+      setError(t("newVisit.splitMustEqualTotal")); return;
+    }
 
     setSubmitting(true);
     try {
@@ -105,7 +112,7 @@ export default function EditVisitPage() {
           notes,
           tip,
           items: cart.map((i) => ({ serviceId: i.serviceId, quantity: i.quantity, priceAtTime: i.priceAtTime })),
-          ...(paymentMethod === "MIXED" ? { cashAmount, cardAmount } : {}),
+          ...(paymentMethod === "MIXED" ? amounts : {}),
         }),
       });
       if (res.ok) router.push("/visits");
@@ -159,45 +166,13 @@ export default function EditVisitPage() {
               <input type="datetime-local" className="input" value={visitAt} onChange={(e) => setVisitAt(e.target.value)} />
             </div>
 
-            <div>
-              <label className="label">{t("field.paymentMethod")}</label>
-              <select className="input" value={paymentMethod} onChange={(e) => {
-                setPaymentMethod(e.target.value as "CASH"|"CARD"|"MIXED");
-                if (e.target.value !== "MIXED") { setCashAmount(0); setCardAmount(0); }
-              }}>
-                <option value="CASH">{t("common.cash")}</option>
-                <option value="CARD">{t("common.card")}</option>
-                <option value="MIXED">{t("common.mixed")}</option>
-              </select>
-            </div>
-
-            {paymentMethod === "MIXED" && (
-              <>
-                <div>
-                  <label className="label">{t("newVisit.cashAmount")}</label>
-                  <input type="number" min="0" step="0.01" className="input"
-                    value={cashAmount}
-                    onChange={(e) => {
-                      const v = parseFloat(e.target.value) || 0;
-                      setCashAmount(v);
-                      setCardAmount(Math.max(0, parseFloat((total - v).toFixed(2))));
-                    }} />
-                </div>
-                <div>
-                  <label className="label">{t("newVisit.cardAmount")}</label>
-                  <input type="number" min="0" step="0.01" className="input"
-                    value={cardAmount}
-                    onChange={(e) => {
-                      const v = parseFloat(e.target.value) || 0;
-                      setCardAmount(v);
-                      setCashAmount(Math.max(0, parseFloat((total - v).toFixed(2))));
-                    }} />
-                  {Math.abs(cashAmount + cardAmount - total) > 0.01 && (
-                    <p className="text-xs text-amber-600 mt-1">{t("newVisit.splitMustEqualTotal")}</p>
-                  )}
-                </div>
-              </>
-            )}
+            <PaymentFields
+              method={paymentMethod}
+              onMethodChange={setPaymentMethod}
+              amounts={amounts}
+              onAmountsChange={setAmounts}
+              total={total}
+            />
           </div>
         </div>
 
@@ -298,7 +273,7 @@ export default function EditVisitPage() {
                 onChange={(e) => setTip(parseFloat(e.target.value) || 0)}
               />
             </div>
-            {paymentMethod === "CARD" && tip > 0 && (
+            {!tipPaidInCash({ paymentMethod, cashAmount: amounts.cashAmount }) && tip > 0 && (
               <p className="text-xs text-amber-600">{t("newVisit.cardTipNote")}</p>
             )}
           </div>

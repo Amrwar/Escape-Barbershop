@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { getJournalOutflows, getVisaCommissionPercent, visaCommissionOn, round2 } from "@/lib/finance";
+import { paymentSplit, sumPayments, type PaidVisit } from "@/lib/payments";
 
 export async function GET(req: NextRequest) {
   try {
@@ -50,14 +51,14 @@ export async function GET(req: NextRequest) {
     ] = await Promise.all([
         prisma.visit.findMany({
           where: { visitAt: { gte: todayStart }, ...barberFilter },
-          select: { total: true, cashAmount: true, cardAmount: true, paymentMethod: true, tip: true },
+          select: { total: true, cashAmount: true, cardAmount: true, instapayAmount: true, paymentMethod: true, tip: true },
         }),
         prisma.visit.findMany({
           where: {
             visitAt: { gte: monthStart, lte: monthEnd },
             ...barberFilter,
           },
-          select: { total: true, cashAmount: true, cardAmount: true, paymentMethod: true, tip: true },
+          select: { total: true, cashAmount: true, cardAmount: true, instapayAmount: true, paymentMethod: true, tip: true },
         }),
         prisma.visitItem.groupBy({
           by: ["serviceId"],
@@ -126,14 +127,12 @@ export async function GET(req: NextRequest) {
         where: { status: "OPEN" },
         include: {
           movements: { select: { type: true, amount: true } },
-          visits: { select: { cashAmount: true, paymentMethod: true, total: true } },
+          visits: { select: { cashAmount: true, cardAmount: true, instapayAmount: true, paymentMethod: true, total: true } },
         },
       });
 
       if (openSession) {
-        const cashSales = openSession.visits
-          .filter((v) => v.paymentMethod === "CASH" || v.paymentMethod === "MIXED")
-          .reduce((s, v) => s + (v.cashAmount ?? (v.paymentMethod === "CASH" ? v.total : 0)), 0);
+        const cashSales = openSession.visits.reduce((s, v) => s + paymentSplit(v).cash, 0);
         const cashIn = openSession.movements.filter((m) => m.type === "IN").reduce((s, m) => s + m.amount, 0);
         const cashOut = openSession.movements.filter((m) => m.type === "OUT").reduce((s, m) => s + m.amount, 0);
         const drawerOutflows = await getJournalOutflows(openSession.openedAt, new Date());
@@ -150,12 +149,10 @@ export async function GET(req: NextRequest) {
         const lastClosed = await prisma.cashDrawerSession.findFirst({
           where: { status: "CLOSED" },
           orderBy: { closedAt: "desc" },
-          select: { closingCashCounted: true, openingCash: true, id: true, movements: { select: { type: true, amount: true } }, visits: { select: { cashAmount: true, paymentMethod: true, total: true } } },
+          select: { closingCashCounted: true, openingCash: true, id: true, movements: { select: { type: true, amount: true } }, visits: { select: { cashAmount: true, cardAmount: true, instapayAmount: true, paymentMethod: true, total: true } } },
         });
         if (lastClosed && lastClosed.closingCashCounted !== null) {
-          const cashSales = lastClosed.visits
-            .filter((v) => v.paymentMethod === "CASH" || v.paymentMethod === "MIXED")
-            .reduce((s, v) => s + (v.cashAmount ?? (v.paymentMethod === "CASH" ? v.total : 0)), 0);
+          const cashSales = lastClosed.visits.reduce((s, v) => s + paymentSplit(v).cash, 0);
           const cashIn = lastClosed.movements.filter((m) => m.type === "IN").reduce((s, m) => s + m.amount, 0);
           const cashOut = lastClosed.movements.filter((m) => m.type === "OUT").reduce((s, m) => s + m.amount, 0);
           const expectedCash = round2(lastClosed.openingCash + cashSales + cashIn - cashOut);
@@ -169,19 +166,14 @@ export async function GET(req: NextRequest) {
     const todayExpensesTotal = todayOutflows.expensesTotal;
     const monthExpensesTotal = monthOutflows.expensesTotal;
 
-    // Compute cash/card breakdown
-    const computeBreakdown = (visits: { total: number; cashAmount: number | null; cardAmount: number | null; paymentMethod: string; tip: number }[]) => {
-      let cash = 0, card = 0, tips = 0;
-      for (const v of visits) {
-        if (v.paymentMethod === "CASH") cash += v.total;
-        else if (v.paymentMethod === "CARD") card += v.total;
-        else if (v.paymentMethod === "MIXED") { cash += v.cashAmount ?? 0; card += v.cardAmount ?? 0; }
-        tips += v.tip ?? 0;
-      }
-      return { cash: cash - tips, card, tips };
+    // Compute the cash/card/InstaPay breakdown
+    const computeBreakdown = (visits: PaidVisit[]) => {
+      const { cash, card, instapay } = sumPayments(visits);
+      const tips = visits.reduce((s, v) => s + (v.tip ?? 0), 0);
+      return { cash: cash - tips, card, instapay, tips };
     };
-    const { cash: todayCash, card: todayCard, tips: todayTips } = computeBreakdown(todayVisits);
-    const { cash: monthCash, card: monthCard, tips: monthTips } = computeBreakdown(monthVisits);
+    const { cash: todayCash, card: todayCard, instapay: todayInstapay, tips: todayTips } = computeBreakdown(todayVisits);
+    const { cash: monthCash, card: monthCard, instapay: monthInstapay, tips: monthTips } = computeBreakdown(monthVisits);
 
     // The card machine takes its cut off the card sales, so it comes out of the
     // day's revenue exactly like an expense does.
@@ -197,6 +189,7 @@ export async function GET(req: NextRequest) {
       ),
       todayCash,
       todayCard,
+      todayInstapay,
       todayTips,
       todayExpenses: todayExpensesTotal,
       todayCashExpenses: todayOutflows.cashExpenses,
@@ -206,6 +199,7 @@ export async function GET(req: NextRequest) {
       todayCardNet: round2(todayCard - todayVisaCommission - todayOutflows.cardExpenses),
       monthCash,
       monthCard,
+      monthInstapay,
       monthTips,
       monthExpenses: monthExpensesTotal,
       monthAdvances: monthOutflows.advancesTotal,

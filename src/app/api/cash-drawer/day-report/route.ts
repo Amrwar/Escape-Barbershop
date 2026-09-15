@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { getVisaCommissionPercent, visaCommissionOn, round2 } from "@/lib/finance";
+import { drawerSales } from "@/lib/payments";
 
 export async function GET(req: NextRequest) {
   try {
@@ -66,10 +67,6 @@ export async function GET(req: NextRequest) {
     const advancesTotal = cashAdvances + cardAdvances;
 
     let totalVisits = 0;
-    let cashTotal = 0;
-    let cardTotal = 0;
-    let mixedCashAmount = 0;
-    let mixedCardAmount = 0;
     let discountsTotal = 0;
     let cashIn = 0;
     let cashOut = 0;
@@ -85,14 +82,6 @@ export async function GET(req: NextRequest) {
       }
 
       for (const v of s.visits) {
-        // Cash/MIXED tips flow into cash drawer; card tips are deducted as CashMovement OUT
-        if (v.paymentMethod === "CASH") cashTotal += (v.cashAmount ?? v.total) + (v.tip ?? 0);
-        else if (v.paymentMethod === "CARD") cardTotal += v.cardAmount ?? v.total;
-        else if (v.paymentMethod === "MIXED") {
-          mixedCashAmount += (v.cashAmount ?? 0) + (v.tip ?? 0);
-          mixedCardAmount += v.cardAmount ?? 0;
-        }
-
         const subtotal = v.items.reduce((sum, i) => sum + i.priceAtTime * i.quantity, 0);
         discountsTotal += (subtotal * v.discount) / 100;
 
@@ -109,9 +98,10 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    const cashSales = cashTotal + mixedCashAmount;
-    const cardSales = cardTotal + mixedCardAmount;
-    const totalRevenue = cashSales + cardSales;
+    // InstaPay goes to the bank, so only the cash side can move the drawer
+    const sales = drawerSales(sessions.flatMap((s) => s.visits));
+    const { cashSales, cardSales, instapaySales } = sales;
+    const totalRevenue = cashSales + cardSales + instapaySales;
 
     const visaPercent = await getVisaCommissionPercent();
     const visaCommission = visaCommissionOn(cardSales, visaPercent);
@@ -195,10 +185,12 @@ export async function GET(req: NextRequest) {
       summary: {
         sessionCount: sessions.length,
         totalVisits,
-        cashTotal,
-        cardTotal,
-        mixedCashAmount,
-        mixedCardAmount,
+        cashTotal: sales.cashTotal,
+        cardTotal: sales.cardTotal,
+        instapayTotal: sales.instapayTotal,
+        mixedCashAmount: sales.mixedCash,
+        mixedCardAmount: sales.mixedCard,
+        mixedInstapayAmount: sales.mixedInstapay,
         discountsTotal,
         cashIn,
         cashOut,
@@ -212,6 +204,7 @@ export async function GET(req: NextRequest) {
         visaCommission,
         cashSales,
         cardSales,
+        instapaySales,
         cardNet,
         totalRevenue,
         ...(isOwner ? { netRevenue } : {}),

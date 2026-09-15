@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireOwner } from "@/lib/auth";
 import { getVisaCommissionPercent, visaCommissionOn, round2 } from "@/lib/finance";
+import { paymentSplit } from "@/lib/payments";
 
 export async function GET(req: NextRequest) {
   try {
@@ -62,18 +63,17 @@ export async function GET(req: NextRequest) {
     let totalRevenue = 0;
     let cashTotal = 0;
     let cardTotal = 0;
+    let instapayTotal = 0;
     let discountsTotal = 0;
     let tipsTotal = 0;
     const serviceCountMap = new Map<string, { name: string; arabicName: string | null; count: number; revenue: number }>();
 
     for (const v of visits) {
       totalRevenue += v.total;
-      if (v.paymentMethod === "CASH") cashTotal += v.total;
-      else if (v.paymentMethod === "CARD") cardTotal += v.total;
-      else if (v.paymentMethod === "MIXED") {
-        cashTotal += v.cashAmount ?? 0;
-        cardTotal += v.cardAmount ?? 0;
-      }
+      const paid = paymentSplit(v);
+      cashTotal += paid.cash;
+      cardTotal += paid.card;
+      instapayTotal += paid.instapay;
 
       tipsTotal += (v as { tip?: number }).tip ?? 0;
 
@@ -221,6 +221,7 @@ export async function GET(req: NextRequest) {
         totalRevenue,
         cashTotal: cashTotal - tipsTotal,
         cardTotal,
+        instapayTotal,
         tipsTotal,
         discountsTotal,
         expensesTotal,

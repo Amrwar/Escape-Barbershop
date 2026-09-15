@@ -20,6 +20,7 @@ export interface BarberStatsExportData {
     totalRevenue: number;
     cashTotal: number;
     cardTotal: number;
+    instapayTotal: number;
     mixedTotal: number;
     discountsTotal: number;
     topServices: { name: string; count: number; revenue: number }[];
@@ -31,6 +32,7 @@ export interface BarberStatsExportData {
     paymentMethod: string;
     cashAmount: number | null;
     cardAmount: number | null;
+    instapayAmount: number | null;
     subtotal: number;
     discountPercent: number;
     total: number;
@@ -65,6 +67,7 @@ export function downloadBarberExcel(filename: string, data: BarberStatsExportDat
     ["Total Revenue", $(data.summary.totalRevenue)],
     ["Cash Revenue", $(data.summary.cashTotal)],
     ["Card Revenue", $(data.summary.cardTotal)],
+    ["InstaPay Revenue", $(data.summary.instapayTotal)],
     ["Mixed Revenue", $(data.summary.mixedTotal)],
     ["Discounts Given", $(data.summary.discountsTotal)],
     ["", ""],
@@ -88,13 +91,14 @@ export function downloadBarberExcel(filename: string, data: BarberStatsExportDat
     "Payment": v.paymentMethod,
     "Cash ($)": v.cashAmount ?? 0,
     "Card ($)": v.cardAmount ?? 0,
+    "InstaPay ($)": v.instapayAmount ?? 0,
     "Subtotal ($)": v.subtotal,
     "Discount %": v.discountPercent,
     "Total ($)": v.total,
   }));
 
   const wsVisits = XLSX.utils.json_to_sheet(visitRows);
-  setColWidths(wsVisits, [22, 22, 40, 10, 10, 10, 12, 10, 10]);
+  setColWidths(wsVisits, [22, 22, 40, 10, 10, 10, 12, 12, 10, 10]);
   XLSX.utils.book_append_sheet(wb, wsVisits, "Visits");
 
   // ── Sheet 3: Services Breakdown ───────────────────────────────────────────

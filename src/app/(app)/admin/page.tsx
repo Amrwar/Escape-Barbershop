@@ -14,6 +14,7 @@ interface DashboardStats {
   todayRevenue: number;
   todayCash: number;
   todayCardNet: number;
+  todayInstapay: number;
   todayExpenses: number;
   todayVisaCommission: number;
   visitsToday: number;
@@ -66,13 +67,14 @@ function Figure({
   label: string;
   value: string;
   hint?: string;
-  tone?: "plain" | "cash" | "card" | "cost";
+  tone?: "plain" | "cash" | "card" | "instapay" | "cost";
   loading?: boolean;
 }) {
   const toneClass = {
     plain: "text-gray-900",
     cash: "text-green-700",
     card: "text-blue-700",
+    instapay: "text-purple-700",
     cost: "text-red-600",
   }[tone];
 
@@ -162,7 +164,7 @@ export default function AdminPage() {
             {stats?.visitsToday ?? 0} {t("common.visits")}
           </span>
         </div>
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
           <Figure loading={loading} label={t("admin.netRevenue")} value={money(stats?.todayRevenue)} />
           <Figure loading={loading} label={t("finance.cashAccount")} value={money(stats?.todayCash)} tone="cash" />
           <Figure
@@ -175,6 +177,13 @@ export default function AdminPage() {
                 ? `${t("admin.visaCommission")} -${money(stats?.todayVisaCommission)}`
                 : undefined
             }
+          />
+          <Figure
+            loading={loading}
+            label={t("common.instapay")}
+            value={money(stats?.todayInstapay)}
+            tone="instapay"
+            hint={t("cashDrawer.instapayHint")}
           />
           <Figure
             loading={loading}

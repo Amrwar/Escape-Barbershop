@@ -40,6 +40,7 @@ export async function GET(req: NextRequest) {
     let totalRevenue = 0;
     let cashTotal = 0;
     let cardTotal = 0;
+    let instapayTotal = 0;
     let mixedTotal = 0;
     let discountsTotal = 0;
     const serviceMap = new Map<string, { name: string; arabicName: string | null; count: number; revenue: number }>();
@@ -48,6 +49,7 @@ export async function GET(req: NextRequest) {
       totalRevenue += v.total;
       if (v.paymentMethod === "CASH") cashTotal += v.total;
       else if (v.paymentMethod === "CARD") cardTotal += v.total;
+      else if (v.paymentMethod === "INSTAPAY") instapayTotal += v.total;
       else mixedTotal += v.total;
 
       const subtotal = v.items.reduce((s, i) => s + i.priceAtTime * i.quantity, 0);
@@ -79,6 +81,7 @@ export async function GET(req: NextRequest) {
         totalRevenue,
         cashTotal,
         cardTotal,
+        instapayTotal,
         mixedTotal,
         discountsTotal,
         topServices,

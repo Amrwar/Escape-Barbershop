@@ -6,6 +6,7 @@ import { DateNavInput } from "@/components/ui/DateNavInput";
 import { StatCard } from "@/components/ui/StatCard";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { useTranslation } from "@/lib/i18n";
+import { paymentMethodKey, paymentMethodName, type VisitPaymentMethod } from "@/lib/payments";
 import { Pagination } from "@/components/ui/Pagination";
 import { format, startOfDay, startOfWeek, startOfMonth } from "date-fns";
 
@@ -15,11 +16,13 @@ interface DashboardData {
   todayRevenue: number;
   todayCash: number;
   todayCard: number;
+  todayInstapay: number;
   todayTips: number;
   todayExpenses: number;
   monthRevenue: number;
   monthCash: number;
   monthCard: number;
+  monthInstapay: number;
   monthTips: number;
   monthExpenses: number;
   visitsToday: number;
@@ -39,11 +42,12 @@ interface BarberStatsItem {
 interface BarberStatsVisit {
   id: string;
   visitAt: string;
-  paymentMethod: "CASH" | "CARD" | "MIXED";
+  paymentMethod: VisitPaymentMethod;
   discount: number;
   total: number;
   cashAmount: number | null;
   cardAmount: number | null;
+  instapayAmount: number | null;
   customer: { name: string };
   items: BarberStatsItem[];
 }
@@ -55,6 +59,7 @@ interface BarberStats {
     totalRevenue: number;
     cashTotal: number;
     cardTotal: number;
+    instapayTotal: number;
     mixedTotal: number;
     discountsTotal: number;
     topServices: { name: string; arabicName: string | null; count: number; revenue: number }[];
@@ -191,12 +196,10 @@ export default function DashboardPage() {
           services: v.items
             .map((i) => `${i.service.name}${i.quantity > 1 ? ` ×${i.quantity}` : ""}`)
             .join(", "),
-          paymentMethod:
-            v.paymentMethod === "CASH" ? "Cash"
-            : v.paymentMethod === "CARD" ? "Card"
-            : "Mixed",
+          paymentMethod: paymentMethodName(v.paymentMethod),
           cashAmount: v.cashAmount,
           cardAmount: v.cardAmount,
+          instapayAmount: v.instapayAmount,
           subtotal,
           discountPercent: v.discount,
           total: v.total,
@@ -281,6 +284,12 @@ export default function DashboardPage() {
                     <span>{t("common.card")}</span>
                     <span className="font-medium text-gray-700">{fmtCurrency(data?.todayCard ?? 0)}</span>
                   </div>
+                  {(data?.todayInstapay ?? 0) > 0 && (
+                    <div className="flex justify-between text-xs text-gray-500">
+                      <span>{t("common.instapay")}</span>
+                      <span className="font-medium text-gray-700">{fmtCurrency(data?.todayInstapay ?? 0)}</span>
+                    </div>
+                  )}
                   {(data?.todayTips ?? 0) > 0 && (
                     <div className="flex justify-between text-xs text-red-500">
                       <span>{t("newVisit.tip")}</span>
@@ -312,6 +321,12 @@ export default function DashboardPage() {
                     <span>{t("common.card")}</span>
                     <span className="font-medium text-gray-700">{fmtCurrency(data?.monthCard ?? 0)}</span>
                   </div>
+                  {(data?.monthInstapay ?? 0) > 0 && (
+                    <div className="flex justify-between text-xs text-gray-500">
+                      <span>{t("common.instapay")}</span>
+                      <span className="font-medium text-gray-700">{fmtCurrency(data?.monthInstapay ?? 0)}</span>
+                    </div>
+                  )}
                   {(data?.monthTips ?? 0) > 0 && (
                     <div className="flex justify-between text-xs text-red-500">
                       <span>{t("newVisit.tip")}</span>
@@ -481,11 +496,12 @@ export default function DashboardPage() {
               ) : (
                 <div className="space-y-5">
                   {/* Summary cards */}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
                     <SummaryCard label={t("common.visits")}        value={String(stats.summary.visitCount)}              accent />
                     <SummaryCard label={t("reports.totalRevenue")} value={`${fmtCurrency(stats.summary.totalRevenue)}`} accent />
                     <SummaryCard label={t("common.cash")}          value={`${fmtCurrency(stats.summary.cashTotal)}`}     />
                     <SummaryCard label={t("common.card")}          value={`${fmtCurrency(stats.summary.cardTotal)}`}     />
+                    <SummaryCard label={t("common.instapay")}      value={`${fmtCurrency(stats.summary.instapayTotal)}`} />
                     <SummaryCard label={t("common.mixed")}         value={`${fmtCurrency(stats.summary.mixedTotal)}`}    />
                     <SummaryCard label={t("reports.discounts")}    value={`${fmtCurrency(stats.summary.discountsTotal)}`} />
                   </div>
@@ -550,9 +566,7 @@ export default function DashboardPage() {
                                 ).join(", ")}
                               </td>
                               <td className="px-4 py-2 text-gray-600">
-                                {v.paymentMethod === "CASH" ? t("common.cash")
-                                  : v.paymentMethod === "CARD" ? t("common.card")
-                                  : t("common.mixed")}
+                                {t(paymentMethodKey(v.paymentMethod))}
                               </td>
                               <td className="px-4 py-2 text-end font-semibold text-gray-900">
                                 {fmtCurrency(v.total)}

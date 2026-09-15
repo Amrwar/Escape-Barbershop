@@ -39,6 +39,8 @@ interface SessionData {
     advancesTotal: number;
     cardSales: number;
     mixedCard: number;
+    instapaySales: number;
+    mixedInstapay: number;
     cardNet: number;
     visaPercent: number;
     visaCommission: number;
@@ -375,7 +377,7 @@ export default function CashDrawerPage() {
             </div>
 
             {/* Takings first: what came in today, however it was paid */}
-            <div className="grid grid-cols-3 gap-3 mb-4 pb-4 border-b border-green-200">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4 pb-4 border-b border-green-200">
               <div>
                 <div className="text-xs text-gray-600">{t("common.visits")}</div>
                 <div className="text-lg font-bold text-gray-900 tabular-nums">
@@ -393,6 +395,13 @@ export default function CashDrawerPage() {
                 <div className="text-lg font-bold text-blue-700 tabular-nums">
                   {fmtCurrency(session.visitSummary.cardSales)}
                 </div>
+              </div>
+              <div>
+                <div className="text-xs text-gray-600">{t("cashDrawer.instapaySales")}</div>
+                <div className="text-lg font-bold text-purple-700 tabular-nums">
+                  {fmtCurrency(session.visitSummary.instapaySales)}
+                </div>
+                <div className="text-[11px] text-gray-500">{t("cashDrawer.instapayHint")}</div>
               </div>
             </div>
 
