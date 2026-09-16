@@ -11,7 +11,8 @@ export function normalizePhone(input: string | null | undefined): string | null 
   let digits = input.replace(/[^\d+]/g, "");
   if (digits.startsWith("+")) digits = digits.slice(1);
   if (digits.startsWith("0020")) digits = digits.slice(4);
-  else if (digits.startsWith("20") && digits.length === 12) digits = digits.slice(2);
+  // "20" then either the local number with its 0 (+20 01…) or without (+20 1…).
+  else if (digits.startsWith("20") && (digits.length === 12 || digits.length === 13)) digits = digits.slice(2);
   if (digits.length === 10 && digits.startsWith("1")) digits = `0${digits}`;
   return /^01\d{9}$/.test(digits) ? digits : null;
 }

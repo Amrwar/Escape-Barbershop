@@ -13,8 +13,12 @@
     "db:studio": "prisma studio",
     "db:generate": "prisma generate",
     "postinstall": "prisma generate",
-    "test": "vitest run",
-    "docs:pdf": "node scripts/docs-to-pdf.mjs"
+    "test": "vitest run src",
+    "docs:pdf": "node scripts/docs-to-pdf.mjs",
+    "test:integration": "vitest run tests",
+    "test:all": "vitest run",
+    "test:watch": "vitest",
+    "test:db:stop": "docker rm -f escape-test-db"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.7.2",

@@ -80,6 +80,12 @@ apps and prepare the listings.
 
 ---
 
+## Quality
+
+- [x] 167 tests: 83 on the rules, 84 on the API against a real database
+- [x] Every endpoint tested for what it does *and* who it refuses
+- [ ] Tests for the screens themselves (clicking through a browser)
+
 ## Open questions
 
 1. **Cancellation window** is 2 hours. Right for Escape?
