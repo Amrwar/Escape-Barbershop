@@ -51,5 +51,6 @@ export const config = {
     "/settings/:path*",
     "/account/:path*",
     "/appointments/:path*",
+    "/queue/:path*",
   ],
 };

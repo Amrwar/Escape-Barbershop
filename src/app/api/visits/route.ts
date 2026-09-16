@@ -3,6 +3,14 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { visitSchema } from "@/lib/validations";
 import { paymentMethodName, resolvePaymentAmounts, tipPaidInCash } from "@/lib/payments";
+import { recordAudit } from "@/lib/audit";
+
+/** A refusal the cashier should read, rather than a bare "invalid data". */
+class VisitError extends Error {
+  constructor(message: string, readonly status: number) {
+    super(message);
+  }
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -63,6 +71,17 @@ export async function POST(req: NextRequest) {
 
     // Link to open cash drawer session and assign sequential receipt number
     const visit = await prisma.$transaction(async (tx) => {
+      // Settling a booked appointment: it becomes this visit, once and once only.
+      if (data.appointmentId) {
+        const appointment = await tx.appointment.findUnique({
+          where: { id: data.appointmentId },
+          select: { id: true, visitId: true, status: true },
+        });
+        if (!appointment) throw new VisitError("That appointment no longer exists", 404);
+        if (appointment.visitId) throw new VisitError("This appointment has already been rung up", 409);
+        if (appointment.status === "CANCELLED") throw new VisitError("That appointment was cancelled", 409);
+      }
+
       // Find open session
       const openSession = await tx.cashDrawerSession.findFirst({
         where: { status: "OPEN" },
@@ -124,10 +143,34 @@ export async function POST(req: NextRequest) {
         });
       }
 
+      // The appointment is now settled: it points at the visit, and the money
+      // side lives on the visit alone. There is nothing to reconcile between them.
+      if (data.appointmentId) {
+        await tx.appointment.update({
+          where: { id: data.appointmentId },
+          data: { status: "COMPLETED", visitId: newVisit.id },
+        });
+      }
+
       return newVisit;
     });
+
+    if (data.appointmentId) {
+      await recordAudit(authSession, {
+        action: "UPDATE",
+        entity: "APPOINTMENT",
+        entityId: data.appointmentId,
+        amount: visit.total,
+        summary: `Rang up ${visit.customer.name}'s appointment — ${visit.total.toFixed(2)} ${visit.paymentMethod}`,
+        details: { visitId: visit.id },
+      });
+    }
+
     return NextResponse.json(visit, { status: 201 });
   } catch (err: unknown) {
+    if (err instanceof VisitError) {
+      return NextResponse.json({ error: err.message }, { status: err.status });
+    }
     if (err instanceof Error && err.message.includes("Unauthorized")) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

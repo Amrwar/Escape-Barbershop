@@ -10,7 +10,7 @@ import { BookingError, appointmentInclude } from "./appointment-api";
  * transaction, so two people cannot take the last slot at the same moment.
  */
 
-const BLOCKING = ["PENDING", "CONFIRMED", "CHECKED_IN", "IN_PROGRESS", "COMPLETED"] as const;
+const BLOCKING = ["PENDING", "CONFIRMED", "CHECKED_IN", "IN_PROGRESS", "COMPLETED", "COMPLETED_UNPAID"] as const;
 
 export interface CreateAppointmentInput {
   customerId: string;
@@ -25,6 +25,8 @@ export interface CreateAppointmentInput {
   onlineOnly?: boolean;
   /** A walk-in may wait in the queue without a barber. */
   requireBarber?: boolean;
+  /** A walk-in is already in the shop, so the working-hours check does not apply. */
+  skipHoursCheck?: boolean;
 }
 
 export async function createAppointment(input: CreateAppointmentInput) {
@@ -95,7 +97,9 @@ export async function createAppointment(input: CreateAppointmentInput) {
         if (barber.services.length > 0 && !services.every((s) => barber.services.some((bs) => bs.serviceId === s.id))) {
           throw new BookingError("That barber does not do one of these services", 400);
         }
-        if (!worksThen(barber.workingHours)) throw new BookingError("That time is outside the barber's working hours", 409);
+        if (!input.skipHoursCheck && !worksThen(barber.workingHours)) {
+          throw new BookingError("That time is outside the barber's working hours", 409);
+        }
         if (!(await isFree(barber.id))) throw new BookingError("That time has just been taken", 409);
       } else if (requireBarber) {
         const candidates = await tx.barber.findMany({
@@ -105,7 +109,7 @@ export async function createAppointment(input: CreateAppointmentInput) {
         });
         for (const c of candidates) {
           const canDo = c.services.length === 0 || services.every((s) => c.services.some((bs) => bs.serviceId === s.id));
-          if (!canDo || !worksThen(c.workingHours)) continue;
+          if (!canDo || (!input.skipHoursCheck && !worksThen(c.workingHours))) continue;
           if (await isFree(c.id)) {
             barberId = c.id;
             break;

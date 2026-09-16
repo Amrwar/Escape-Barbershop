@@ -8,7 +8,7 @@ import { getBookingSettings, getShopHours } from "@/lib/booking-server";
 import { MINUTE, shopDateISO, workingWindow } from "@/lib/booking";
 import { BookingError, appointmentInclude, bookingErrorResponse } from "@/lib/appointment-api";
 
-const BLOCKING = ["PENDING", "CONFIRMED", "CHECKED_IN", "IN_PROGRESS", "COMPLETED"] as const;
+const BLOCKING = ["PENDING", "CONFIRMED", "CHECKED_IN", "IN_PROGRESS", "COMPLETED", "COMPLETED_UNPAID"] as const;
 
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
   try {

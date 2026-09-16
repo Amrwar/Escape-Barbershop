@@ -64,7 +64,17 @@ Customer ──< Appointment >── Barber
 
 **An appointment holds a chair. A visit is money.** They meet at `Appointment.visitId`,
 which is set once, when the customer pays. Until then the appointment carries only a
-quote.
+quote. Ringing up is one transaction: the visit is created and the appointment is stamped
+with it, so an appointment can never become two visits, and the shop can change the price
+at the till without rewriting what was quoted.
+
+A customer who is served and leaves without paying is closed as `COMPLETED_UNPAID`: the
+chair was used, so the time stays taken, but no visit exists and no money is counted. If
+they come back and settle, it can still be rung up.
+
+**A walk-in is the same appointment**, with `source = WALK_IN`, starting now, possibly
+with nobody assigned. That is what keeps one diary, one set of takings and one customer
+history however the customer arrived.
 
 Decisions worth keeping:
 

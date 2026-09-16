@@ -198,8 +198,18 @@ export function workingWindow(
   };
 }
 
-/** Statuses that still hold the chair. A cancelled or no-show slot frees up. */
-export const BLOCKING_STATUSES = ["PENDING", "CONFIRMED", "CHECKED_IN", "IN_PROGRESS", "COMPLETED"] as const;
+/**
+ * Statuses that hold the chair — including the ones already served, since that
+ * time was genuinely used. A cancelled or no-show slot frees up again.
+ */
+export const BLOCKING_STATUSES = [
+  "PENDING",
+  "CONFIRMED",
+  "CHECKED_IN",
+  "IN_PROGRESS",
+  "COMPLETED",
+  "COMPLETED_UNPAID",
+] as const;
 
 export function isBlocking(status: string): boolean {
   return (BLOCKING_STATUSES as readonly string[]).includes(status);

@@ -8,7 +8,7 @@ import { getBookingSettings, getShopHours } from "@/lib/booking-server";
 import { MINUTE, shopDateISO, workingWindow } from "@/lib/booking";
 import { UPCOMING_STATUSES, customerAppointmentView } from "@/lib/customer-api";
 
-const BLOCKING = ["PENDING", "CONFIRMED", "CHECKED_IN", "IN_PROGRESS", "COMPLETED"] as const;
+const BLOCKING = ["PENDING", "CONFIRMED", "CHECKED_IN", "IN_PROGRESS", "COMPLETED", "COMPLETED_UNPAID"] as const;
 
 /** The customer's own appointment, or nothing — never someone else's. */
 async function ownAppointment(customerId: string, id: string) {

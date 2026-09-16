@@ -45,6 +45,8 @@ export const visitSchema = z.object({
   cashAmount: z.number().min(0).optional(),
   cardAmount: z.number().min(0).optional(),
   instapayAmount: z.number().min(0).optional(),
+  /** Set when this visit is settling a booked appointment. */
+  appointmentId: z.string().optional(),
   tip: z.number().min(0).optional().default(0),
 });
 
@@ -201,6 +203,7 @@ export const APPOINTMENT_STATUSES = [
   "CHECKED_IN",
   "IN_PROGRESS",
   "COMPLETED",
+  "COMPLETED_UNPAID",
   "CANCELLED",
   "NO_SHOW",
 ] as const;
@@ -213,6 +216,21 @@ export const appointmentSchema = z.object({
   serviceIds: z.array(z.string().min(1)).min(1, "At least one service is required"),
   notes: z.string().max(500).nullable().optional().or(z.literal("")),
   source: z.enum(["ONLINE", "PHONE", "WALK_IN", "STAFF"]).optional().default("STAFF"),
+});
+
+/** Somebody who has just walked in: no time, only a place in the queue. */
+export const walkInSchema = z.object({
+  customerId: z.string().min(1, "Customer is required"),
+  /** Null means the next barber free. */
+  barberId: z.string().nullable().optional(),
+  serviceIds: z.array(z.string().min(1)).min(1, "At least one service is required"),
+  notes: z.string().max(500).nullable().optional().or(z.literal("")),
+});
+
+/** Moving somebody through the queue: give them a chair, or start them. */
+export const queueActionSchema = z.object({
+  barberId: z.string().nullable().optional(),
+  start: z.boolean().optional(),
 });
 
 export const appointmentUpdateSchema = z.object({

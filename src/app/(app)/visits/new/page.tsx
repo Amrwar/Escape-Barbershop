@@ -19,7 +19,7 @@ function NewVisitInner() {
   const params = useSearchParams();
   const { data: session } = useSession();
   const isOwner = session?.user?.role === "OWNER";
-  const { t, fmtCurrency, lang } = useTranslation();
+  const { t, fmtCurrency, fmtTime, lang } = useTranslation();
 
   const [services, setServices] = useState<Service[]>([]);
   const [barbers,  setBarbers]  = useState<Barber[]>([]);
@@ -51,6 +51,8 @@ function NewVisitInner() {
   const [verifyingPin,      setVerifyingPin]      = useState(false);
 
   const preCustomerId = params.get("customerId");
+  const appointmentId = params.get("appointmentId");
+  const [appointment, setAppointment] = useState<{ startAt: string; barber: { id: string; name: string } | null } | null>(null);
 
   useEffect(() => {
     Promise.all([
@@ -79,6 +81,29 @@ function NewVisitInner() {
       fetch(`/api/customers/${preCustomerId}`).then((r) => r.json()).then((c) => setSelectedCustomer(c));
     }
   }, [preCustomerId]);
+
+  // Ringing up a booking: the customer, barber and services are already known,
+  // so the cashier only has to take the money.
+  useEffect(() => {
+    if (!appointmentId) return;
+    fetch(`/api/appointments/${appointmentId}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((a) => {
+        if (!a) return;
+        setAppointment({ startAt: a.startAt, barber: a.barber });
+        setSelectedCustomer(a.customer);
+        if (a.barber?.id) setBarberId(a.barber.id);
+        setCart(
+          a.services.map((s: { serviceId: string; serviceName: string; price: number }) => ({
+            serviceId: s.serviceId,
+            serviceName: s.serviceName,
+            serviceArabicName: null,
+            quantity: 1,
+            priceAtTime: s.price,
+          }))
+        );
+      });
+  }, [appointmentId]);
 
   const searchCustomers = useCallback((q: string) => {
     if (!q.trim()) { setCustomers([]); return; }
@@ -184,6 +209,7 @@ function NewVisitInner() {
           notes,
           tip,
           items: cart.map((i) => ({ serviceId: i.serviceId, quantity: i.quantity, priceAtTime: i.priceAtTime })),
+          ...(appointmentId ? { appointmentId } : {}),
           ...(paymentMethod === "MIXED" ? amounts : {}),
         }),
       });
@@ -206,6 +232,17 @@ function NewVisitInner() {
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <PageHeader title={t("newVisit.title")} subtitle={t("newVisit.subtitle")} />
+
+      {appointment && (
+        <div className="mb-5 rounded-xl border border-primary-200 bg-primary-50 px-4 py-3 text-sm">
+          <span className="font-semibold text-primary-800">{t("appointments.settling")}</span>
+          <span className="text-primary-700">
+            {" — "}
+            {t("appointments.settlingFor")} {fmtTime(appointment.startAt)}
+            {appointment.barber ? ` · ${appointment.barber.name}` : ""}
+          </span>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Visit Details */}

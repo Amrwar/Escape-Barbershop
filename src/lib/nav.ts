@@ -26,6 +26,7 @@ export interface NavItem {
 
 const TILL_NAV_ALL: NavItem[] = [
   { href: "/visits/new", labelKey: "nav.newVisit", icon: "plus" },
+  { href: "/queue", labelKey: "nav.queue", icon: "users" },
   { href: "/visits", labelKey: "nav.visits", icon: "list" },
   { href: "/cash-drawer", labelKey: "nav.cashDrawer", icon: "drawer" },
   { href: "/expenses", labelKey: "nav.expenses", icon: "banknote", cashierOnly: true },
@@ -77,6 +78,7 @@ export const ADMIN_NAV: NavGroup[] = [
     titleKey: "admin.sectionSetup",
     items: [
       { href: "/appointments", labelKey: "nav.appointments", icon: "calendar" },
+      { href: "/queue", labelKey: "nav.queue", icon: "users" },
       { href: "/settings/booking", labelKey: "nav.bookingSettings", icon: "cog" },
       { href: "/services", labelKey: "nav.services", icon: "scissors" },
       { href: "/customers", labelKey: "nav.customers", icon: "users" },

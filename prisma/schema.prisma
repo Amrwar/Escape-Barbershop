@@ -487,6 +487,8 @@ enum AppointmentStatus {
   CHECKED_IN
   IN_PROGRESS
   COMPLETED
+  /// Served, but left without paying. Closed, and counted nowhere as revenue.
+  COMPLETED_UNPAID
   CANCELLED
   NO_SHOW
 }

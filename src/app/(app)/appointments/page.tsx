@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { format } from "date-fns";
 import { DateNavInput } from "@/components/ui/DateNavInput";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -94,6 +95,11 @@ export default function AppointmentsPage() {
     load();
   };
 
+  const markUnpaid = async (a: Appointment) => {
+    if (!confirm(t("appointments.markUnpaidConfirm"))) return;
+    await setStatus(a, "COMPLETED_UNPAID");
+  };
+
   const cancel = async (a: Appointment) => {
     if (!confirm(t("appointments.cancelConfirm"))) return;
     const res = await fetch(`/api/appointments/${a.id}`, { method: "DELETE" });
@@ -171,8 +177,12 @@ export default function AppointmentsPage() {
                 {fmtCurrency(a.totalPrice)}
               </div>
 
-              {a.status !== "CANCELLED" && a.status !== "COMPLETED" && (
+              {a.status !== "CANCELLED" && a.status !== "COMPLETED" && a.status !== "COMPLETED_UNPAID" && (
                 <div className="flex flex-wrap gap-1.5 text-xs">
+                  {/* The till takes the money; the appointment becomes that visit. */}
+                  <Link href={`/visits/new?appointmentId=${a.id}`} className="btn-primary px-2 py-1 text-xs">
+                    {t("appointments.ringUp")}
+                  </Link>
                   {a.status === "CONFIRMED" && (
                     <button onClick={() => setStatus(a, "CHECKED_IN")} className="btn-ghost px-2 py-1">
                       {t("appointments.checkIn")}
@@ -188,6 +198,9 @@ export default function AppointmentsPage() {
                   </button>
                   <button onClick={() => setStatus(a, "NO_SHOW")} className="btn-ghost px-2 py-1 text-amber-600">
                     {t("appointments.noShow")}
+                  </button>
+                  <button onClick={() => markUnpaid(a)} className="btn-ghost px-2 py-1 text-red-500">
+                    {t("appointments.markUnpaid")}
                   </button>
                   <button onClick={() => cancel(a)} className="btn-ghost px-2 py-1 text-red-500">
                     {t("action.cancel")}

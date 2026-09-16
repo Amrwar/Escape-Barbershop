@@ -28,19 +28,17 @@ The shop has been using this for a while. Listed so the rest has context.
 - [x] **1c** Customer accounts by phone number; the customer app (`/app`): book, see, cancel,
       profile; staff and customers walled apart, with tests
 
-## Phase 2 — the till side (next)
+## Phase 2 — the till side (mostly done)
 
 The piece that makes booking worth having: one appointment, one visit, one set of figures.
 
-- [ ] Ring up an appointment → it becomes a `Visit`, exactly once, carrying its lines
-- [ ] "Arrived" and "in the chair" from the till as well as the diary
-- [ ] Walk-ins: add to the diary without an appointment, wait in a live queue
-- [ ] Live queue screen: now, next, waiting; assign a barber
+- [x] Ring up an appointment → it becomes a `Visit`, exactly once, carrying its lines
+- [x] A customer who leaves without paying: closed as **done, not paid**, counted nowhere
+- [x] Walk-ins: the same appointment as a booking, starting now, in a live queue
+- [x] Live queue screen: in a chair, waiting with an estimated wait, expected today
+- [x] Seat a customer: assign a barber and start them, one barber per chair
 - [ ] Today at a glance for the owner: booked, walk-ins, completed, no-shows, takings
 - [ ] No-shows counted, so the shop can see the cost of them
-
-**Needs from you:** a decision on whether a booked customer who does not pay at the till
-(walks out, pays later) should leave the appointment open or closed.
 
 ## Phase 3 — keeping customers (after that)
 
@@ -82,7 +80,7 @@ apps and prepare the listings.
 
 ## Quality
 
-- [x] 167 tests: 83 on the rules, 84 on the API against a real database
+- [x] 204 tests: 89 on the rules, 115 on the API against a real database
 - [x] Every endpoint tested for what it does *and* who it refuses
 - [ ] Tests for the screens themselves (clicking through a browser)
 

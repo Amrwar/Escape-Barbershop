@@ -14,6 +14,8 @@ export function appointmentStatusKey(status: string) {
       return "appointments.statusInProgress";
     case "COMPLETED":
       return "appointments.statusCompleted";
+    case "COMPLETED_UNPAID":
+      return "appointments.statusUnpaid";
     case "CANCELLED":
       return "appointments.statusCancelled";
     case "NO_SHOW":
@@ -29,6 +31,7 @@ export const APPOINTMENT_BADGE: Record<string, "green" | "blue" | "yellow" | "gr
   CHECKED_IN: "purple",
   IN_PROGRESS: "ink",
   COMPLETED: "green",
+  COMPLETED_UNPAID: "red",
   CANCELLED: "gray",
   NO_SHOW: "red",
 };

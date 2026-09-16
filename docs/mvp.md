@@ -25,8 +25,8 @@ Everything below is either needed for that sentence, or it is not in the MVP.
 - [x] Service lengths, and which services may be booked online
 - [x] A diary for any day: book, move, arrived, no-show, cancel
 - [x] Booking rules: notice, buffer, how far ahead, slot grid
-- [ ] Walk-ins in the same diary, with a live queue
-- [ ] Ring up an appointment: it becomes the visit, once
+- [x] Walk-ins in the same diary, with a live queue
+- [x] Ring up an appointment: it becomes the visit, once
 
 **Owner**
 - [x] Nothing double-booked, ever (enforced on save)
@@ -59,6 +59,7 @@ Not "the screen exists". For each item:
 
 ## Where the MVP stands
 
-Customer booking and the shop diary are built and tested. What is left is the till side —
-turning an appointment into a visit — and walk-ins in the same queue. That is phase 2, and
-it is what makes the sentence at the top true.
+The sentence at the top now holds: a customer books on their phone, the shop sees them in
+the diary, seats them from the queue, rings them up, and the money lands once — in the
+drawer, the commission and the report. What is left of the MVP is the owner's view of the
+day at a glance, and counting no-shows.
