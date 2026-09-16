@@ -4,11 +4,12 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "@/lib/i18n";
 import { Icon } from "@/components/ui/Icon";
+import { ActionBar, Avatar, EmptyState, Pill, ScreenTitle, Skeleton } from "@/components/customer/kit";
 
 /**
- * Booking, in the order a customer thinks: what do I want, with whom, which
- * day, what time. Every time offered comes from the server, so nothing that is
- * already taken is ever shown.
+ * Booking, in the order a customer thinks: what am I having, with whom, when.
+ * Every time offered comes from the server, so nothing already taken is shown,
+ * and the one action that moves things along sits under the thumb throughout.
  */
 
 interface Service {
@@ -36,17 +37,25 @@ interface Catalog {
 const STEPS = ["service", "barber", "time", "confirm"] as const;
 type Step = (typeof STEPS)[number];
 
-/** The next `count` days, as shop-local dates. */
-function nextDays(count: number): string[] {
-  const days: string[] = [];
-  for (let i = 0; i < count; i++) {
-    const d = new Date();
-    d.setDate(d.getDate() + i);
-    days.push(
-      new Intl.DateTimeFormat("en-CA", { timeZone: "Africa/Cairo", year: "numeric", month: "2-digit", day: "2-digit" }).format(d)
-    );
+const TZ = "Africa/Cairo";
+const dateIn = (days: number) =>
+  new Intl.DateTimeFormat("en-CA", { timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit" }).format(
+    new Date(Date.now() + days * 86_400_000)
+  );
+
+/** Times read more easily in parts of the day than as one long list. */
+function groupByPartOfDay(slots: string[]) {
+  const groups: { key: "app.morning" | "app.afternoon" | "app.evening"; slots: string[] }[] = [
+    { key: "app.morning", slots: [] },
+    { key: "app.afternoon", slots: [] },
+    { key: "app.evening", slots: [] },
+  ];
+  for (const iso of slots) {
+    const hour = Number(new Intl.DateTimeFormat("en-GB", { timeZone: TZ, hour: "2-digit", hour12: false }).format(new Date(iso)));
+    const index = hour < 12 ? 0 : hour < 17 ? 1 : 2;
+    groups[index].slots.push(iso);
   }
-  return days;
+  return groups.filter((g) => g.slots.length > 0);
 }
 
 export default function BookPage() {
@@ -57,7 +66,7 @@ export default function BookPage() {
   const [step, setStep] = useState<Step>("service");
   const [serviceIds, setServiceIds] = useState<string[]>([]);
   const [barberId, setBarberId] = useState<string | null>(null);
-  const [day, setDay] = useState(() => nextDays(1)[0]);
+  const [day, setDay] = useState(() => dateIn(0));
   const [slots, setSlots] = useState<string[] | null>(null);
   const [time, setTime] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
@@ -71,15 +80,11 @@ export default function BookPage() {
       .catch(() => setCatalog(null));
   }, []);
 
-  const chosenServices = useMemo(
-    () => (catalog?.services ?? []).filter((s) => serviceIds.includes(s.id)),
-    [catalog, serviceIds]
-  );
-  const totalPrice = chosenServices.reduce((s, x) => s + x.defaultPrice, 0);
-  const totalMinutes = chosenServices.reduce((s, x) => s + x.durationMinutes, 0);
+  const chosen = useMemo(() => (catalog?.services ?? []).filter((s) => serviceIds.includes(s.id)), [catalog, serviceIds]);
+  const totalPrice = chosen.reduce((s, x) => s + x.defaultPrice, 0);
+  const totalMinutes = chosen.reduce((s, x) => s + x.durationMinutes, 0);
   const barber = catalog?.barbers.find((b) => b.id === barberId) ?? null;
 
-  // Barbers who can do everything chosen (an empty list means "all services").
   const availableBarbers = useMemo(
     () => (catalog?.barbers ?? []).filter((b) => b.serviceIds.length === 0 || serviceIds.every((id) => b.serviceIds.includes(id))),
     [catalog, serviceIds]
@@ -121,43 +126,60 @@ export default function BookPage() {
     }
   };
 
-  if (!catalog) return <div className="card h-64 animate-pulse bg-gray-100" />;
+  if (!catalog) {
+    return (
+      <div className="space-y-3 pt-4">
+        <Skeleton className="h-8 w-1/2" />
+        {[...Array(4)].map((_, i) => (
+          <Skeleton key={i} className="h-20" />
+        ))}
+      </div>
+    );
+  }
 
   if (!catalog.booking.onlineBookingEnabled) {
     return (
-      <div className="card p-6 text-center">
-        <div className="text-3xl mb-2">📞</div>
-        <p className="text-sm text-gray-600">{t("app.bookingClosed")}</p>
+      <div className="pt-6">
+        <EmptyState icon="receipt" title={t("app.bookingClosed")} hint={t("app.bookingClosedHint")} />
       </div>
     );
   }
 
   const stepIndex = STEPS.indexOf(step);
+  const canGoOn = step === "service" ? chosen.length > 0 : step === "time" ? !!time : true;
+  const days = Array.from({ length: Math.min(catalog.booking.maxDaysAhead, 14) }, (_, i) => dateIn(i));
 
   return (
-    <div className="space-y-5">
-      {/* Where the customer is in the flow */}
-      <div className="flex items-center gap-2">
-        {STEPS.map((s, i) => (
-          <div key={s} className={`h-1.5 flex-1 rounded-full ${i <= stepIndex ? "bg-primary-700" : "bg-gray-200"}`} />
-        ))}
+    <div className="pt-2">
+      {/* How far along, and what it is costing so far */}
+      <div className="sticky top-0 z-10 -mx-5 mb-5 bg-primary-950/90 px-5 pb-3 pt-2 backdrop-blur-lg">
+        <div className="flex items-center gap-1.5">
+          {STEPS.map((s, i) => (
+            <div
+              key={s}
+              className={`h-1 flex-1 rounded-full transition-colors duration-300 ${
+                i < stepIndex ? "bg-brass-400" : i === stepIndex ? "bg-brass-400/70" : "bg-white/10"
+              }`}
+            />
+          ))}
+        </div>
+        {chosen.length > 0 && (
+          <div className="mt-2.5 flex items-center justify-between text-[13px]">
+            <span className="truncate text-white/60">
+              {chosen.map((s) => (lang === "ar" && s.arabicName ? s.arabicName : s.name)).join(" + ")}
+              <span className="text-white/35">
+                {" · "}
+                {totalMinutes} {t("appointments.minutesShort")}
+              </span>
+            </span>
+            <span className="ms-3 shrink-0 font-semibold tabular-nums text-brass-300">{fmtCurrency(totalPrice)}</span>
+          </div>
+        )}
       </div>
 
       {step === "service" && (
-        <section className="space-y-3">
-          <StepTitle title={t("app.stepService")} hint={t("app.stepServiceHint")} />
-          {chosenServices.length > 0 && (
-            <div className="sticky top-0 z-10 -mx-1 px-3 py-2 rounded-xl bg-primary-800 text-white text-sm flex items-center justify-between shadow">
-              <span>
-                {chosenServices.length} {t(chosenServices.length === 1 ? "app.serviceChosen" : "app.servicesChosen")}
-                <span className="opacity-70">
-                  {" · "}
-                  {totalMinutes} {t("appointments.minutesShort")}
-                </span>
-              </span>
-              <span className="font-semibold tabular-nums">{fmtCurrency(totalPrice)}</span>
-            </div>
-          )}
+        <section className="space-y-4">
+          <ScreenTitle title={t("app.stepService")} hint={t("app.stepServiceHint")} />
           <div className="space-y-2">
             {catalog.services.map((s) => {
               const on = serviceIds.includes(s.id);
@@ -166,23 +188,21 @@ export default function BookPage() {
                   key={s.id}
                   type="button"
                   onClick={() => setServiceIds((prev) => (on ? prev.filter((x) => x !== s.id) : [...prev, s.id]))}
-                  className={`w-full text-start card p-4 flex items-center gap-3 transition-colors ${
-                    on ? "border-primary-500 bg-primary-50/50" : "hover:border-primary-200"
-                  }`}
+                  className={`c-choice flex w-full items-center gap-4 p-4 text-start ${on ? "c-choice-on" : ""}`}
                 >
-                  <div className="flex-1">
-                    <div className="font-semibold text-gray-900">{lang === "ar" && s.arabicName ? s.arabicName : s.name}</div>
-                    <div className="text-xs text-gray-500 mt-0.5">
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate font-medium">{lang === "ar" && s.arabicName ? s.arabicName : s.name}</div>
+                    <div className="mt-1 text-xs text-white/40">
                       {s.durationMinutes} {t("appointments.minutesShort")}
                     </div>
                   </div>
-                  <div className="text-sm font-semibold text-gray-900 tabular-nums">{fmtCurrency(s.defaultPrice)}</div>
+                  <div className="text-sm font-semibold tabular-nums text-white/90">{fmtCurrency(s.defaultPrice)}</div>
                   <div
-                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                      on ? "border-primary-600 bg-primary-600 text-white" : "border-gray-300"
+                    className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
+                      on ? "border-brass-400 bg-brass-400 text-primary-950" : "border-white/20"
                     }`}
                   >
-                    {on && <span className="text-[11px]">✓</span>}
+                    {on && <span className="text-xs font-bold">✓</span>}
                   </div>
                 </button>
               );
@@ -192,51 +212,49 @@ export default function BookPage() {
       )}
 
       {step === "barber" && (
-        <section className="space-y-3">
-          <StepTitle title={t("app.stepBarber")} hint={t("app.stepBarberHint")} />
-          <button
-            type="button"
-            onClick={() => setBarberId(null)}
-            className={`w-full text-start card p-4 flex items-center gap-3 ${
-              barberId === null ? "border-primary-500 bg-primary-50/50" : "hover:border-primary-200"
-            }`}
-          >
-            <div className="w-11 h-11 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center">
-              <Icon name="users" className="w-5 h-5" />
-            </div>
-            <div className="flex-1">
-              <div className="font-semibold text-gray-900">{t("appointments.anyBarber")}</div>
-              <div className="text-xs text-gray-500">{t("app.anyBarberHint")}</div>
-            </div>
-          </button>
-
-          {availableBarbers.map((b) => (
+        <section className="space-y-4">
+          <ScreenTitle title={t("app.stepBarber")} hint={t("app.stepBarberHint")} />
+          <div className="space-y-2">
             <button
-              key={b.id}
               type="button"
-              onClick={() => setBarberId(b.id)}
-              className={`w-full text-start card p-4 flex items-center gap-3 ${
-                barberId === b.id ? "border-primary-500 bg-primary-50/50" : "hover:border-primary-200"
-              }`}
+              onClick={() => setBarberId(null)}
+              className={`c-choice flex w-full items-center gap-4 p-4 text-start ${barberId === null ? "c-choice-on" : ""}`}
             >
-              <div className="w-11 h-11 rounded-full bg-primary-100 text-primary-800 font-bold flex items-center justify-center">
-                {b.name[0]?.toUpperCase()}
+              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-brass-400/15 text-brass-300">
+                <Icon name="users" className="h-5 w-5" />
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="font-semibold text-gray-900">{b.name}</div>
-                {b.bio && <div className="text-xs text-gray-500 truncate">{b.bio}</div>}
+              <div className="flex-1">
+                <div className="font-medium">{t("appointments.anyBarber")}</div>
+                <div className="mt-0.5 text-xs text-white/40">{t("app.anyBarberHint")}</div>
               </div>
+              {barberId === null && <Pill tone="brass">✓</Pill>}
             </button>
-          ))}
+
+            {availableBarbers.map((b) => (
+              <button
+                key={b.id}
+                type="button"
+                onClick={() => setBarberId(b.id)}
+                className={`c-choice flex w-full items-center gap-4 p-4 text-start ${barberId === b.id ? "c-choice-on" : ""}`}
+              >
+                <Avatar name={b.name} photo={b.photo} />
+                <div className="min-w-0 flex-1">
+                  <div className="font-medium">{b.name}</div>
+                  {b.bio && <div className="mt-0.5 truncate text-xs text-white/40">{b.bio}</div>}
+                </div>
+                {barberId === b.id && <Pill tone="brass">✓</Pill>}
+              </button>
+            ))}
+          </div>
         </section>
       )}
 
       {step === "time" && (
-        <section className="space-y-3">
-          <StepTitle title={t("app.stepTime")} hint={t("app.stepTimeHint")} />
+        <section className="space-y-4">
+          <ScreenTitle title={t("app.stepTime")} hint={t("app.stepTimeHint")} />
 
-          <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
-            {nextDays(catalog.booking.maxDaysAhead > 14 ? 14 : catalog.booking.maxDaysAhead).map((d) => {
+          <div className="scroll-clean -mx-5 flex gap-2 overflow-x-auto px-5 pb-1">
+            {days.map((d, i) => {
               const date = new Date(`${d}T12:00:00`);
               const on = d === day;
               return (
@@ -244,40 +262,45 @@ export default function BookPage() {
                   key={d}
                   type="button"
                   onClick={() => setDay(d)}
-                  className={`shrink-0 w-16 py-2 rounded-xl border text-center transition-colors ${
-                    on ? "border-primary-600 bg-primary-700 text-white" : "border-gray-200 bg-white hover:border-primary-300"
-                  }`}
+                  className={`c-choice w-[68px] shrink-0 py-2.5 text-center ${on ? "c-choice-on" : ""}`}
                 >
-                  <div className="text-[11px] uppercase opacity-80">
-                    {new Intl.DateTimeFormat(lang === "ar" ? "ar-EG" : "en-GB", { weekday: "short" }).format(date)}
+                  <div className={`text-[10px] uppercase tracking-wide ${on ? "text-brass-200" : "text-white/40"}`}>
+                    {i === 0
+                      ? t("app.today")
+                      : new Intl.DateTimeFormat(lang === "ar" ? "ar-EG" : "en-GB", { weekday: "short", timeZone: TZ }).format(date)}
                   </div>
-                  <div className="text-lg font-bold tabular-nums leading-tight">{date.getDate()}</div>
+                  <div className="text-xl font-bold leading-tight tabular-nums">{date.getDate()}</div>
                 </button>
               );
             })}
           </div>
 
           {slots === null ? (
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
               {[...Array(9)].map((_, i) => (
-                <div key={i} className="h-10 rounded-xl bg-gray-100 animate-pulse" />
+                <Skeleton key={i} className="h-11 rounded-xl" />
               ))}
             </div>
           ) : slots.length === 0 ? (
-            <div className="card p-6 text-center text-sm text-gray-500">{t("app.noTimesThatDay")}</div>
+            <EmptyState icon="calendar" title={t("app.noTimesThatDay")} hint={t("app.noTimesThatDayHint")} />
           ) : (
-            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-              {slots.map((iso) => (
-                <button
-                  key={iso}
-                  type="button"
-                  onClick={() => setTime(iso)}
-                  className={`py-2.5 rounded-xl border text-sm font-medium tabular-nums transition-colors ${
-                    time === iso ? "border-primary-600 bg-primary-700 text-white" : "border-gray-200 bg-white hover:border-primary-300"
-                  }`}
-                >
-                  {fmtTime(iso)}
-                </button>
+            <div className="space-y-5">
+              {groupByPartOfDay(slots).map((group) => (
+                <div key={group.key}>
+                  <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/35">{t(group.key)}</div>
+                  <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                    {group.slots.map((iso) => (
+                      <button
+                        key={iso}
+                        type="button"
+                        onClick={() => setTime(iso)}
+                        className={`c-choice py-2.5 text-sm font-medium tabular-nums ${time === iso ? "c-choice-on" : ""}`}
+                      >
+                        {fmtTime(iso)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
           )}
@@ -285,74 +308,82 @@ export default function BookPage() {
       )}
 
       {step === "confirm" && time && (
-        <section className="space-y-3">
-          <StepTitle title={t("app.stepConfirm")} hint={t("app.stepConfirmHint")} />
-          <div className="card p-5 space-y-3">
-            <Row label={t("field.services")} value={chosenServices.map((s) => (lang === "ar" && s.arabicName ? s.arabicName : s.name)).join(" + ")} />
-            <Row label={t("field.barber")} value={barber?.name ?? t("appointments.anyBarber")} />
-            <Row label={t("field.dateTime")} value={`${fmtTime(time)} · ${new Intl.DateTimeFormat(lang === "ar" ? "ar-EG" : "en-GB", { weekday: "long", day: "numeric", month: "long", timeZone: "Africa/Cairo" }).format(new Date(time))}`} />
-            <Row label={t("app.duration")} value={`${totalMinutes} ${t("appointments.minutesShort")}`} />
-            <div className="flex justify-between pt-3 border-t border-gray-100">
-              <span className="font-semibold text-gray-900">{t("field.total")}</span>
-              <span className="font-bold text-gray-900 tabular-nums">{fmtCurrency(totalPrice)}</span>
+        <section className="space-y-4">
+          <ScreenTitle title={t("app.stepConfirm")} hint={t("app.stepConfirmHint")} />
+
+          <div className="c-card-raised overflow-hidden">
+            <div className="border-b border-white/10 bg-white/[0.03] px-5 py-4">
+              <div className="text-3xl font-bold tabular-nums leading-none">{fmtTime(time)}</div>
+              <div className="mt-1.5 text-sm text-white/50">
+                {new Intl.DateTimeFormat(lang === "ar" ? "ar-EG" : "en-GB", {
+                  weekday: "long",
+                  day: "numeric",
+                  month: "long",
+                  timeZone: TZ,
+                }).format(new Date(time))}
+              </div>
+            </div>
+
+            <div className="space-y-3 px-5 py-4">
+              {chosen.map((s) => (
+                <div key={s.id} className="flex items-baseline justify-between text-sm">
+                  <span className="text-white/70">{lang === "ar" && s.arabicName ? s.arabicName : s.name}</span>
+                  <span className="tabular-nums text-white/90">{fmtCurrency(s.defaultPrice)}</span>
+                </div>
+              ))}
+              <div className="flex items-center justify-between border-t border-white/10 pt-3">
+                <div className="flex items-center gap-2.5">
+                  <Avatar name={barber?.name ?? "?"} photo={barber?.photo} size={32} />
+                  <span className="text-sm text-white/70">{barber?.name ?? t("appointments.anyBarber")}</span>
+                </div>
+                <Pill>
+                  {totalMinutes} {t("appointments.minutesShort")}
+                </Pill>
+              </div>
+              <div className="flex items-baseline justify-between border-t border-white/10 pt-3">
+                <span className="font-semibold">{t("field.total")}</span>
+                <span className="text-xl font-bold tabular-nums text-brass-300">{fmtCurrency(totalPrice)}</span>
+              </div>
             </div>
           </div>
 
           <div>
-            <label className="label">{t("app.notesOptional")}</label>
-            <input className="input" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={t("app.notesPlaceholder")} />
+            <label className="c-label">{t("app.notesOptional")}</label>
+            <input className="c-input" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={t("app.notesPlaceholder")} />
           </div>
 
-          <p className="text-xs text-gray-500">
+          <p className="text-center text-xs text-white/35">
             {t("app.cancelPolicy").replace("{minutes}", String(catalog.booking.cancelWindowMinutes))}
           </p>
         </section>
       )}
 
-      {error && <div className="bg-red-50 text-red-700 text-sm px-4 py-3 rounded-lg border border-red-200">{error}</div>}
+      {error && (
+        <div className="mt-4 rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-200">{error}</div>
+      )}
 
-      {/* The one action that moves things along, always within thumb reach */}
-      <div className="flex gap-3">
+      <ActionBar>
         {stepIndex > 0 && (
-          <button type="button" onClick={() => setStep(STEPS[stepIndex - 1])} className="btn-secondary flex-1">
-            {t("action.back").replace("←", "").trim()}
+          <button type="button" onClick={() => setStep(STEPS[stepIndex - 1])} className="c-btn-secondary px-5">
+            {t("app.back")}
           </button>
         )}
         {step === "confirm" ? (
-          <button type="button" onClick={book} disabled={saving} className="btn-primary flex-[2]">
+          <button type="button" onClick={book} disabled={saving} className="c-btn-primary flex-1">
             {saving ? t("action.saving") : t("app.confirmBooking")}
           </button>
         ) : (
           <button
             type="button"
             onClick={() => setStep(STEPS[stepIndex + 1])}
-            disabled={(step === "service" && serviceIds.length === 0) || (step === "time" && !time)}
-            className="btn-primary flex-[2]"
+            disabled={!canGoOn}
+            className="c-btn-primary flex-1"
           >
-            {step === "service" && serviceIds.length > 0
-              ? `${t("action.next")} · ${fmtCurrency(totalPrice)}`
-              : t("action.next")}
+            {t("action.next")}
+            {step === "service" && chosen.length > 0 && <span className="tabular-nums opacity-80">· {fmtCurrency(totalPrice)}</span>}
           </button>
         )}
-      </div>
-    </div>
-  );
-}
-
-function StepTitle({ title, hint }: { title: string; hint: string }) {
-  return (
-    <div>
-      <h1 className="text-lg font-bold text-gray-900">{title}</h1>
-      <p className="text-sm text-gray-500">{hint}</p>
-    </div>
-  );
-}
-
-function Row({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex justify-between gap-4 text-sm">
-      <span className="text-gray-500 shrink-0">{label}</span>
-      <span className="text-gray-900 font-medium text-end">{value}</span>
+      </ActionBar>
     </div>
   );
 }

@@ -9,7 +9,10 @@ import { LanguageToggle } from "@/components/ui/LanguageToggle";
 import { customerRegisterSchema } from "@/lib/validations";
 import { isValidPhone } from "@/lib/customers";
 
-/** Where a customer signs in, or makes an account with their phone number. */
+/**
+ * The way in. The phone number is the username, because everyone knows theirs
+ * and nobody remembers which email they used at a barbershop.
+ */
 function CustomerLoginInner() {
   const router = useRouter();
   const { t } = useTranslation();
@@ -24,17 +27,6 @@ function CustomerLoginInner() {
   useEffect(() => {
     setEnded(new URLSearchParams(window.location.search).has("ended"));
   }, []);
-
-  const goToApp = async () => {
-    const res = await signIn("credentials", { email: phone, password, redirect: false });
-    if (res?.error) {
-      setError(t("app.wrongLogin"));
-      return false;
-    }
-    router.push("/app");
-    router.refresh();
-    return true;
-  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,7 +55,14 @@ function CustomerLoginInner() {
           return;
         }
       }
-      await goToApp();
+
+      const res = await signIn("credentials", { email: phone, password, redirect: false });
+      if (res?.error) {
+        setError(t("app.wrongLogin"));
+        return;
+      }
+      router.push("/app");
+      router.refresh();
     } catch {
       setError(t("appointments.networkError"));
     } finally {
@@ -72,29 +71,41 @@ function CustomerLoginInner() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-primary-900 via-primary-950 to-black p-4">
-      <div className="fixed top-4 end-4">
+    <div className="relative flex min-h-screen flex-col justify-center overflow-hidden bg-primary-950 px-5 py-10 text-white">
+      {/* Two soft lights in an otherwise black room */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-[radial-gradient(70%_100%_at_50%_0%,rgba(207,162,67,0.18),transparent_70%)]" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-64 bg-[radial-gradient(70%_100%_at_50%_100%,rgba(255,255,255,0.05),transparent_70%)]" />
+
+      <div className="fixed end-5 top-5 z-10">
         <LanguageToggle />
       </div>
 
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="flex justify-center mb-4">
-            <Image src="/logo.jpg" alt="Escape Barbershop" width={104} height={104} className="rounded-2xl shadow-lg" priority />
-          </div>
-          <h1 className="text-white text-xl font-bold tracking-[0.22em] uppercase">Escape</h1>
-          <p className="text-primary-300 mt-1 text-sm tracking-wide">{t("app.loginSubtitle")}</p>
+      <div className="relative mx-auto w-full max-w-sm">
+        <div className="mb-8 text-center">
+          <Image
+            src="/logo.jpg"
+            alt="Escape Barbershop"
+            width={96}
+            height={96}
+            priority
+            className="mx-auto rounded-2xl ring-1 ring-white/15"
+          />
+          <h1 className="mt-5 text-2xl font-bold uppercase tracking-[0.3em]">Escape</h1>
+          <p className="mt-1.5 text-sm text-brass-300/80">{t("app.loginSubtitle")}</p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-2xl p-7">
-          <div className="grid grid-cols-2 gap-1 p-1 bg-gray-100 rounded-xl mb-6">
+        <div className="c-card-raised p-6">
+          <div className="mb-6 grid grid-cols-2 gap-1 rounded-xl border border-white/10 bg-white/[0.03] p-1">
             {(["signin", "signup"] as const).map((m) => (
               <button
                 key={m}
                 type="button"
-                onClick={() => { setMode(m); setError(""); }}
-                className={`py-2 rounded-lg text-sm font-medium transition-colors ${
-                  mode === m ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700"
+                onClick={() => {
+                  setMode(m);
+                  setError("");
+                }}
+                className={`rounded-lg py-2 text-sm font-medium transition-colors ${
+                  mode === m ? "bg-white/10 text-white" : "text-white/40 hover:text-white/70"
                 }`}
               >
                 {t(m === "signin" ? "app.signIn" : "app.createAccount")}
@@ -104,19 +115,23 @@ function CustomerLoginInner() {
 
           <form onSubmit={submit} className="space-y-4">
             {mode === "signup" && (
-              <div>
-                <label className="label" htmlFor="name">{t("field.name")}</label>
-                <input id="name" className="input" value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" required />
+              <div className="animate-fade-up">
+                <label className="c-label" htmlFor="name">
+                  {t("field.name")}
+                </label>
+                <input id="name" className="c-input" value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" required />
               </div>
             )}
 
             <div>
-              <label className="label" htmlFor="phone">{t("field.phone")}</label>
+              <label className="c-label" htmlFor="phone">
+                {t("field.phone")}
+              </label>
               <input
                 id="phone"
                 type="tel"
                 inputMode="numeric"
-                className="input"
+                className="c-input tracking-wide"
                 placeholder="01X XXXX XXXX"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
@@ -126,11 +141,13 @@ function CustomerLoginInner() {
             </div>
 
             <div>
-              <label className="label" htmlFor="password">{t("auth.password")}</label>
+              <label className="c-label" htmlFor="password">
+                {t("auth.password")}
+              </label>
               <input
                 id="password"
                 type="password"
-                className="input"
+                className="c-input"
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -140,21 +157,21 @@ function CustomerLoginInner() {
             </div>
 
             {ended && !error && (
-              <div className="bg-amber-50 text-amber-800 text-sm px-4 py-3 rounded-lg border border-amber-200">
+              <div className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-sm text-amber-200">
                 {t("auth.endedExpired")}
               </div>
             )}
             {error && (
-              <div className="bg-red-50 text-red-700 text-sm px-4 py-3 rounded-lg border border-red-200">{error}</div>
+              <div className="rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-200">{error}</div>
             )}
 
-            <button type="submit" disabled={loading} className="btn-primary w-full py-2.5">
+            <button type="submit" disabled={loading} className="c-btn-primary w-full">
               {loading ? t("action.saving") : t(mode === "signin" ? "app.signIn" : "app.createAccount")}
             </button>
           </form>
         </div>
 
-        <p className="text-center text-primary-400 text-xs mt-6">{t("app.loginHint")}</p>
+        <p className="mt-6 text-center text-xs text-white/30">{t("app.loginHint")}</p>
       </div>
     </div>
   );

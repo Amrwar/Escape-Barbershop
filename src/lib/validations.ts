@@ -180,11 +180,23 @@ export const profileSchema = z.object({
   email: z.string().email("Invalid email address").optional(),
 });
 
-export const userCreateSchema = z.object({
-  name: z.string().min(1, "Name is required").max(100),
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-  role: z.enum(["OWNER", "CASHIER"]),
+export const userCreateSchema = z
+  .object({
+    name: z.string().min(1, "Name is required").max(100),
+    email: z.string().email("Invalid email address"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
+    role: z.enum(["OWNER", "CASHIER", "BARBER"]),
+    /** Which barber this login belongs to. Required for a barber's login. */
+    barberId: z.string().optional(),
+  })
+  .refine((u) => u.role !== "BARBER" || !!u.barberId, {
+    message: "Choose which barber this login is for",
+    path: ["barberId"],
+  });
+
+/** A note the barber leaves about a customer, for next time. */
+export const customerNoteSchema = z.object({
+  text: z.string().min(1, "Write something first").max(500),
 });
 
 export const userUpdateSchema = z.object({

@@ -40,8 +40,9 @@ export async function POST(req: NextRequest) {
         email: data.email.trim(),
         password: await bcrypt.hash(data.password, 12),
         role: data.role,
+        ...(data.role === "BARBER" ? { barberId: data.barberId } : {}),
       },
-      select: { id: true, name: true, email: true, role: true, createdAt: true },
+      select: { id: true, name: true, email: true, role: true, createdAt: true, barber: { select: { id: true, name: true } } },
     });
     await recordAudit(authSession, {
       action: "CREATE",

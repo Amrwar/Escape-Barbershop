@@ -14,6 +14,11 @@ export function isCustomerPath(pathname: string): boolean {
   return pathname === "/app" || pathname.startsWith("/app/");
 }
 
+/** Whether a path belongs to a barber's own screens. */
+export function isBarberPath(pathname: string): boolean {
+  return pathname === "/barber" || pathname.startsWith("/barber/");
+}
+
 /** The customer app's own sign-in page, which is open to everyone. */
 export function isCustomerLoginPath(pathname: string): boolean {
   return pathname === "/app/login" || pathname.startsWith("/app/login/");

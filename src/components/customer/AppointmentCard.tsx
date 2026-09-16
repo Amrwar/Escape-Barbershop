@@ -1,8 +1,8 @@
 "use client";
 
 import { useTranslation } from "@/lib/i18n";
-import { Badge } from "@/components/ui/Badge";
-import { APPOINTMENT_BADGE, appointmentStatusKey } from "@/lib/appointments";
+import { appointmentStatusKey } from "@/lib/appointments";
+import { Avatar, Pill } from "./kit";
 
 export interface CustomerAppointment {
   id: string;
@@ -15,7 +15,32 @@ export interface CustomerAppointment {
   services: { id: string; serviceId: string; serviceName: string; price: number; durationMinutes: number }[];
 }
 
-/** One appointment, as the customer reads it: when, who, what, how much. */
+const TONES: Record<string, "muted" | "brass" | "good" | "warn" | "bad"> = {
+  CONFIRMED: "brass",
+  PENDING: "warn",
+  CHECKED_IN: "warn",
+  IN_PROGRESS: "warn",
+  COMPLETED: "good",
+  COMPLETED_UNPAID: "bad",
+  CANCELLED: "muted",
+  NO_SHOW: "bad",
+};
+
+/** How far off it is, in words: "tomorrow", "in 3 days", "today". */
+function whenText(startAt: string, t: (k: "app.today" | "app.tomorrow" | "app.inDays" | "app.past") => string): string {
+  const start = new Date(startAt);
+  const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const days = Math.round((startOfDay(start) - startOfDay(new Date())) / 86_400_000);
+  if (days < 0) return t("app.past");
+  if (days === 0) return t("app.today");
+  if (days === 1) return t("app.tomorrow");
+  return t("app.inDays").replace("{days}", String(days));
+}
+
+/**
+ * One appointment. The next one gets the full treatment — big time, brass edge,
+ * how soon it is — and the rest are quieter, so a list still reads as a list.
+ */
 export function AppointmentCard({
   appointment,
   highlight,
@@ -26,35 +51,63 @@ export function AppointmentCard({
   actions?: React.ReactNode;
 }) {
   const { t, fmtCurrency, fmtDate, fmtTime } = useTranslation();
-  const past = appointment.status === "CANCELLED" || appointment.status === "NO_SHOW";
+  const services = appointment.services.map((s) => s.serviceName).join(" + ");
+  const faded = appointment.status === "CANCELLED" || appointment.status === "NO_SHOW";
 
-  return (
-    <div
-      className={`card p-4 ${highlight ? "border-primary-200 bg-primary-50/40" : ""} ${past ? "opacity-70" : ""}`}
-    >
-      <div className="flex items-start gap-3">
-        <div className="text-center shrink-0 w-16">
-          <div className="text-lg font-bold text-gray-900 tabular-nums">{fmtTime(appointment.startAt)}</div>
-          <div className="text-[11px] text-gray-500">{fmtDate(appointment.startAt)}</div>
+  if (highlight) {
+    return (
+      <div className="c-card-raised animate-fade-up relative overflow-hidden p-5">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brass-400/70 to-transparent" />
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <Pill tone="brass">{whenText(appointment.startAt, t)}</Pill>
+            <div className="mt-3 text-4xl font-bold tabular-nums leading-none text-white">{fmtTime(appointment.startAt)}</div>
+            <div className="mt-1.5 text-sm text-white/50">{fmtDate(appointment.startAt)}</div>
+          </div>
+          <div className="text-end">
+            <div className="text-lg font-semibold tabular-nums text-white">{fmtCurrency(appointment.totalPrice)}</div>
+            <div className="mt-0.5 text-xs text-white/40">
+              {appointment.durationMinutes} {t("appointments.minutesShort")}
+            </div>
+          </div>
         </div>
 
-        <div className="flex-1 min-w-0">
-          <div className="font-semibold text-gray-900 truncate">
-            {appointment.services.map((s) => s.serviceName).join(" + ")}
+        <div className="mt-5 flex items-center gap-3 border-t border-white/10 pt-4">
+          <Avatar name={appointment.barber?.name ?? "?"} photo={appointment.barber?.photo} size={40} />
+          <div className="min-w-0 flex-1">
+            <div className="truncate font-medium text-white">{services}</div>
+            <div className="text-xs text-white/45">{appointment.barber?.name ?? t("appointments.anyBarber")}</div>
           </div>
-          <div className="text-xs text-gray-500 mt-0.5">
-            {appointment.barber?.name ?? t("appointments.anyBarber")} · {appointment.durationMinutes} {t("appointments.minutesShort")}
+        </div>
+
+        {actions && <div className="mt-4 flex gap-2">{actions}</div>}
+      </div>
+    );
+  }
+
+  return (
+    <div className={`c-card animate-fade-up p-4 ${faded ? "opacity-60" : ""}`}>
+      <div className="flex items-center gap-3">
+        <div className="w-14 shrink-0 text-center">
+          <div className="text-lg font-bold tabular-nums leading-none text-white">{fmtTime(appointment.startAt)}</div>
+          <div className="mt-1 text-[11px] text-white/40">{fmtDate(appointment.startAt)}</div>
+        </div>
+        <div className="h-10 w-px bg-white/10" />
+        <div className="min-w-0 flex-1">
+          <div className="truncate font-medium text-white">{services}</div>
+          <div className="mt-0.5 truncate text-xs text-white/45">
+            {appointment.barber?.name ?? t("appointments.anyBarber")} · {appointment.durationMinutes}{" "}
+            {t("appointments.minutesShort")}
           </div>
-          <div className="mt-2 flex items-center gap-2">
-            <Badge variant={APPOINTMENT_BADGE[appointment.status] ?? "gray"}>
-              {t(appointmentStatusKey(appointment.status))}
-            </Badge>
-            <span className="text-sm font-semibold text-gray-900 tabular-nums">{fmtCurrency(appointment.totalPrice)}</span>
+        </div>
+        <div className="text-end">
+          <div className="text-sm font-semibold tabular-nums text-white">{fmtCurrency(appointment.totalPrice)}</div>
+          <div className="mt-1">
+            <Pill tone={TONES[appointment.status] ?? "muted"}>{t(appointmentStatusKey(appointment.status))}</Pill>
           </div>
         </div>
       </div>
-
-      {actions && <div className="mt-3 pt-3 border-t border-gray-100 flex gap-2">{actions}</div>}
+      {actions && <div className="mt-3 flex gap-2 border-t border-white/10 pt-3">{actions}</div>}
     </div>
   );
 }

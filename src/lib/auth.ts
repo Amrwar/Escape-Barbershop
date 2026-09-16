@@ -103,6 +103,15 @@ export async function requireStaff() {
   return session;
 }
 
+/** A barber, on their own screens. */
+export async function requireBarber() {
+  const session = await getSession();
+  if (!session || session.user.role !== "BARBER" || !session.user.barberId) {
+    throw new Error("Unauthorized: Barber login required");
+  }
+  return session as typeof session & { user: { barberId: string } };
+}
+
 /** A signed-in customer, booking for themselves. */
 export async function requireCustomer() {
   const session = await getSession();

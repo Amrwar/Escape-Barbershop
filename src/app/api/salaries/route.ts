@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireOwner } from "@/lib/auth";
+import { earningsFor } from "@/lib/payroll";
 
 export async function GET(req: NextRequest) {
   try {
@@ -50,28 +51,7 @@ export async function GET(req: NextRequest) {
 
     const payroll = barbers.map((barber) => {
       const settings = barber.salarySettings;
-      const visitTotal = barber.visits.reduce((s, v) => s + v.total, 0);
-      const visitCount = barber.visits.length;
-
-      // Commission only on non-excluded services, with discount applied proportionally
-      const commissionableTotal = barber.visits.reduce((s, v) => {
-        const allSubtotal = v.items.reduce((s2, i) => s2 + i.priceAtTime * i.quantity, 0);
-        const commissionableSubtotal = v.items
-          .filter((i) => !i.service.excludeFromCommission)
-          .reduce((s2, i) => s2 + i.priceAtTime * i.quantity, 0);
-        // Apply the same discount factor proportionally
-        const discountFactor = allSubtotal > 0 ? v.total / allSubtotal : 1;
-        return s + commissionableSubtotal * discountFactor;
-      }, 0);
-
-      let commission = 0;
-      if (settings) {
-        if (settings.commissionType === "PERCENT") {
-          commission = (commissionableTotal * settings.commissionValue) / 100;
-        } else {
-          commission = visitCount * settings.commissionValue;
-        }
-      }
+      const { visitCount, visitTotal, commissionableTotal, commission } = earningsFor(barber.visits, settings);
 
       const baseSalary = settings?.baseSalary ?? 0;
       const gross = baseSalary + commission;

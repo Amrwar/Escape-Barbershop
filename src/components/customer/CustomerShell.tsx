@@ -3,15 +3,17 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useSession } from "next-auth/react";
 import { useTranslation } from "@/lib/i18n";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { LanguageToggle } from "@/components/ui/LanguageToggle";
 
 /**
- * The customer's app: a dark header carrying the shop's name, the page itself
- * on a light background, and a bar along the bottom for thumbs on a phone.
- * The login page opts out of the chrome — it has its own full-screen look.
+ * The customer app's chrome: black, quiet, and built for a thumb.
+ *
+ * The shop's own screens are white because they are worked on for eight hours;
+ * this is opened for thirty seconds to book a haircut, so it can afford to look
+ * like the shop feels. Colour is kept for one thing at a time — brass marks the
+ * action, everything else is white at varying strength.
  */
 
 const TABS: { href: string; labelKey: "app.navHome" | "app.navBook" | "app.navAppointments" | "app.navProfile"; icon: IconName }[] = [
@@ -24,50 +26,52 @@ const TABS: { href: string; labelKey: "app.navHome" | "app.navBook" | "app.navAp
 export function CustomerShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { t } = useTranslation();
-  const { data: session } = useSession();
 
+  // The sign-in screen carries its own full-bleed look.
   if (pathname.startsWith("/app/login")) return <>{children}</>;
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <header className="bg-gradient-to-b from-primary-900 to-primary-950 text-white">
-        <div className="max-w-2xl mx-auto px-5 py-4 flex items-center gap-3">
-          <Link href="/app" className="flex items-center gap-3">
-            <Image src="/logo.jpg" alt="Escape Barbershop" width={36} height={36} className="rounded-lg" />
-            <div>
-              <div className="text-sm font-bold tracking-[0.2em] uppercase">Escape</div>
-              <div className="text-[11px] text-primary-300">{t("app.tagline")}</div>
+    <div className="min-h-screen bg-primary-950 text-white">
+      {/* A soft brass glow behind the header, so black does not read as flat */}
+      <div className="pointer-events-none fixed inset-x-0 top-0 h-64 bg-[radial-gradient(60%_100%_at_50%_0%,rgba(207,162,67,0.13),transparent_70%)]" />
+
+      <header className="relative">
+        <div className="mx-auto flex max-w-2xl items-center gap-3 px-5 pt-5 pb-2">
+          <Link href="/app" className="flex items-center gap-3 transition-opacity active:opacity-70">
+            <Image src="/logo.jpg" alt="Escape Barbershop" width={38} height={38} className="rounded-xl ring-1 ring-white/15" />
+            <div className="leading-tight">
+              <div className="text-sm font-bold uppercase tracking-[0.28em] text-white">Escape</div>
+              <div className="text-[11px] tracking-wide text-brass-300/80">{t("app.tagline")}</div>
             </div>
           </Link>
-          <div className="ms-auto flex items-center gap-2">
+          <div className="ms-auto">
             <LanguageToggle />
           </div>
         </div>
       </header>
 
-      <main className="flex-1 max-w-2xl w-full mx-auto px-5 py-6 pb-24">{children}</main>
+      <main className="relative mx-auto w-full max-w-2xl px-5 pb-28 pt-2">{children}</main>
 
-      <nav className="fixed bottom-0 inset-x-0 bg-white border-t border-gray-200 pb-[env(safe-area-inset-bottom)]">
-        <div className="max-w-2xl mx-auto grid grid-cols-4">
+      <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-white/10 bg-primary-950/85 backdrop-blur-lg pb-[env(safe-area-inset-bottom)]">
+        <div className="mx-auto grid max-w-2xl grid-cols-4">
           {TABS.map((tab) => {
             const active = tab.href === "/app" ? pathname === "/app" : pathname.startsWith(tab.href);
             return (
               <Link
                 key={tab.href}
                 href={tab.href}
-                className={`flex flex-col items-center gap-1 py-2.5 text-[11px] font-medium transition-colors ${
-                  active ? "text-primary-800" : "text-gray-400 hover:text-gray-600"
+                className={`group relative flex flex-col items-center gap-1 py-3 text-[11px] font-medium transition-colors ${
+                  active ? "text-brass-300" : "text-white/40 hover:text-white/70"
                 }`}
               >
-                <Icon name={tab.icon} className={active ? "w-5 h-5" : "w-5 h-5 opacity-70"} />
+                {active && <span className="absolute inset-x-6 top-0 h-px bg-brass-400/70" />}
+                <Icon name={tab.icon} className="h-5 w-5" />
                 {t(tab.labelKey)}
               </Link>
             );
           })}
         </div>
       </nav>
-
-      {session?.user?.name && <span className="sr-only">{session.user.name}</span>}
     </div>
   );
 }

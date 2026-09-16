@@ -25,6 +25,7 @@ model User {
   cashMovements      CashMovement[]      @relation("CreatedMovements")
   recordedVisits     Visit[]             @relation("RecordedVisits")
   bookedAppointments Appointment[]       @relation("BookedAppointments")
+  writtenNotes       CustomerNote[]      @relation("WrittenNotes")
   barber             Barber?             @relation(fields: [barberId], references: [id])
   customer           Customer?           @relation(fields: [customerId], references: [id])
 }
@@ -48,6 +49,7 @@ model Barber {
   user           User?
   visits         Visit[]
   appointments   Appointment[]
+  customerNotes  CustomerNote[]
   workingHours   BarberWorkingHours[]
   timeOff        BarberTimeOff[]
   services       BarberService[]
@@ -211,16 +213,33 @@ model Service {
   appointmentServices   AppointmentService[]
 }
 
+/// What the barber should know before the customer sits down: "low fade, same
+/// as last time". Kept apart from the shop's own notes on the customer record.
+model CustomerNote {
+  id              String   @id @default(cuid())
+  customerId      String
+  barberId        String?
+  createdByUserId String?
+  text            String
+  createdAt       DateTime @default(now())
+  customer        Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  barber          Barber?  @relation(fields: [barberId], references: [id])
+  createdBy       User?    @relation("WrittenNotes", fields: [createdByUserId], references: [id])
+
+  @@index([customerId, createdAt])
+}
+
 model Customer {
-  id           String        @id @default(cuid())
+  id           String         @id @default(cuid())
   name         String
   phone        String?
   notes        String?
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
   visits       Visit[]
   appointments Appointment[]
   user         User?
+  notes_       CustomerNote[]
 }
 
 model Visit {
@@ -478,6 +497,8 @@ model ProductUsage {
 enum Role {
   OWNER
   CASHIER
+  /// Their own schedule, their own customers, their own earnings. Nothing else.
+  BARBER
   CUSTOMER
 }
 

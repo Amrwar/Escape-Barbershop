@@ -6,6 +6,7 @@ export async function requireOwnerPage() {
   const session = await getSession();
   if (!session) redirect("/login");
   if (session.user.role === "CUSTOMER") redirect("/app");
+  if (session.user.role === "BARBER") redirect("/barber");
   if (session.user.role !== "OWNER") redirect("/dashboard");
   return session;
 }
@@ -14,6 +15,7 @@ export async function requireOwnerOrCashierPage() {
   const session = await getSession();
   if (!session) redirect("/login");
   if (session.user.role === "CUSTOMER") redirect("/app");
+  if (session.user.role === "BARBER") redirect("/barber");
   if (session.user.role !== "OWNER" && session.user.role !== "CASHIER") redirect("/dashboard");
   return session;
 }
@@ -22,7 +24,16 @@ export async function requireOwnerOrCashierPage() {
 export async function requireAuthPage() {
   const session = await getSession();
   if (!session) redirect("/login");
+  if (session.user.role === "BARBER") redirect("/barber");
   if (!isStaffRole(session.user.role)) redirect("/app");
+  return session;
+}
+
+/** A barber on their own screens. Anyone else is sent to their own side. */
+export async function requireBarberPage() {
+  const session = await getSession();
+  if (!session) redirect("/login");
+  if (session.user.role !== "BARBER") redirect("/");
   return session;
 }
 
