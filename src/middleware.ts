@@ -29,5 +29,6 @@ export const config = {
     "/attendance/:path*",
     "/settings/:path*",
     "/account/:path*",
+    "/appointments/:path*",
   ],
 };

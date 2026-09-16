@@ -45,6 +45,44 @@ const SERVICES: { name: string; arabicName: string }[] = [
   { name: "hair dryer for beard",    arabicName: "سشوار لحية" },
 ];
 
+/**
+ * Roughly how long each service takes a chair, used to lay out the booking
+ * calendar. Anything not listed starts at 30 minutes. These are only ever set
+ * when a service is first created, so the owner's own edits are never undone.
+ */
+const SERVICE_MINUTES: Record<string, number> = {
+  "Hair cut": 30,
+  "Beard cut": 20,
+  "kids Hair cut": 30,
+  "nose and ear wax": 15,
+  "whole wax": 30,
+  "face string": 20,
+  "curly or hair dryer": 30,
+  "external hair dryer": 20,
+  "hair dryer for tall hair": 30,
+  "hair dryer for beard": 15,
+  "hair dye": 45,
+  "beard dye": 30,
+  "silver dye": 60,
+  "highlights": 90,
+  "hair protein": 120,
+  "american straightening": 120,
+  "rinsage": 45,
+  "oil bath argan": 30,
+  "oil bath loreal": 30,
+  "oil bath beard": 20,
+  "hair henna": 45,
+  "beard henna": 30,
+  "dandruff removal": 30,
+  "topic thickening": 45,
+  "groom external package": 90,
+  "groom internal package": 90,
+  "douglas": 45,
+  "extras": 15,
+};
+
+const DEFAULT_SERVICE_MINUTES = 30;
+
 async function main() {
   console.log("Seeding database...");
 
@@ -54,7 +92,14 @@ async function main() {
     await prisma.service.upsert({
       where: { name },
       update: { arabicName, excludeFromCommission },
-      create: { name, arabicName, defaultPrice: 0, isActive: true, excludeFromCommission },
+      create: {
+        name,
+        arabicName,
+        defaultPrice: 0,
+        isActive: true,
+        excludeFromCommission,
+        durationMinutes: SERVICE_MINUTES[name] ?? DEFAULT_SERVICE_MINUTES,
+      },
     });
   }
   console.log(`Seeded ${SERVICES.length} services`);

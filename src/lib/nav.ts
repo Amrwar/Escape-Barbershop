@@ -76,6 +76,8 @@ export const ADMIN_NAV: NavGroup[] = [
   {
     titleKey: "admin.sectionSetup",
     items: [
+      { href: "/appointments", labelKey: "nav.appointments", icon: "calendar" },
+      { href: "/settings/booking", labelKey: "nav.bookingSettings", icon: "cog" },
       { href: "/services", labelKey: "nav.services", icon: "scissors" },
       { href: "/customers", labelKey: "nav.customers", icon: "users" },
       { href: "/inventory", labelKey: "nav.inventory", icon: "pie" },

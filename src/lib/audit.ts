@@ -13,6 +13,7 @@ export type AuditAction = "CREATE" | "UPDATE" | "DELETE";
 
 export type AuditEntity =
   | "VISIT"
+  | "APPOINTMENT"
   | "EXPENSE"
   | "ADVANCE"
   | "PENALTY"

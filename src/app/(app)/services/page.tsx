@@ -15,6 +15,8 @@ interface Service {
   defaultPrice: number;
   isActive: boolean;
   excludeFromCommission: boolean;
+  durationMinutes: number;
+  bookableOnline: boolean;
 }
 
 export default function ServicesPage() {
@@ -23,7 +25,15 @@ export default function ServicesPage() {
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Service | null>(null);
-  const [form, setForm] = useState({ name: "", arabicName: "", defaultPrice: "", isActive: true, excludeFromCommission: false });
+  const [form, setForm] = useState({
+    name: "",
+    arabicName: "",
+    defaultPrice: "",
+    isActive: true,
+    excludeFromCommission: false,
+    durationMinutes: "30",
+    bookableOnline: true,
+  });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
 
@@ -39,14 +49,30 @@ export default function ServicesPage() {
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ name: "", arabicName: "", defaultPrice: "", isActive: true, excludeFromCommission: false });
+    setForm({
+      name: "",
+      arabicName: "",
+      defaultPrice: "",
+      isActive: true,
+      excludeFromCommission: false,
+      durationMinutes: "30",
+      bookableOnline: true,
+    });
     setErrors({});
     setModalOpen(true);
   };
 
   const openEdit = (s: Service) => {
     setEditing(s);
-    setForm({ name: s.name, arabicName: s.arabicName ?? "", defaultPrice: String(s.defaultPrice), isActive: s.isActive, excludeFromCommission: s.excludeFromCommission });
+    setForm({
+      name: s.name,
+      arabicName: s.arabicName ?? "",
+      defaultPrice: String(s.defaultPrice),
+      isActive: s.isActive,
+      excludeFromCommission: s.excludeFromCommission,
+      durationMinutes: String(s.durationMinutes ?? 30),
+      bookableOnline: s.bookableOnline ?? true,
+    });
     setErrors({});
     setModalOpen(true);
   };
@@ -60,6 +86,8 @@ export default function ServicesPage() {
       defaultPrice: parseFloat(form.defaultPrice) || 0,
       isActive: form.isActive,
       excludeFromCommission: form.excludeFromCommission,
+      durationMinutes: parseInt(form.durationMinutes, 10) || 30,
+      bookableOnline: form.bookableOnline,
     });
     if (!parsed.success) {
       const errs: Record<string, string> = {};
@@ -123,6 +151,7 @@ export default function ServicesPage() {
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200">
                 <th className="th-start px-4 py-3 font-medium text-gray-600">{t("field.service")}</th>
+                <th className="text-end px-4 py-3 font-medium text-gray-600">{t("booking.durationMinutes")}</th>
                 <th className="text-end px-4 py-3 font-medium text-gray-600">{t("field.defaultPrice")}</th>
                 <th className="text-center px-4 py-3 font-medium text-gray-600">{t("field.status")}</th>
                 <th className="px-4 py-3" />
@@ -136,6 +165,9 @@ export default function ServicesPage() {
                     {s.arabicName && lang !== "ar" && (
                       <div className="text-xs text-gray-400 font-normal">{s.arabicName}</div>
                     )}
+                  </td>
+                  <td className="px-4 py-3 text-end text-gray-500 tabular-nums">
+                    {s.durationMinutes} {t("appointments.minutesShort")}
                   </td>
                   <td className="px-4 py-3 text-end text-gray-700">{fmtCurrency(s.defaultPrice)}</td>
                   <td className="px-4 py-3 text-center">
@@ -185,6 +217,20 @@ export default function ServicesPage() {
               placeholder="مثال: قص شعر" />
           </div>
           <div>
+            <label className="label">{t("booking.durationMinutes")}</label>
+            <input
+              type="number"
+              min="5"
+              max="600"
+              step="5"
+              className="input"
+              value={form.durationMinutes}
+              onChange={(e) => setForm({ ...form, durationMinutes: e.target.value })}
+            />
+            {errors.durationMinutes && <p className="text-red-500 text-xs mt-1">{errors.durationMinutes}</p>}
+          </div>
+
+          <div>
             <label className="label">{t("field.defaultPrice")}</label>
             <input type="number" min="0" step="0.01" className="input" value={form.defaultPrice}
               onChange={(e) => setForm({ ...form, defaultPrice: e.target.value })}
@@ -197,6 +243,14 @@ export default function ServicesPage() {
               className="rounded border-gray-300 text-primary-600" />
             <label htmlFor="isActive" className="text-sm text-gray-700">
               {t("services.activeHint")}
+            </label>
+          </div>
+          <div className="flex items-center gap-3">
+            <input type="checkbox" id="bookableOnline" checked={form.bookableOnline}
+              onChange={(e) => setForm({ ...form, bookableOnline: e.target.checked })}
+              className="rounded border-gray-300 text-primary-600" />
+            <label htmlFor="bookableOnline" className="text-sm text-gray-700">
+              {t("booking.bookableOnline")}
             </label>
           </div>
           <div className="flex items-center gap-3">

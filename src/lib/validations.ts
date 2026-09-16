@@ -18,6 +18,8 @@ export const serviceSchema = z.object({
   defaultPrice: z.number().min(0, "Price must be non-negative"),
   isActive: z.boolean().optional().default(true),
   excludeFromCommission: z.boolean().optional().default(false),
+  durationMinutes: z.number().int().min(5, "A service must take at least 5 minutes").max(600).optional().default(30),
+  bookableOnline: z.boolean().optional().default(true),
 });
 
 export const barberSchema = z.object({
@@ -193,6 +195,60 @@ export type UserUpdateInput = z.infer<typeof userUpdateSchema>;
 
 export type LoginInput = z.infer<typeof loginSchema>;
 export type CustomerInput = z.infer<typeof customerSchema>;
+export const APPOINTMENT_STATUSES = [
+  "PENDING",
+  "CONFIRMED",
+  "CHECKED_IN",
+  "IN_PROGRESS",
+  "COMPLETED",
+  "CANCELLED",
+  "NO_SHOW",
+] as const;
+
+export const appointmentSchema = z.object({
+  customerId: z.string().min(1, "Customer is required"),
+  /** Null means nobody is assigned yet; the shop can pick a barber later. */
+  barberId: z.string().nullable().optional(),
+  startAt: z.string().min(1, "A start time is required"),
+  serviceIds: z.array(z.string().min(1)).min(1, "At least one service is required"),
+  notes: z.string().max(500).nullable().optional().or(z.literal("")),
+  source: z.enum(["ONLINE", "PHONE", "WALK_IN", "STAFF"]).optional().default("STAFF"),
+});
+
+export const appointmentUpdateSchema = z.object({
+  barberId: z.string().nullable().optional(),
+  startAt: z.string().optional(),
+  serviceIds: z.array(z.string().min(1)).min(1).optional(),
+  status: z.enum(APPOINTMENT_STATUSES).optional(),
+  notes: z.string().max(500).nullable().optional().or(z.literal("")),
+  cancelReason: z.string().max(200).optional().or(z.literal("")),
+});
+
+const dayHoursSchema = z
+  .object({
+    weekday: z.number().int().min(0).max(6),
+    startMinute: z.number().int().min(0).max(24 * 60),
+    endMinute: z.number().int().min(0).max(24 * 60),
+    isOpen: z.boolean().optional().default(true),
+  })
+  .refine((d) => !d.isOpen || d.endMinute > d.startMinute, {
+    message: "Closing time must be after opening time",
+  });
+
+export const bookingSettingsSchema = z.object({
+  settings: z
+    .object({
+      slotMinutes: z.number().int().min(5).max(120).optional(),
+      minNoticeMinutes: z.number().int().min(0).max(7 * 24 * 60).optional(),
+      maxDaysAhead: z.number().int().min(1).max(365).optional(),
+      bufferMinutes: z.number().int().min(0).max(120).optional(),
+      onlineBookingEnabled: z.boolean().optional(),
+    })
+    .optional(),
+  hours: z.array(dayHoursSchema).max(7).optional(),
+});
+
+export type AppointmentInput = z.infer<typeof appointmentSchema>;
 export type ServiceInput = z.infer<typeof serviceSchema>;
 export type BarberInput = z.infer<typeof barberSchema>;
 export type VisitInput = z.infer<typeof visitSchema>;
