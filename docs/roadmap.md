@@ -45,13 +45,15 @@ The piece that makes booking worth having: one appointment, one visit, one set o
 
 - [x] Barber logins and their own day: schedule, their customers, their earnings
 - [x] Customer notes the barber sees ("low fade, same as last time")
-- [ ] Barber profiles in the customer app: photo, bio, book with them
+- [x] Barber profiles in the customer app: photo, bio, book with them
 - [ ] Reminders the day before, and a booking confirmation
-- [ ] Offers, shown in the app
+- [x] Offers, shown in the app (a notice, never a price the till enforces)
 - [ ] Reviews after a visit
 
 **Needs from you:** an SMS or WhatsApp provider (a monthly cost, plus a registered sender
-name), and photos and a line of bio for each barber.
+name) for reminders — the last piece of this phase, and the best thing for no-shows.
+Photos for each barber whenever you have them; the slots are already in place, and a line
+of bio can be written on the barbers screen today.
 
 ## Phase 4 — the phone apps
 
@@ -81,7 +83,7 @@ apps and prepare the listings.
 
 ## Quality
 
-- [x] 262 tests: 116 on the rules, 146 on the API against a real database
+- [x] 278 tests: 125 on the rules, 153 on the API against a real database
 - [x] Every endpoint tested for what it does *and* who it refuses
 - [ ] Tests for the screens themselves (clicking through a browser)
 

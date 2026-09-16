@@ -121,6 +121,13 @@ save, inside a `Serializable` transaction: the clash query and the insert are on
 step. The loser of a race gets 409 "That time has just been taken", which the screens show
 as a message rather than an error.
 
+## Offers
+
+An offer is a notice, not a rule. It is shown in the customer app while it is running, and
+it never touches a price: the till still charges whatever the shop decides at the counter.
+That keeps the property everything else rests on — the takings are a record of what
+happened, not of what was advertised.
+
 ## Money
 
 Unchanged by the booking work, and worth restating because everything eventually lands

@@ -213,6 +213,29 @@ model Service {
   appointmentServices   AppointmentService[]
 }
 
+/// Something the shop is running this month: "Haircut + beard, 400 instead of 450".
+///
+/// An offer is a notice, not a rule the till enforces. The shop decides at the
+/// counter what to charge, exactly as it does with any other discount, and the
+/// price on the receipt is whatever was actually taken. That keeps one hard-won
+/// property: the money is what happened, never what was promised.
+model Offer {
+  id          String    @id @default(cuid())
+  title       String
+  titleAr     String?
+  description String?
+  /// Shown beside the offer when the shop wants a figure on it.
+  price       Float?
+  wasPrice    Float?
+  startsAt    DateTime?
+  endsAt      DateTime?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([isActive, endsAt])
+}
+
 /// What the barber should know before the customer sits down: "low fade, same
 /// as last time". Kept apart from the shop's own notes on the customer record.
 model CustomerNote {

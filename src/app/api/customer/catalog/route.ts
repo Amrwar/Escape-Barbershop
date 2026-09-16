@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getBookingSettings } from "@/lib/booking-server";
 import { CUSTOMER_FACING_BARBER } from "@/lib/barbers";
+import { isRunning } from "@/lib/offers";
 
 /**
  * What a customer may book: the services and barbers the shop has opened to
@@ -11,7 +12,7 @@ import { CUSTOMER_FACING_BARBER } from "@/lib/barbers";
 export async function GET() {
   try {
     const settings = await getBookingSettings();
-    const [services, barbers] = await Promise.all([
+    const [services, barbers, offers] = await Promise.all([
       prisma.service.findMany({
         where: { isActive: true, bookableOnline: true },
         orderBy: { name: "asc" },
@@ -22,9 +23,17 @@ export async function GET() {
         orderBy: { name: "asc" },
         select: { id: true, name: true, bio: true, photo: true, services: { select: { serviceId: true } } },
       }),
+      prisma.offer.findMany({
+        where: { isActive: true },
+        orderBy: { createdAt: "desc" },
+        select: { id: true, title: true, titleAr: true, description: true, price: true, wasPrice: true, startsAt: true, endsAt: true, isActive: true },
+      }),
     ]);
 
     return NextResponse.json({
+      // Only what is running today: a scheduled or finished offer is the shop's
+      // business, not the customer's.
+      offers: offers.filter((o) => isRunning(o)),
       services,
       barbers: barbers.map((b) => ({
         id: b.id,

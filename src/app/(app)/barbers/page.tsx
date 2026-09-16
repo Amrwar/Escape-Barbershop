@@ -20,12 +20,13 @@ interface Barber {
   phone: string | null;
   isActive: boolean;
   bookableOnline: boolean;
+  bio: string | null;
   createdAt: string;
   salarySettings: SalarySettings | null;
   _count: { visits: number };
 }
 
-const defaultForm = { name: "", phone: "", isActive: true, bookableOnline: true };
+const defaultForm = { name: "", phone: "", isActive: true, bookableOnline: true, bio: "" };
 const defaultSalary = {
   baseSalary: "0",
   commissionType: "PERCENT" as "PERCENT" | "FIXED_PER_VISIT",
@@ -106,7 +107,13 @@ export default function BarbersPage() {
   const openCreate = () => { setEditing(null); setForm(defaultForm); setErrors({}); setModalOpen(true); };
   const openEdit = (b: Barber) => {
     setEditing(b);
-    setForm({ name: b.name, phone: b.phone ?? "", isActive: b.isActive, bookableOnline: b.bookableOnline ?? true });
+    setForm({
+      name: b.name,
+      phone: b.phone ?? "",
+      isActive: b.isActive,
+      bookableOnline: b.bookableOnline ?? true,
+      bio: b.bio ?? "",
+    });
     setErrors({});
     setModalOpen(true);
   };
@@ -281,6 +288,17 @@ export default function BarbersPage() {
             <input className="input" value={form.phone}
               onChange={(e) => setForm({ ...form, phone: e.target.value })}
               placeholder="+1 234 567 8900" />
+          </div>
+          <div>
+            <label className="label">{t("barbers.bio")}</label>
+            <input
+              className="input"
+              value={form.bio}
+              onChange={(e) => setForm({ ...form, bio: e.target.value })}
+              placeholder={t("barbers.bioPlaceholder")}
+              maxLength={300}
+            />
+            <p className="text-xs text-gray-500 mt-1">{t("barbers.bioHint")}</p>
           </div>
           <div className="flex items-center gap-3">
             <input type="checkbox" id="barberBookable" checked={form.bookableOnline}

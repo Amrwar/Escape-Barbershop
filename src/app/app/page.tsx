@@ -6,12 +6,27 @@ import { useSession } from "next-auth/react";
 import { useTranslation } from "@/lib/i18n";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { AppointmentCard, type CustomerAppointment } from "@/components/customer/AppointmentCard";
-import { EmptyState, ScreenTitle, SectionTitle, Skeleton } from "@/components/customer/kit";
+import { Avatar, EmptyState, ScreenTitle, SectionTitle, Skeleton } from "@/components/customer/kit";
 
 /**
  * Home answers one question — "when is my next haircut?" — and offers one
  * obvious way to make another. Everything else is a step down in weight.
  */
+
+interface Offer {
+  id: string;
+  title: string;
+  titleAr: string | null;
+  price: number | null;
+  wasPrice: number | null;
+}
+
+interface Barber {
+  id: string;
+  name: string;
+  bio: string | null;
+  photo: string | null;
+}
 
 interface Service {
   id: string;
@@ -34,6 +49,8 @@ export default function CustomerHomePage() {
   const { data: session } = useSession();
   const [upcoming, setUpcoming] = useState<CustomerAppointment[] | null>(null);
   const [services, setServices] = useState<Service[]>([]);
+  const [offers, setOffers] = useState<Offer[]>([]);
+  const [barbers, setBarbers] = useState<Barber[]>([]);
 
   useEffect(() => {
     fetch("/api/customer/appointments?scope=upcoming")
@@ -42,7 +59,11 @@ export default function CustomerHomePage() {
       .catch(() => setUpcoming([]));
     fetch("/api/customer/catalog")
       .then((r) => r.json())
-      .then((d) => setServices(Array.isArray(d?.services) ? d.services.slice(0, 4) : []))
+      .then((d) => {
+        setServices(Array.isArray(d?.services) ? d.services.slice(0, 4) : []);
+        setOffers(Array.isArray(d?.offers) ? d.offers.slice(0, 2) : []);
+        setBarbers(Array.isArray(d?.barbers) ? d.barbers.slice(0, 6) : []);
+      })
       .catch(() => setServices([]));
   }, []);
 
@@ -105,6 +126,61 @@ export default function CustomerHomePage() {
           <div className="space-y-2">
             {upcoming.slice(1).map((a) => (
               <AppointmentCard key={a.id} appointment={a} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {offers.length > 0 && (
+        <section>
+          <SectionTitle
+            action={
+              <Link href="/app/offers" className="text-[11px] font-medium text-brass-300/90 hover:text-brass-200">
+                {t("app.seeAll")}
+              </Link>
+            }
+          >
+            {t("app.offers")}
+          </SectionTitle>
+          <div className="space-y-2">
+            {offers.map((o) => (
+              <Link
+                key={o.id}
+                href="/app/offers"
+                className="c-card flex items-center justify-between gap-4 p-4 transition-colors hover:border-brass-400/40"
+              >
+                <span className="min-w-0 truncate font-medium text-white">{lang === "ar" && o.titleAr ? o.titleAr : o.title}</span>
+                {o.price !== null && (
+                  <span className="shrink-0 text-end">
+                    <span className="font-semibold tabular-nums text-brass-300">{fmtCurrency(o.price)}</span>
+                    {o.wasPrice !== null && (
+                      <span className="ms-2 text-xs tabular-nums text-white/30 line-through">{fmtCurrency(o.wasPrice)}</span>
+                    )}
+                  </span>
+                )}
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {barbers.length > 0 && (
+        <section>
+          <SectionTitle
+            action={
+              <Link href="/app/barbers" className="text-[11px] font-medium text-brass-300/90 hover:text-brass-200">
+                {t("app.seeAll")}
+              </Link>
+            }
+          >
+            {t("app.ourBarbers")}
+          </SectionTitle>
+          <div className="scroll-clean -mx-5 flex gap-3 overflow-x-auto px-5 pb-1">
+            {barbers.map((b) => (
+              <Link key={b.id} href={`/app/barbers/${b.id}`} className="w-[84px] shrink-0 text-center">
+                <Avatar name={b.name} photo={b.photo} size={64} />
+                <div className="mt-2 truncate text-xs text-white/70">{b.name}</div>
+              </Link>
             ))}
           </div>
         </section>

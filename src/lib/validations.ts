@@ -194,6 +194,18 @@ export const userCreateSchema = z
     path: ["barberId"],
   });
 
+/** Something the shop is running: "Haircut + beard, 400 instead of 450". */
+export const offerSchema = z.object({
+  title: z.string().min(1, "Give the offer a name").max(120),
+  titleAr: z.string().max(120).optional().or(z.literal("")),
+  description: z.string().max(400).optional().or(z.literal("")),
+  price: z.number().min(0).nullable().optional(),
+  wasPrice: z.number().min(0).nullable().optional(),
+  startsAt: z.string().optional().or(z.literal("")),
+  endsAt: z.string().optional().or(z.literal("")),
+  isActive: z.boolean().optional(),
+});
+
 /** A note the barber leaves about a customer, for next time. */
 export const customerNoteSchema = z.object({
   text: z.string().min(1, "Write something first").max(500),

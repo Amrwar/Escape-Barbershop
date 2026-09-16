@@ -30,6 +30,7 @@ export type AuditEntity =
   | "CUSTOMER"
   | "BARBER"
   | "ATTENDANCE"
+  | "OFFER"
   | "SETTING"
   | "USER";
 
