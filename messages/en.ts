@@ -212,7 +212,9 @@ const en = {
   "app.historyHint": "See your history",
   "app.duration": "Takes",
   "app.stepService": "What are you having?",
-  "app.stepServiceHint": "Choose one or more",
+  "app.stepServiceHint": "Pick as many as you want — haircut and beard together, for instance",
+  "app.serviceChosen": "service chosen",
+  "app.servicesChosen": "services chosen",
   "app.stepBarber": "Who with?",
   "app.stepBarberHint": "Pick your barber, or leave it to us",
   "app.stepTime": "When suits you?",
@@ -279,6 +281,18 @@ const en = {
   "appointments.statusCancelled": "Cancelled",
   "appointments.statusNoShow": "No-show",
 
+  // The day's diary at a glance
+  "diary.title": "Today's diary",
+  "diary.nothing": "Nothing booked, and nobody in yet",
+  "diary.openDiary": "Open the diary →",
+  "diary.stillToCome": "Still to come",
+  "diary.served": "Served",
+  "diary.walkIns": "Walk-ins",
+  "diary.booked": "booked",
+  "diary.noShows": "No-shows",
+  "diary.allTurnedUp": "Everyone turned up",
+  "diary.unpaid": "Left without paying",
+
   // Live queue
   "queue.title": "Queue",
   "queue.subtitle": "Who is in a chair, who is waiting, and who is still expected",
@@ -340,6 +354,8 @@ const en = {
   "barbers.commission": "commission",
   "barbers.perVisit": "/visit",
   "barbers.active": "Active",
+  "barbers.bookableOnline": "Takes bookings in the customer app",
+  "barbers.notInApp": "Not in the app",
 
   // Cash Drawer
   "cashDrawer.title": "Cash Drawer",

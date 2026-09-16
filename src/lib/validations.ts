@@ -26,6 +26,9 @@ export const barberSchema = z.object({
   name: z.string().min(1, "Name is required").max(100),
   phone: z.string().max(20).optional().or(z.literal("")),
   isActive: z.boolean().optional().default(true),
+  /** Off for anyone who works here but takes no bookings — a manager, the owner. */
+  bookableOnline: z.boolean().optional().default(true),
+  bio: z.string().max(300).optional().or(z.literal("")),
 });
 
 export const visitItemSchema = z.object({

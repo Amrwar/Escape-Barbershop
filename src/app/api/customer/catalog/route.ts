@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getBookingSettings } from "@/lib/booking-server";
+import { CUSTOMER_FACING_BARBER } from "@/lib/barbers";
 
 /**
  * What a customer may book: the services and barbers the shop has opened to
@@ -17,7 +18,7 @@ export async function GET() {
         select: { id: true, name: true, arabicName: true, defaultPrice: true, durationMinutes: true },
       }),
       prisma.barber.findMany({
-        where: { isActive: true, bookableOnline: true },
+        where: { isActive: true, bookableOnline: true, ...CUSTOMER_FACING_BARBER },
         orderBy: { name: "asc" },
         select: { id: true, name: true, bio: true, photo: true, services: { select: { serviceId: true } } },
       }),

@@ -28,7 +28,7 @@ The shop has been using this for a while. Listed so the rest has context.
 - [x] **1c** Customer accounts by phone number; the customer app (`/app`): book, see, cancel,
       profile; staff and customers walled apart, with tests
 
-## Phase 2 — the till side (mostly done)
+## Phase 2 — the till side (done)
 
 The piece that makes booking worth having: one appointment, one visit, one set of figures.
 
@@ -37,8 +37,9 @@ The piece that makes booking worth having: one appointment, one visit, one set o
 - [x] Walk-ins: the same appointment as a booking, starting now, in a live queue
 - [x] Live queue screen: in a chair, waiting with an estimated wait, expected today
 - [x] Seat a customer: assign a barber and start them, one barber per chair
-- [ ] Today at a glance for the owner: booked, walk-ins, completed, no-shows, takings
-- [ ] No-shows counted, so the shop can see the cost of them
+- [x] Today at a glance for the owner: booked, walk-ins, completed, no-shows, takings
+- [x] No-shows counted, with what they cost, on the overview and in the day journal
+- [x] Who appears in the customer app is the shop's choice, per person
 
 ## Phase 3 — keeping customers (after that)
 
@@ -80,13 +81,16 @@ apps and prepare the listings.
 
 ## Quality
 
-- [x] 204 tests: 89 on the rules, 115 on the API against a real database
+- [x] 233 tests: 103 on the rules, 130 on the API against a real database
 - [x] Every endpoint tested for what it does *and* who it refuses
 - [ ] Tests for the screens themselves (clicking through a browser)
 
 ## Open questions
 
 1. **Cancellation window** is 2 hours. Right for Escape?
+0. **Who shows in the app** — new barbers appear by default. Turn anyone off on the
+   barbers screen ("takes bookings in the customer app"); owners and managers with a
+   login are hidden automatically.
 2. **Three bookings at once** per customer. Enough?
 3. **No-show policy** — does a customer who misses twice get blocked from booking online?
 4. **Service lengths** are seeded estimates (haircut 30, beard 20, protein 120). They decide

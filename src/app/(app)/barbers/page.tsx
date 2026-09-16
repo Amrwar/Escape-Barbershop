@@ -19,12 +19,13 @@ interface Barber {
   name: string;
   phone: string | null;
   isActive: boolean;
+  bookableOnline: boolean;
   createdAt: string;
   salarySettings: SalarySettings | null;
   _count: { visits: number };
 }
 
-const defaultForm = { name: "", phone: "", isActive: true };
+const defaultForm = { name: "", phone: "", isActive: true, bookableOnline: true };
 const defaultSalary = {
   baseSalary: "0",
   commissionType: "PERCENT" as "PERCENT" | "FIXED_PER_VISIT",
@@ -105,7 +106,7 @@ export default function BarbersPage() {
   const openCreate = () => { setEditing(null); setForm(defaultForm); setErrors({}); setModalOpen(true); };
   const openEdit = (b: Barber) => {
     setEditing(b);
-    setForm({ name: b.name, phone: b.phone ?? "", isActive: b.isActive });
+    setForm({ name: b.name, phone: b.phone ?? "", isActive: b.isActive, bookableOnline: b.bookableOnline ?? true });
     setErrors({});
     setModalOpen(true);
   };
@@ -215,6 +216,9 @@ export default function BarbersPage() {
                     <Badge variant={b.isActive ? "green" : "gray"}>
                       {b.isActive ? t("common.active") : t("common.inactive")}
                     </Badge>
+                    {b.isActive && !b.bookableOnline && (
+                      <Badge variant="gray">{t("barbers.notInApp")}</Badge>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-end text-gray-600 hidden md:table-cell">{b._count.visits}</td>
                   <td className="px-4 py-3">
@@ -277,6 +281,14 @@ export default function BarbersPage() {
             <input className="input" value={form.phone}
               onChange={(e) => setForm({ ...form, phone: e.target.value })}
               placeholder="+1 234 567 8900" />
+          </div>
+          <div className="flex items-center gap-3">
+            <input type="checkbox" id="barberBookable" checked={form.bookableOnline}
+              onChange={(e) => setForm({ ...form, bookableOnline: e.target.checked })}
+              className="rounded border-gray-300 text-primary-600" />
+            <label htmlFor="barberBookable" className="text-sm text-gray-700">
+              {t("barbers.bookableOnline")}
+            </label>
           </div>
           <div className="flex items-center gap-3">
             <input type="checkbox" id="barberActive" checked={form.isActive}

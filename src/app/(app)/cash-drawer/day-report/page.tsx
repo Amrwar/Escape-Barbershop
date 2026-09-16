@@ -7,6 +7,7 @@ import { DateNavInput } from "@/components/ui/DateNavInput";
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { useTranslation } from "@/lib/i18n";
+import { DiaryToday } from "@/components/ui/DiaryToday";
 import { paymentMethodKey } from "@/lib/payments";
 import { InstapayAccountLines } from "@/components/ui/InstapayAccount";
 import { Note } from "@/components/ui/Note";
@@ -362,6 +363,8 @@ function DayReportContent() {
           <Note tone="rule" title={t("note.dayReportTitle")} icon="receipt">
             {t("note.dayReportBody")}
           </Note>
+
+          <DiaryToday date={date} />
 
           {/* Summary cards */}
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">

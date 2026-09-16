@@ -48,6 +48,8 @@ export async function PATCH(
         ...(data.name !== undefined && { name: data.name }),
         ...(data.phone !== undefined && { phone: data.phone || null }),
         ...(data.isActive !== undefined && { isActive: data.isActive }),
+        ...(data.bookableOnline !== undefined && { bookableOnline: data.bookableOnline }),
+        ...(data.bio !== undefined && { bio: data.bio || null }),
       },
       include: { salarySettings: true },
     });

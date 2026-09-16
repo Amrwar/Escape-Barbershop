@@ -146,6 +146,18 @@ export default function BookPage() {
       {step === "service" && (
         <section className="space-y-3">
           <StepTitle title={t("app.stepService")} hint={t("app.stepServiceHint")} />
+          {chosenServices.length > 0 && (
+            <div className="sticky top-0 z-10 -mx-1 px-3 py-2 rounded-xl bg-primary-800 text-white text-sm flex items-center justify-between shadow">
+              <span>
+                {chosenServices.length} {t(chosenServices.length === 1 ? "app.serviceChosen" : "app.servicesChosen")}
+                <span className="opacity-70">
+                  {" · "}
+                  {totalMinutes} {t("appointments.minutesShort")}
+                </span>
+              </span>
+              <span className="font-semibold tabular-nums">{fmtCurrency(totalPrice)}</span>
+            </div>
+          )}
           <div className="space-y-2">
             {catalog.services.map((s) => {
               const on = serviceIds.includes(s.id);

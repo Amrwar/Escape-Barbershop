@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { useTranslation } from "@/lib/i18n";
+import { DiaryToday } from "@/components/ui/DiaryToday";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { Note } from "@/components/ui/Note";
 import { Badge } from "@/components/ui/Badge";
@@ -156,6 +157,9 @@ export default function AdminPage() {
           </Link>
         }
       />
+
+      {/* The day's diary, before the money it turns into */}
+      <DiaryToday />
 
       {/* Today */}
       <div className="card p-5">

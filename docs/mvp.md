@@ -31,7 +31,7 @@ Everything below is either needed for that sentence, or it is not in the MVP.
 **Owner**
 - [x] Nothing double-booked, ever (enforced on save)
 - [x] Money unchanged and still reconciling: drawer, card, InstaPay, commissions
-- [ ] Today at a glance: booked, walk-ins, completed, no-shows, takings
+- [x] Today at a glance: booked, walk-ins, completed, no-shows, takings
 
 ## Out, on purpose
 
@@ -59,7 +59,7 @@ Not "the screen exists". For each item:
 
 ## Where the MVP stands
 
-The sentence at the top now holds: a customer books on their phone, the shop sees them in
+**The MVP is complete.** The sentence at the top now holds: a customer books on their phone, the shop sees them in
 the diary, seats them from the queue, rings them up, and the money lands once — in the
 drawer, the commission and the report. What is left of the MVP is the owner's view of the
 day at a glance, and counting no-shows.

@@ -214,7 +214,9 @@ const ar: Record<TranslationKey, string> = {
   "app.historyHint": "اطّلع على سجلك",
   "app.duration": "المدة",
   "app.stepService": "الخدمة المطلوبة؟",
-  "app.stepServiceHint": "اختر خدمة أو أكثر",
+  "app.stepServiceHint": "اختر ما تشاء — قص شعر ولحية معاً مثلاً",
+  "app.serviceChosen": "خدمة مختارة",
+  "app.servicesChosen": "خدمات مختارة",
   "app.stepBarber": "مع مين؟",
   "app.stepBarberHint": "اختر حلاقك، أو اتركها لنا",
   "app.stepTime": "الوقت المناسب؟",
@@ -281,6 +283,18 @@ const ar: Record<TranslationKey, string> = {
   "appointments.statusCancelled": "ملغي",
   "appointments.statusNoShow": "لم يحضر",
 
+  // The day's diary at a glance
+  "diary.title": "حجوزات اليوم",
+  "diary.nothing": "لا حجوزات، ولا أحد في المحل بعد",
+  "diary.openDiary": "فتح الحجوزات ←",
+  "diary.stillToCome": "متبقٍ اليوم",
+  "diary.served": "تمت خدمتهم",
+  "diary.walkIns": "بدون حجز",
+  "diary.booked": "بحجز",
+  "diary.noShows": "لم يحضروا",
+  "diary.allTurnedUp": "الجميع حضر",
+  "diary.unpaid": "غادروا بدون دفع",
+
   // Live queue
   "queue.title": "الطابور",
   "queue.subtitle": "من على الكرسي، من ينتظر، ومن متوقع اليوم",
@@ -342,6 +356,8 @@ const ar: Record<TranslationKey, string> = {
   "barbers.commission": "عمولة",
   "barbers.perVisit": "/زيارة",
   "barbers.active": "نشط",
+  "barbers.bookableOnline": "يستقبل حجوزات من تطبيق العملاء",
+  "barbers.notInApp": "غير ظاهر في التطبيق",
 
   // Cash Drawer
   "cashDrawer.title": "صندوق النقد",

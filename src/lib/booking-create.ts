@@ -3,6 +3,8 @@ import { prisma } from "./prisma";
 import { MINUTE, shopDateISO, workingWindow } from "./booking";
 import { getBookingSettings, getShopHours } from "./booking-server";
 import { BookingError, appointmentInclude } from "./appointment-api";
+import { CUSTOMER_FACING_BARBER } from "./barbers";
+import { isStaffRole } from "./roles";
 
 /**
  * Saving an appointment, used by both the shop screens and the customer app so
@@ -87,11 +89,13 @@ export async function createAppointment(input: CreateAppointmentInput) {
             id: true,
             isActive: true,
             bookableOnline: true,
+            user: { select: { role: true } },
             workingHours: true,
             services: { select: { serviceId: true } },
           },
         });
-        if (!barber || !barber.isActive || (input.onlineOnly && !barber.bookableOnline)) {
+        const staffOnly = isStaffRole(barber?.user?.role);
+        if (!barber || !barber.isActive || (input.onlineOnly && (!barber.bookableOnline || staffOnly))) {
           throw new BookingError("That barber is not available", 400);
         }
         if (barber.services.length > 0 && !services.every((s) => barber.services.some((bs) => bs.serviceId === s.id))) {
@@ -103,7 +107,7 @@ export async function createAppointment(input: CreateAppointmentInput) {
         if (!(await isFree(barber.id))) throw new BookingError("That time has just been taken", 409);
       } else if (requireBarber) {
         const candidates = await tx.barber.findMany({
-          where: { isActive: true, ...(input.onlineOnly ? { bookableOnline: true } : {}) },
+          where: { isActive: true, ...(input.onlineOnly ? { bookableOnline: true, ...CUSTOMER_FACING_BARBER } : {}) },
           select: { id: true, workingHours: true, services: { select: { serviceId: true } } },
           orderBy: { name: "asc" },
         });

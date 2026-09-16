@@ -1,4 +1,5 @@
 import { prisma } from "./prisma";
+import { CUSTOMER_FACING_BARBER } from "./barbers";
 import {
   DEFAULT_BOOKING_SETTINGS,
   MINUTE,
@@ -152,7 +153,7 @@ export async function findFreeSlots(query: SlotQuery): Promise<SlotResult> {
     where: {
       isActive: true,
       ...(query.barberId ? { id: query.barberId } : {}),
-      ...(query.onlineOnly ? { bookableOnline: true } : {}),
+      ...(query.onlineOnly ? { bookableOnline: true, ...CUSTOMER_FACING_BARBER } : {}),
     },
     select: {
       id: true,
