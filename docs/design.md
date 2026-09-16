@@ -35,17 +35,21 @@ That is deliberate: a rule that lives in a screen gets copied and then diverges.
 | --- | --- | --- |
 | `OWNER` | email | everything |
 | `CASHIER` | email | the till, the diary, expenses, the queue |
+| `BARBER` | email | their own day, their own customers, their own earnings |
 | `CUSTOMER` | phone number | their own bookings and profile, nothing else |
 
-`BARBER` is not a role yet — barbers are records the shop manages. It arrives in phase 3
-when barbers get their own screens.
+Three doors, enforced in `middleware.ts`: shop paths need a staff role, `/app` needs a
+customer, `/barber` needs a barber. The API enforces the same thing independently
+(`requireStaff`, `requireBarber`, `requireCustomer`), because middleware protects pages,
+not data.
 
-Two doors, enforced in `middleware.ts`: shop paths need a staff role, `/app` needs a
-customer. The API enforces the same thing independently (`requireStaff`, `requireCustomer`),
-because middleware protects pages, not data.
+A barber may mark someone arrived, started or a no-show, and nothing else: taking the
+money stays at the till, and they cannot move, cancel or re-price a booking. That is what
+keeps the diary and the takings from drifting apart.
 
 > A path check on the prefix `"/app"` once let a customer open `/appointments`, the shop's
-> own screen. Paths are matched segment by segment now (`isCustomerPath`), with tests.
+> own screen. Paths are matched segment by segment now (`isCustomerPath`), with tests —
+> and the same care applies to `/barber` against the shop's `/barbers` screen.
 
 ## The data model
 

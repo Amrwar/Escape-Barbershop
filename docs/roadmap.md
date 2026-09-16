@@ -41,10 +41,10 @@ The piece that makes booking worth having: one appointment, one visit, one set o
 - [x] No-shows counted, with what they cost, on the overview and in the day journal
 - [x] Who appears in the customer app is the shop's choice, per person
 
-## Phase 3 — keeping customers (after that)
+## Phase 3 — keeping customers (in progress)
 
-- [ ] Barber logins and their own day: schedule, their customers, their earnings
-- [ ] Customer notes the barber sees ("low fade, same as last time")
+- [x] Barber logins and their own day: schedule, their customers, their earnings
+- [x] Customer notes the barber sees ("low fade, same as last time")
 - [ ] Barber profiles in the customer app: photo, bio, book with them
 - [ ] Reminders the day before, and a booking confirmation
 - [ ] Offers, shown in the app
@@ -81,7 +81,7 @@ apps and prepare the listings.
 
 ## Quality
 
-- [x] 233 tests: 103 on the rules, 130 on the API against a real database
+- [x] 262 tests: 116 on the rules, 146 on the API against a real database
 - [x] Every endpoint tested for what it does *and* who it refuses
 - [ ] Tests for the screens themselves (clicking through a browser)
 

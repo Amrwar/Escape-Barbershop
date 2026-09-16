@@ -59,6 +59,7 @@ export async function POST(req: NextRequest) {
     if (err instanceof Error && err.message.includes("Unique constraint")) {
       return NextResponse.json({ error: "email_exists" }, { status: 409 });
     }
+    console.error("[users]", err);
     return NextResponse.json({ error: "Invalid data" }, { status: 400 });
   }
 }

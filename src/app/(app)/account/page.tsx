@@ -19,7 +19,8 @@ interface StaffUser {
   id: string;
   name: string;
   email: string;
-  role: "OWNER" | "CASHIER";
+  role: "OWNER" | "CASHIER" | "BARBER";
+  /** Set on a barber's login: which barber it belongs to. */
   barber?: { id: string; name: string } | null;
 }
 
@@ -39,11 +40,19 @@ export default function AccountPage() {
 
   // Add account
   const [addOpen, setAddOpen] = useState(false);
-  const [addForm, setAddForm] = useState<{ name: string; email: string; password: string; role: "OWNER" | "CASHIER" }>({
+  const [barbers, setBarbers] = useState<{ id: string; name: string }[]>([]);
+  const [addForm, setAddForm] = useState<{
+    name: string;
+    email: string;
+    password: string;
+    role: "OWNER" | "CASHIER" | "BARBER";
+    barberId: string;
+  }>({
     name: "",
     email: "",
     password: "",
     role: "CASHIER",
+    barberId: "",
   });
   const [addError, setAddError] = useState("");
   const [saving, setSaving] = useState(false);
@@ -68,6 +77,11 @@ export default function AccountPage() {
       .then((d) => setMe(d?.error ? null : d))
       .catch(() => setMe(null));
     loadUsers();
+    // For the "which barber is this login for?" picker.
+    fetch("/api/barbers?active=true")
+      .then((r) => r.json())
+      .then((d) => setBarbers(Array.isArray(d) ? d.map((b: { id: string; name: string }) => ({ id: b.id, name: b.name })) : []))
+      .catch(() => setBarbers([]));
   }, [status, loadUsers]);
 
   const changePassword = async (e: React.FormEvent) => {
@@ -100,17 +114,18 @@ export default function AccountPage() {
     e.preventDefault();
     setAddError("");
     if (addForm.password.length < 8) return setAddError(t("account.passwordTooShort"));
+    if (addForm.role === "BARBER" && !addForm.barberId) return setAddError(t("account.pickBarber"));
 
     setSaving(true);
     try {
       const res = await fetch("/api/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(addForm),
+        body: JSON.stringify(addForm.role === "BARBER" ? addForm : { ...addForm, barberId: undefined }),
       });
       if (res.ok) {
         setAddOpen(false);
-        setAddForm({ name: "", email: "", password: "", role: "CASHIER" });
+        setAddForm({ name: "", email: "", password: "", role: "CASHIER", barberId: "" });
         loadUsers();
       } else {
         const d = await res.json().catch(() => ({}));
@@ -271,8 +286,12 @@ export default function AccountPage() {
                   </td>
                   <td className="px-4 py-3 text-gray-600">{u.email}</td>
                   <td className="px-4 py-3">
-                    <Badge variant={u.role === "OWNER" ? "ink" : "gray"}>
-                      {u.role === "OWNER" ? t("common.owner") : t("common.cashier")}
+                    <Badge variant={u.role === "OWNER" ? "ink" : u.role === "BARBER" ? "blue" : "gray"}>
+                      {u.role === "OWNER"
+                        ? t("common.owner")
+                        : u.role === "BARBER"
+                          ? `${t("common.barber")}${u.barber ? ` · ${u.barber.name}` : ""}`
+                          : t("common.cashier")}
                     </Badge>
                   </td>
                   <td className="px-4 py-3 text-end whitespace-nowrap">
@@ -336,15 +355,36 @@ export default function AccountPage() {
             <select
               className="input"
               value={addForm.role}
-              onChange={(e) => setAddForm((p) => ({ ...p, role: e.target.value as "OWNER" | "CASHIER" }))}
+              onChange={(e) => setAddForm((p) => ({ ...p, role: e.target.value as "OWNER" | "CASHIER" | "BARBER" }))}
             >
               <option value="CASHIER">{t("common.cashier")}</option>
               <option value="OWNER">{t("common.owner")}</option>
+              <option value="BARBER">{t("common.barber")}</option>
             </select>
             <p className="text-xs text-gray-500 mt-1">{t("account.roleHint")}</p>
           </div>
 
-          {addError && <div className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{addError}</div>}
+          {/* A barber's login only sees their own day, customers and earnings. */}
+          {addForm.role === "BARBER" && (
+            <div>
+              <label className="label">{t("field.barber")}</label>
+              <select
+                className="input"
+                value={addForm.barberId}
+                onChange={(e) => setAddForm((p) => ({ ...p, barberId: e.target.value }))}
+              >
+                <option value="">—</option>
+                {barbers.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-gray-500 mt-1">{t("account.barberHint")}</p>
+            </div>
+          )}
+
+          {addError &&<div className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{addError}</div>}
 
           <div className="flex gap-2 justify-end">
             <button type="button" className="btn-secondary" onClick={() => setAddOpen(false)}>
