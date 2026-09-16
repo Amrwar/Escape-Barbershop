@@ -22,6 +22,7 @@ interface Settings {
   minNoticeMinutes: number;
   maxDaysAhead: number;
   bufferMinutes: number;
+  cancelWindowMinutes: number;
   onlineBookingEnabled: boolean;
   timezone: string;
 }
@@ -84,6 +85,7 @@ export default function BookingSettingsPage() {
             minNoticeMinutes: settings.minNoticeMinutes,
             maxDaysAhead: settings.maxDaysAhead,
             bufferMinutes: settings.bufferMinutes,
+            cancelWindowMinutes: settings.cancelWindowMinutes,
             onlineBookingEnabled: settings.onlineBookingEnabled,
           },
           hours,
@@ -181,6 +183,14 @@ export default function BookingSettingsPage() {
             min={0}
             max={10080}
             onChange={(minNoticeMinutes) => setSettings({ ...settings, minNoticeMinutes })}
+          />
+          <NumberField
+            label={t("booking.cancelWindow")}
+            hint={t("booking.cancelWindowHint")}
+            value={settings.cancelWindowMinutes}
+            min={0}
+            max={10080}
+            onChange={(cancelWindowMinutes) => setSettings({ ...settings, cancelWindowMinutes })}
           />
           <NumberField
             label={t("booking.maxDaysAhead")}

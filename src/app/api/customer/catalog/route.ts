@@ -1,0 +1,48 @@
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { getBookingSettings } from "@/lib/booking-server";
+
+/**
+ * What a customer may book: the services and barbers the shop has opened to
+ * online booking. Public, because the booking screen shows this before anyone
+ * signs in — it is the same thing a passer-by reads on the price list.
+ */
+export async function GET() {
+  try {
+    const settings = await getBookingSettings();
+    const [services, barbers] = await Promise.all([
+      prisma.service.findMany({
+        where: { isActive: true, bookableOnline: true },
+        orderBy: { name: "asc" },
+        select: { id: true, name: true, arabicName: true, defaultPrice: true, durationMinutes: true },
+      }),
+      prisma.barber.findMany({
+        where: { isActive: true, bookableOnline: true },
+        orderBy: { name: "asc" },
+        select: { id: true, name: true, bio: true, photo: true, services: { select: { serviceId: true } } },
+      }),
+    ]);
+
+    return NextResponse.json({
+      services,
+      barbers: barbers.map((b) => ({
+        id: b.id,
+        name: b.name,
+        bio: b.bio,
+        photo: b.photo,
+        // An empty list means this barber does everything.
+        serviceIds: b.services.map((s) => s.serviceId),
+      })),
+      booking: {
+        onlineBookingEnabled: settings.onlineBookingEnabled,
+        maxDaysAhead: settings.maxDaysAhead,
+        minNoticeMinutes: settings.minNoticeMinutes,
+        cancelWindowMinutes: settings.cancelWindowMinutes,
+        timezone: settings.timezone,
+      },
+    });
+  } catch (err) {
+    console.error("[customer/catalog]", err);
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+  }
+}

@@ -5,6 +5,7 @@ declare module "next-auth" {
   interface User {
     role: string;
     barberId?: string;
+    customerId?: string;
   }
   interface Session {
     user: {
@@ -13,6 +14,7 @@ declare module "next-auth" {
       name: string;
       role: string;
       barberId?: string;
+      customerId?: string;
     };
     /** When this login started (ms since epoch). */
     loginAt: number;
@@ -23,6 +25,7 @@ declare module "next-auth/jwt" {
   interface JWT {
     role: string;
     barberId?: string;
+    customerId?: string;
     loginAt: number;
   }
 }

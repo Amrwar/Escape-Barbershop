@@ -242,10 +242,37 @@ export const bookingSettingsSchema = z.object({
       minNoticeMinutes: z.number().int().min(0).max(7 * 24 * 60).optional(),
       maxDaysAhead: z.number().int().min(1).max(365).optional(),
       bufferMinutes: z.number().int().min(0).max(120).optional(),
+      cancelWindowMinutes: z.number().int().min(0).max(7 * 24 * 60).optional(),
       onlineBookingEnabled: z.boolean().optional(),
     })
     .optional(),
   hours: z.array(dayHoursSchema).max(7).optional(),
+});
+
+/** A customer signing themselves up on their phone. */
+export const customerRegisterSchema = z.object({
+  name: z.string().min(2, "Please enter your name").max(100),
+  phone: z.string().min(6, "Please enter your phone number").max(20),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
+
+export const customerProfileSchema = z.object({
+  name: z.string().min(2).max(100).optional(),
+  currentPassword: z.string().min(1).optional(),
+  newPassword: z.string().min(6, "Password must be at least 6 characters").optional(),
+});
+
+/** What a customer may ask for: their own booking, nobody else's. */
+export const customerBookingSchema = z.object({
+  barberId: z.string().nullable().optional(),
+  startAt: z.string().min(1, "Please choose a time"),
+  serviceIds: z.array(z.string().min(1)).min(1, "Please choose a service"),
+  notes: z.string().max(300).optional().or(z.literal("")),
+});
+
+export const customerRescheduleSchema = z.object({
+  startAt: z.string().min(1),
+  barberId: z.string().nullable().optional(),
 });
 
 export type AppointmentInput = z.infer<typeof appointmentSchema>;

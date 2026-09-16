@@ -9,11 +9,15 @@ datasource db {
 
 model User {
   id                 String              @id @default(cuid())
-  email              String              @unique
+  /// Staff sign in with an email; customers with their phone number.
+  email              String?             @unique
+  phone              String?             @unique
   password           String
   name               String
   role               Role                @default(CASHIER)
   barberId           String?             @unique
+  /// Set on a customer's own login, linking it to their record in the shop.
+  customerId         String?             @unique
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
   closedSessions     CashDrawerSession[] @relation("ClosedSessions")
@@ -22,6 +26,7 @@ model User {
   recordedVisits     Visit[]             @relation("RecordedVisits")
   bookedAppointments Appointment[]       @relation("BookedAppointments")
   barber             Barber?             @relation(fields: [barberId], references: [id])
+  customer           Customer?           @relation(fields: [customerId], references: [id])
 }
 
 model Barber {
@@ -215,6 +220,7 @@ model Customer {
   updatedAt    DateTime      @updatedAt
   visits       Visit[]
   appointments Appointment[]
+  user         User?
 }
 
 model Visit {
@@ -472,6 +478,7 @@ model ProductUsage {
 enum Role {
   OWNER
   CASHIER
+  CUSTOMER
 }
 
 enum AppointmentStatus {

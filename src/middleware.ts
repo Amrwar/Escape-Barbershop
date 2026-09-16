@@ -1,17 +1,38 @@
-import { withAuth } from "next-auth/middleware";
+import { NextResponse, type NextRequest } from "next/server";
+import { getToken } from "next-auth/jwt";
 import { isPastMaxSession } from "@/lib/session-policy";
+import { isCustomerLoginPath, isCustomerPath, isStaffRole } from "@/lib/roles";
 
-// The pages are client components, so this is their gate. A token past its
-// two-hour cap, or from before logins had one, is sent back to the login page.
-export default withAuth({
-  pages: { signIn: "/login" },
-  callbacks: {
-    authorized: ({ token }) => !!token && !isPastMaxSession(token.loginAt),
-  },
-});
+/**
+ * Two doors into the same building: the shop pages are for staff, the customer
+ * app is for customers. The pages are client components, so this is their gate.
+ * A token past its cap, or from before logins carried one, counts as signed out.
+ */
+export default async function middleware(req: NextRequest) {
+  const { pathname } = req.nextUrl;
+  const token = await getToken({ req });
+  const signedIn = !!token && !isPastMaxSession(token.loginAt, Date.now(), token.role);
+
+  const sendTo = (path: string) => {
+    const url = req.nextUrl.clone();
+    url.pathname = path;
+    url.search = `?callbackUrl=${encodeURIComponent(pathname)}`;
+    return NextResponse.redirect(url);
+  };
+
+  if (isCustomerPath(pathname)) {
+    if (isCustomerLoginPath(pathname)) return NextResponse.next();
+    if (!signedIn || token?.role !== "CUSTOMER") return sendTo("/app/login");
+    return NextResponse.next();
+  }
+
+  if (!signedIn || !isStaffRole(token?.role)) return sendTo("/login");
+  return NextResponse.next();
+}
 
 export const config = {
   matcher: [
+    "/app/:path*",
     "/dashboard/:path*",
     "/customers/:path*",
     "/visits/:path*",

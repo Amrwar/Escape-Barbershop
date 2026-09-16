@@ -19,12 +19,15 @@ export const DEFAULT_MIN_NOTICE_MINUTES = 60;
 export const DEFAULT_MAX_DAYS_AHEAD = 30;
 /** Quiet time kept around every appointment (cleaning up, overrun). */
 export const DEFAULT_BUFFER_MINUTES = 0;
+/** How close to the appointment a customer may still cancel or move it. */
+export const DEFAULT_CANCEL_WINDOW_MINUTES = 120;
 
 export interface BookingSettings {
   slotMinutes: number;
   minNoticeMinutes: number;
   maxDaysAhead: number;
   bufferMinutes: number;
+  cancelWindowMinutes: number;
   timezone: string;
   onlineBookingEnabled: boolean;
 }
@@ -34,6 +37,7 @@ export const DEFAULT_BOOKING_SETTINGS: BookingSettings = {
   minNoticeMinutes: DEFAULT_MIN_NOTICE_MINUTES,
   maxDaysAhead: DEFAULT_MAX_DAYS_AHEAD,
   bufferMinutes: DEFAULT_BUFFER_MINUTES,
+  cancelWindowMinutes: DEFAULT_CANCEL_WINDOW_MINUTES,
   timezone: DEFAULT_SHOP_TIMEZONE,
   onlineBookingEnabled: true,
 };

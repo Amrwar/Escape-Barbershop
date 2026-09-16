@@ -22,6 +22,7 @@ const SETTING_KEYS = {
   minNoticeMinutes: "booking_min_notice_minutes",
   maxDaysAhead: "booking_max_days_ahead",
   bufferMinutes: "booking_buffer_minutes",
+  cancelWindowMinutes: "booking_cancel_window_minutes",
   timezone: "shop_timezone",
   onlineBookingEnabled: "booking_online_enabled",
 } as const;
@@ -51,6 +52,7 @@ export async function getBookingSettings(): Promise<BookingSettings> {
     minNoticeMinutes: number(SETTING_KEYS.minNoticeMinutes, DEFAULT_BOOKING_SETTINGS.minNoticeMinutes),
     maxDaysAhead: Math.max(1, number(SETTING_KEYS.maxDaysAhead, DEFAULT_BOOKING_SETTINGS.maxDaysAhead)),
     bufferMinutes: number(SETTING_KEYS.bufferMinutes, DEFAULT_BOOKING_SETTINGS.bufferMinutes),
+    cancelWindowMinutes: number(SETTING_KEYS.cancelWindowMinutes, DEFAULT_BOOKING_SETTINGS.cancelWindowMinutes),
     timezone: value(SETTING_KEYS.timezone) || DEFAULT_BOOKING_SETTINGS.timezone,
     onlineBookingEnabled: (value(SETTING_KEYS.onlineBookingEnabled) ?? "1") !== "0",
   };

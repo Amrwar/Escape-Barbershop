@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useSession, signOut } from "next-auth/react";
-import { ACTIVITY_PING_MS, IDLE_TIMEOUT_MS, MAX_SESSION_MS } from "@/lib/session-policy";
+import { ACTIVITY_PING_MS, idleTimeoutMsFor, isCustomerRole, maxSessionMsFor } from "@/lib/session-policy";
 
 /**
  * Signs the device out after inactivity or when the login reaches its cap. The
@@ -34,19 +34,26 @@ function writeSharedActivity(at: number) {
 export function SessionTimeout() {
   const { data: session, status } = useSession();
   const loginAt = session?.loginAt;
+  const role = session?.user?.role;
   const wasSignedIn = useRef(false);
+  const lastRole = useRef<string | undefined>(undefined);
 
   // Signed out somewhere else (another tab, or the server ended it on a check).
   useEffect(() => {
-    if (status === "authenticated") wasSignedIn.current = true;
-    else if (status === "unauthenticated" && wasSignedIn.current) {
+    if (status === "authenticated") {
+      wasSignedIn.current = true;
+      lastRole.current = role;
+    } else if (status === "unauthenticated" && wasSignedIn.current) {
       wasSignedIn.current = false;
-      window.location.href = "/login?ended=expired";
+      const loginPath = isCustomerRole(lastRole.current) ? "/app/login" : "/login";
+      window.location.href = `${loginPath}?ended=expired`;
     }
-  }, [status]);
+  }, [status, role]);
 
   useEffect(() => {
     if (status !== "authenticated") return;
+    // A customer on their own phone is not signed out for sitting idle.
+    if (isCustomerRole(role)) return;
 
     let lastActivity = Date.now();
     let lastShared = 0;
@@ -58,13 +65,13 @@ export function SessionTimeout() {
       if (ending) return;
       ending = true;
       wasSignedIn.current = false;
-      signOut({ callbackUrl: `/login?ended=${reason}` });
+      signOut({ callbackUrl: `${isCustomerRole(role) ? "/app/login" : "/login"}?ended=${reason}` });
     };
 
     const check = () => {
       const now = Date.now();
-      if (typeof loginAt === "number" && now - loginAt >= MAX_SESSION_MS) return end("max");
-      if (now - Math.max(lastActivity, readSharedActivity()) >= IDLE_TIMEOUT_MS) end("idle");
+      if (typeof loginAt === "number" && now - loginAt >= maxSessionMsFor(role)) return end("max");
+      if (now - Math.max(lastActivity, readSharedActivity()) >= idleTimeoutMsFor(role)) end("idle");
     };
 
     const onActivity = () => {
@@ -102,7 +109,7 @@ export function SessionTimeout() {
       document.removeEventListener("visibilitychange", onVisible);
       window.clearInterval(timer);
     };
-  }, [status, loginAt]);
+  }, [status, loginAt, role]);
 
   return null;
 }

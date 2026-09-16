@@ -117,6 +117,7 @@ export function sideForPath(pathname: string): Side {
 
 /** Where each role starts after signing in. */
 export function landingFor(role: string | undefined): string {
+  if (role === "CUSTOMER") return "/app";
   return role === "OWNER" ? "/admin" : "/visits/new";
 }
 
