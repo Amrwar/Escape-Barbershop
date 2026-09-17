@@ -203,6 +203,25 @@ Rewards earned are `floor(visits / required)`; rewards given are rows in
 `LoyaltyRedemption`; what is waiting is the difference, never below zero — a
 reward handed over early is the shop's kindness, not the customer's debt.
 
+## Insights
+
+A second reading of the same rows the money is made of: when the shop is busy,
+who did the work, how many faces were new, and whether people come back. Nothing
+here has its own store of numbers, so an insight can never disagree with the day
+journal.
+
+Two of the questions cannot be answered from a window, and are not:
+
+- **New versus returning** compares each visit against that customer's first
+  visit ever. Counted inside the window instead, everybody would look new the
+  moment the window opened.
+- **Retention** reads each customer's whole history: how many came back at all,
+  the typical gap between visits, and which regulars have not been in for two
+  months — the last of which is the shop's best call list.
+
+Times are bucketed in shop time, so a visit at half past midnight belongs to the
+night the shop worked.
+
 ## Sessions
 
 Shop devices sit on a counter, so a staff login ends after 2 hours, or 30 minutes idle.

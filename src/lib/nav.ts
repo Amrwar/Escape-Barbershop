@@ -49,6 +49,7 @@ export const ADMIN_NAV: NavGroup[] = [
       { href: "/admin", labelKey: "nav.admin", icon: "shield" },
       { href: "/dashboard", labelKey: "nav.dashboard", icon: "chart-bar" },
       { href: "/reports", labelKey: "nav.reports", icon: "chart-line" },
+      { href: "/reports/insights", labelKey: "nav.insights", icon: "pie" },
       { href: "/cash-drawer/day-report", labelKey: "cashDrawer.dayReport", icon: "receipt" },
       { href: "/admin/activity", labelKey: "nav.activity", icon: "clipboard-check" },
       { href: "/admin/discounts", labelKey: "nav.discounts", icon: "banknote" },

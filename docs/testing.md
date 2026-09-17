@@ -45,6 +45,9 @@ worth knowing about are:
   visit, and the owner's power to hide but not delete.
 - **`loyalty-api.test.ts`** — stamps counted from paid visits only, a card that
   cannot be cashed in twice, and the proof that giving a reward moves no money.
+- **`insights-api.test.ts`** — the owner's read of the shop: the window, who may
+  ask, and the proof that a long-standing customer is never counted as a new
+  face.
 
 A mock cannot tell you that two people took the same slot, or that the drawer
 and the report disagree. These can.
