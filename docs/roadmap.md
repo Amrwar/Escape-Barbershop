@@ -72,10 +72,10 @@ never install the app — worth revisiting once we see how many turn notificatio
 ($99 a year). The accounts must be in the shop's name, and only you can submit. I build the
 apps and prepare the listings.
 
-## Phase 5 — loyalty and depth (in progress)
+## Phase 5 — loyalty and depth (done)
 
 - [x] Loyalty: a punch card — a stamp per paid visit, a reward you describe
-- [ ] Referrals and birthday offers
+- [x] Referrals and birthday offers
 - [x] Deeper reports: retention, busiest times, barber utilisation, new versus returning
 - [x] Customer groups, and a notification the owner can send one of them
 

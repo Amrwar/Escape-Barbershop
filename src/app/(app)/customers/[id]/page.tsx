@@ -33,6 +33,7 @@ interface Customer {
   name: string;
   phone: string | null;
   notes: string | null;
+  birthday: string | null;
   createdAt: string;
   visits: Visit[];
 }
@@ -46,6 +47,9 @@ export default function CustomerDetailPage() {
   const [loading, setLoading] = useState(true);
   const [visitsPage, setVisitsPage] = useState(1);
   const [loyalty, setLoyalty] = useState<{ text: string | null; available: number } | null>(null);
+  const [referral, setReferral] = useState<{ text: string | null; waiting: number } | null>(null);
+  const [birthday, setBirthday] = useState("");
+  const [savingBirthday, setSavingBirthday] = useState(false);
   const PAGE_SIZE = 15;
 
   useEffect(() => {
@@ -58,7 +62,38 @@ export default function CustomerDetailPage() {
       .then((r) => r.json())
       .then((d) => setLoyalty(d?.settings?.enabled ? { text: d.text, available: d.standing.available } : null))
       .catch(() => setLoyalty(null));
+
+    fetch(`/api/referrals/${id}`)
+      .then((r) => r.json())
+      .then((d) => setReferral(d?.settings?.enabled ? { text: d.text, waiting: d.standing.waiting } : null))
+      .catch(() => setReferral(null));
   }, [id, router]);
+
+  useEffect(() => {
+    setBirthday(customer?.birthday ? customer.birthday.slice(0, 10) : "");
+  }, [customer?.birthday]);
+
+  const saveBirthday = async (value: string) => {
+    setBirthday(value);
+    setSavingBirthday(true);
+    try {
+      await fetch(`/api/customers/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ birthday: value }),
+      });
+    } finally {
+      setSavingBirthday(false);
+    }
+  };
+
+  const giveReferralReward = async () => {
+    const res = await fetch(`/api/referrals/${id}`, { method: "POST" });
+    if (res.ok) {
+      const d = await res.json();
+      setReferral({ text: d.text, waiting: d.standing.waiting });
+    }
+  };
 
   if (loading) {
     return (
@@ -107,6 +142,30 @@ export default function CustomerDetailPage() {
           <p className="font-medium text-gray-900 mt-0.5">{fmtCurrency(totalSpent)}</p>
         </div>
       </div>
+
+      <div className="card mb-6 flex flex-wrap items-center gap-3 p-4">
+        <label className="text-xs text-gray-500" htmlFor="birthday">
+          {t("birthdays.field")}
+        </label>
+        <input
+          id="birthday"
+          type="date"
+          className="input w-44"
+          value={birthday}
+          onChange={(e) => saveBirthday(e.target.value)}
+          disabled={savingBirthday}
+        />
+        <span className="text-xs text-gray-400">{t("birthdays.hint")}</span>
+      </div>
+
+      {referral?.text && (
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          <span>{referral.text}</span>
+          <button type="button" onClick={giveReferralReward} className="btn-secondary text-xs">
+            {t("referrals.give")}
+          </button>
+        </div>
+      )}
 
       {loyalty?.text && (
         <div

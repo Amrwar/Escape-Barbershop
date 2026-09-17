@@ -3,12 +3,15 @@ import { prisma } from "@/lib/prisma";
 import { getBookingSettings } from "@/lib/booking-server";
 import { DEFAULT_REMIND_HOURS_AHEAD, dueForReminder, reminderMessage, reviewRequestMessage } from "@/lib/reminders";
 import { ASK_WITHIN_HOURS, shouldAskForReview } from "@/lib/reviews";
+import { birthdayMessage, shouldGreet } from "@/lib/birthdays";
+import { getBirthdaySettings } from "@/lib/loyalty-server";
 import { sendPush } from "@/lib/push";
 
 /**
- * The evening run. Vercel calls this once a day, and it does two things: it
- * reminds everyone with a booking in the next twenty hours, and it asks anyone
- * who was in the chair yesterday what they thought.
+ * The evening run. Vercel calls this once a day, and it does three things: it
+ * reminds everyone with a booking in the next twenty hours, asks anyone who was
+ * in the chair yesterday what they thought, and wishes a happy birthday to
+ * anyone whose day it is.
  *
  * Each appointment is stamped as it goes out, so a second run — a retry, a
  * manual trigger, a cron that fires twice — cannot remind the same person
@@ -108,7 +111,25 @@ export async function GET(req: NextRequest) {
       asked += 1;
     }
 
-    return NextResponse.json({ considered: appointments.length, reminded, asked, notificationsSent: sent });
+    // And the birthdays, if the shop keeps them.
+    let greeted = 0;
+    const birthdays = await getBirthdaySettings();
+    if (birthdays.enabled) {
+      const people = await prisma.customer.findMany({
+        where: { birthday: { not: null } },
+        select: { id: true, name: true, birthday: true, birthdayGreetedAt: true },
+      });
+
+      for (const person of people.filter((p) => shouldGreet(p, Date.now(), settings.timezone))) {
+        sent += await sendPush({ customerId: person.id }, birthdayMessage(person.name, birthdays.messageText));
+        // Stamped whether or not they have a phone listening, so the greeting
+        // is a once-a-year thing rather than a nightly attempt.
+        await prisma.customer.update({ where: { id: person.id }, data: { birthdayGreetedAt: new Date() } });
+        greeted += 1;
+      }
+    }
+
+    return NextResponse.json({ considered: appointments.length, reminded, asked, greeted, notificationsSent: sent });
   } catch (err) {
     console.error("[cron/reminders]", err);
     return NextResponse.json({ error: "Reminder run failed" }, { status: 500 });

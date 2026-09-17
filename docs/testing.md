@@ -51,6 +51,9 @@ worth knowing about are:
 - **`segments-api.test.ts`** — the groups, and the guardrails on writing to one:
   who may send, once every twelve hours, and only to people who asked for
   notifications.
+- **`referrals-api.test.ts`** — a code that survives being written down badly, a
+  referral earned only by a friend who actually came in, a reward given once,
+  and a birthday greeting that goes out once a year.
 
 A mock cannot tell you that two people took the same slot, or that the drawer
 and the report disagree. These can.

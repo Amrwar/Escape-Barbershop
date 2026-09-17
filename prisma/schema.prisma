@@ -8,29 +8,30 @@ datasource db {
 }
 
 model User {
-  id                 String              @id @default(cuid())
+  id                   String              @id @default(cuid())
   /// Staff sign in with an email; customers with their phone number.
-  email              String?             @unique
-  phone              String?             @unique
-  password           String
-  name               String
-  role               Role                @default(CASHIER)
-  barberId           String?             @unique
+  email                String?             @unique
+  phone                String?             @unique
+  password             String
+  name                 String
+  role                 Role                @default(CASHIER)
+  barberId             String?             @unique
   /// Set on a customer's own login, linking it to their record in the shop.
-  customerId         String?             @unique
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
-  closedSessions     CashDrawerSession[] @relation("ClosedSessions")
-  openedSessions     CashDrawerSession[] @relation("OpenedSessions")
-  cashMovements      CashMovement[]      @relation("CreatedMovements")
-  recordedVisits     Visit[]             @relation("RecordedVisits")
-  bookedAppointments Appointment[]       @relation("BookedAppointments")
-  writtenNotes       CustomerNote[]      @relation("WrittenNotes")
-  hiddenReviews      Review[]            @relation("HiddenReviews")
-  givenRewards       LoyaltyRedemption[] @relation("GivenRewards")
-  pushDevices        PushSubscription[]
-  barber             Barber?             @relation(fields: [barberId], references: [id])
-  customer           Customer?           @relation(fields: [customerId], references: [id])
+  customerId           String?             @unique
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+  closedSessions       CashDrawerSession[] @relation("ClosedSessions")
+  openedSessions       CashDrawerSession[] @relation("OpenedSessions")
+  cashMovements        CashMovement[]      @relation("CreatedMovements")
+  recordedVisits       Visit[]             @relation("RecordedVisits")
+  bookedAppointments   Appointment[]       @relation("BookedAppointments")
+  writtenNotes         CustomerNote[]      @relation("WrittenNotes")
+  hiddenReviews        Review[]            @relation("HiddenReviews")
+  givenRewards         LoyaltyRedemption[] @relation("GivenRewards")
+  givenReferralRewards Referral[]          @relation("GivenReferralRewards")
+  pushDevices          PushSubscription[]
+  barber               Barber?             @relation(fields: [barberId], references: [id])
+  customer             Customer?           @relation(fields: [customerId], references: [id])
 }
 
 model Barber {
@@ -243,6 +244,27 @@ model PushSubscription {
   @@index([userId])
 }
 
+/// Somebody brought somebody in.
+///
+/// Whether it counts is not stored: a referral has earned its reward once the
+/// new customer has actually paid for a visit, which is read from the visits
+/// themselves. The only thing written down is the reward the shop handed over,
+/// for the same reason the loyalty card works that way.
+model Referral {
+  id              String    @id @default(cuid())
+  referrerId      String
+  /// One person can only be brought in once, by one person.
+  referredId      String    @unique
+  rewardGivenAt   DateTime?
+  rewardGivenById String?
+  createdAt       DateTime  @default(now())
+  referrer        Customer  @relation("ReferralsMade", fields: [referrerId], references: [id], onDelete: Cascade)
+  referred        Customer  @relation("ReferredBy", fields: [referredId], references: [id], onDelete: Cascade)
+  rewardGivenBy   User?     @relation("GivenReferralRewards", fields: [rewardGivenById], references: [id])
+
+  @@index([referrerId])
+}
+
 /// A reward handed over: the shop's record that a full card was cashed in.
 ///
 /// The row says a reward was given, not what it was worth — the visit's own
@@ -332,19 +354,27 @@ model CustomerNote {
 }
 
 model Customer {
-  id           String              @id @default(cuid())
-  name         String
-  phone        String?
-  notes        String?
-  createdAt    DateTime            @default(now())
-  updatedAt    DateTime            @updatedAt
-  visits       Visit[]
-  appointments Appointment[]
-  user         User?
-  notes_       CustomerNote[]
-  pushDevices  PushSubscription[]
-  reviews      Review[]
-  rewards      LoyaltyRedemption[]
+  id                String              @id @default(cuid())
+  name              String
+  phone             String?
+  notes             String?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  visits            Visit[]
+  appointments      Appointment[]
+  user              User?
+  notes_            CustomerNote[]
+  /// What they tell a friend. Made the first time they ask for it.
+  referralCode      String?             @unique
+  /// Day and month are what the shop uses; the year is whatever they gave.
+  birthday          DateTime?
+  /// Stops a birthday greeting going twice in the same year.
+  birthdayGreetedAt DateTime?
+  pushDevices       PushSubscription[]
+  reviews           Review[]
+  rewards           LoyaltyRedemption[]
+  referralsMade     Referral[]          @relation("ReferralsMade")
+  referredBy        Referral?           @relation("ReferredBy")
 }
 
 model Visit {

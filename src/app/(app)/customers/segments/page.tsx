@@ -18,6 +18,13 @@ import { SEGMENT_KEYS, type SegmentKey } from "@/lib/segments";
  * reach anybody.
  */
 
+interface Birthday {
+  id: string;
+  name: string;
+  phone: string | null;
+  daysAway: number;
+}
+
 interface Member {
   id: string;
   name: string;
@@ -51,6 +58,7 @@ export default function SegmentsPage() {
   const [counts, setCounts] = useState<Record<string, number> | null>(null);
   const [key, setKey] = useState<SegmentKey>("slipping");
   const [group, setGroup] = useState<{ total: number; reachable: number; members: Member[] } | null>(null);
+  const [birthdays, setBirthdays] = useState<Birthday[]>([]);
 
   const [composing, setComposing] = useState(false);
   const [title, setTitle] = useState("");
@@ -64,6 +72,11 @@ export default function SegmentsPage() {
       .then((r) => r.json())
       .then((d) => setCounts(d?.counts ?? null))
       .catch(() => setCounts(null));
+
+    fetch("/api/birthdays?days=30")
+      .then((r) => r.json())
+      .then((d) => setBirthdays(Array.isArray(d?.birthdays) ? d.birthdays : []))
+      .catch(() => setBirthdays([]));
   }, []);
 
   const loadGroup = useCallback(() => {
@@ -200,6 +213,31 @@ export default function SegmentsPage() {
               </button>
             )}
           </>
+        )}
+      </div>
+
+      <div className="card p-5">
+        <h2 className="mb-3 text-sm font-semibold text-gray-900">{t("birthdays.thisMonth")}</h2>
+        {birthdays.length === 0 ? (
+          <p className="text-sm text-gray-500">{t("birthdays.none")}</p>
+        ) : (
+          <div className="divide-y divide-gray-100">
+            {birthdays.map((person) => (
+              <div key={person.id} className="flex items-center justify-between py-2 text-sm">
+                <Link href={`/customers/${person.id}`} className="font-medium text-gray-900 hover:underline">
+                  {person.name}
+                </Link>
+                <div className="flex items-center gap-4">
+                  <span className="text-xs text-gray-400">{person.phone ?? "—"}</span>
+                  <span className={`text-xs ${person.daysAway === 0 ? "font-semibold text-amber-600" : "text-gray-500"}`}>
+                    {person.daysAway === 0
+                      ? t("birthdays.today")
+                      : t("birthdays.inDays").replace("{days}", String(person.daysAway))}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </div>
 

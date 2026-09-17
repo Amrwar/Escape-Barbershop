@@ -3,6 +3,8 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { customerRegisterSchema } from "@/lib/validations";
 import { normalizePhone } from "@/lib/customers";
+import { customerByCode } from "@/lib/referrals-server";
+import { getReferralSettings } from "@/lib/loyalty-server";
 
 /**
  * A customer signing themselves up, from the phone in their hand. The phone
@@ -28,6 +30,12 @@ export async function POST(req: NextRequest) {
     const passwordHash = await bcrypt.hash(data.password, 10);
     const name = data.name.trim();
 
+    // Who sent them, if anybody. A code nobody recognises is ignored rather
+    // than refused: the account matters more than the referral.
+    const settings = await getReferralSettings();
+    const referrer =
+      settings.enabled && data.referralCode ? await customerByCode(data.referralCode) : null;
+
     await prisma.$transaction(async (tx) => {
       // Reuse the shop's record for this number where there is exactly one and
       // nobody has claimed it yet; duplicates are left alone and a new one is made.
@@ -41,6 +49,14 @@ export async function POST(req: NextRequest) {
       await tx.user.create({
         data: { name, phone, password: passwordHash, role: "CUSTOMER", customerId: customer.id },
       });
+
+      // Nobody refers themselves, and nobody is referred twice.
+      if (referrer && referrer.id !== customer.id) {
+        const already = await tx.referral.findUnique({ where: { referredId: customer.id }, select: { id: true } });
+        if (!already) {
+          await tx.referral.create({ data: { referrerId: referrer.id, referredId: customer.id } });
+        }
+      }
     });
 
     return NextResponse.json({ ok: true }, { status: 201 });

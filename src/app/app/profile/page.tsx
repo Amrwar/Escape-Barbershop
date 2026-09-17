@@ -7,6 +7,7 @@ import { formatPhone } from "@/lib/customers";
 import { Avatar, ScreenTitle, SectionTitle, Skeleton } from "@/components/customer/kit";
 import { PushToggle } from "@/components/customer/PushToggle";
 import { LoyaltyCard, type Loyalty } from "@/components/customer/LoyaltyCard";
+import { ReferralCard, type Referral } from "@/components/customer/ReferralCard";
 
 interface Profile {
   id: string;
@@ -27,6 +28,7 @@ export default function CustomerProfilePage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [referral, setReferral] = useState<Referral | null>(null);
 
   useEffect(() => {
     fetch("/api/customer/me")
@@ -36,6 +38,11 @@ export default function CustomerProfilePage() {
         setName(d?.name ?? "");
       })
       .catch(() => setProfile(null));
+
+    fetch("/api/customer/referral")
+      .then((r) => r.json())
+      .then((d) => setReferral(d?.enabled ? d : null))
+      .catch(() => setReferral(null));
   }, []);
 
   const save = async (body: Record<string, string>) => {
@@ -100,6 +107,13 @@ export default function CustomerProfilePage() {
         <section>
           <SectionTitle>{t("app.loyaltyTitle")}</SectionTitle>
           <LoyaltyCard loyalty={profile.loyalty} />
+        </section>
+      )}
+
+      {referral && (
+        <section>
+          <SectionTitle>{t("app.referralTitle")}</SectionTitle>
+          <ReferralCard referral={referral} />
         </section>
       )}
 

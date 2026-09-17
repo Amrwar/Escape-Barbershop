@@ -83,7 +83,7 @@ export const ADMIN_NAV: NavGroup[] = [
       { href: "/appointments", labelKey: "nav.appointments", icon: "calendar" },
       { href: "/queue", labelKey: "nav.queue", icon: "users" },
       { href: "/settings/booking", labelKey: "nav.bookingSettings", icon: "cog" },
-      { href: "/settings/loyalty", labelKey: "nav.loyalty", icon: "hand-coins" },
+      { href: "/settings/rewards", labelKey: "nav.rewards", icon: "hand-coins" },
       { href: "/services", labelKey: "nav.services", icon: "scissors" },
       { href: "/customers", labelKey: "nav.customers", icon: "users" },
       { href: "/customers/segments", labelKey: "nav.segments", icon: "pie" },

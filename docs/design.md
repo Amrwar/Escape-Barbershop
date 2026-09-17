@@ -246,6 +246,33 @@ not ask for:
 Every send is written to the activity log with the words that were sent. For
 everyone else, the screen copies the phone numbers so the shop can ring them.
 
+## Telling a friend
+
+Every customer has a six-character code in their app, made the first time they
+look for it. A new customer types it when they sign up, and the shop owes a
+reward once that friend has **paid for a haircut** — not when they sign up,
+because an account costs nothing to make.
+
+The code leaves out the characters people confuse when reading one out across a
+counter: no 0/O, no 1/I/L, no 5/S. A code nobody recognises is ignored rather
+than refused — the account matters more than the referral.
+
+Nothing about whether a referral is earned is stored: it is read from the
+visits, so it cannot drift. Only the reward the shop handed over is written
+down, along with who gave it.
+
+## Birthdays
+
+Only the day and the month are ever used — the year a customer gave is their
+business, and the shop has no reason to work out anybody's age. The evening run
+wishes a happy birthday once a year, in shop time, and stamps the customer
+whether or not a phone was listening so the greeting is a once-a-year thing
+rather than a nightly attempt. Somebody born on 29 February is greeted on the
+28th in a common year rather than three years out of four.
+
+The shop sees the birthdays coming up on the customer groups screen, because
+most customers have no app and a phone call is what actually happens.
+
 ## Sessions
 
 Shop devices sit on a counter, so a staff login ends after 2 hours, or 30 minutes idle.

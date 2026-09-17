@@ -20,6 +20,8 @@ function CustomerLoginInner() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  // A friend's code, if somebody sent them. Never required.
+  const [referralCode, setReferralCode] = useState("");
   const [error, setError] = useState("");
   const [ended, setEnded] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -40,7 +42,7 @@ function CustomerLoginInner() {
     setLoading(true);
     try {
       if (mode === "signup") {
-        const parsed = customerRegisterSchema.safeParse({ name, phone, password });
+        const parsed = customerRegisterSchema.safeParse({ name, phone, password, referralCode });
         if (!parsed.success) {
           setError(parsed.error.errors[0].message);
           return;
@@ -155,6 +157,22 @@ function CustomerLoginInner() {
                 required
               />
             </div>
+
+            {mode === "signup" && (
+              <div className="animate-fade-up">
+                <label className="c-label" htmlFor="referral">
+                  {t("app.referralCodeField")}
+                </label>
+                <input
+                  id="referral"
+                  className="c-input uppercase tracking-[0.2em]"
+                  value={referralCode}
+                  onChange={(e) => setReferralCode(e.target.value)}
+                  maxLength={12}
+                  autoCapitalize="characters"
+                />
+              </div>
+            )}
 
             {ended && !error && (
               <div className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-sm text-amber-200">

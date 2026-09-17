@@ -31,6 +31,7 @@ function NewVisitInner() {
   // The customer's punch card, looked up while they stand at the counter.
   const [loyalty, setLoyalty] = useState<{ text: string | null; available: number } | null>(null);
   const [useReward, setUseReward] = useState(false);
+  const [referral, setReferral] = useState<{ text: string | null; waiting: number } | null>(null);
   const [showDropdown, setShowDropdown]        = useState(false);
   const [newCustModal, setNewCustModal]         = useState(false);
   const [newCustForm,  setNewCustForm]          = useState({ name: "", phone: "" });
@@ -197,6 +198,11 @@ function NewVisitInner() {
       .then((r) => r.json())
       .then((d) => setLoyalty(d?.settings?.enabled ? { text: d.text, available: d.standing.available } : null))
       .catch(() => setLoyalty(null));
+
+    fetch(`/api/referrals/${selectedCustomer.id}`)
+      .then((r) => r.json())
+      .then((d) => setReferral(d?.settings?.enabled ? { text: d.text, waiting: d.standing.waiting } : null))
+      .catch(() => setReferral(null));
   }, [selectedCustomer]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -335,6 +341,28 @@ function NewVisitInner() {
                       {t("loyalty.useReward")}
                     </label>
                   )}
+                </div>
+              </div>
+            )}
+
+            {/* Somebody they brought in has been in */}
+            {selectedCustomer && referral?.text && (
+              <div className="sm:col-span-2 -mt-1">
+                <div className="flex items-center justify-between gap-3 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+                  <span>{referral.text}</span>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const res = await fetch(`/api/referrals/${selectedCustomer.id}`, { method: "POST" });
+                      if (res.ok) {
+                        const d = await res.json();
+                        setReferral({ text: d.text, waiting: d.standing.waiting });
+                      }
+                    }}
+                    className="btn-secondary shrink-0 text-xs"
+                  >
+                    {t("referrals.give")}
+                  </button>
                 </div>
               </div>
             )}

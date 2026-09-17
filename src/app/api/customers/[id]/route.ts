@@ -54,6 +54,10 @@ export async function PATCH(
         ...(data.name !== undefined && { name: data.name }),
         ...(data.phone !== undefined && { phone: data.phone || null }),
         ...(data.notes !== undefined && { notes: data.notes || null }),
+        ...(data.birthday !== undefined && {
+          // Midday, so no timezone can nudge it onto the day before.
+          birthday: data.birthday ? new Date(`${data.birthday}T12:00:00Z`) : null,
+        }),
       },
     });
     return NextResponse.json(customer);

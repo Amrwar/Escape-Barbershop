@@ -10,6 +10,8 @@ export const customerSchema = z.object({
   name: z.string().max(100).optional().or(z.literal("")),
   phone: z.string().max(20).optional().or(z.literal("")),
   notes: z.string().max(500).optional().or(z.literal("")),
+  /** "1991-09-16", or empty to forget it. Only the day and month are ever used. */
+  birthday: z.string().max(10).optional().or(z.literal("")),
 });
 
 export const serviceSchema = z.object({
@@ -308,6 +310,8 @@ export const customerRegisterSchema = z.object({
   name: z.string().min(2, "Please enter your name").max(100),
   phone: z.string().min(6, "Please enter your phone number").max(20),
   password: z.string().min(6, "Password must be at least 6 characters"),
+  /** A friend's code, if somebody sent them. Never required. */
+  referralCode: z.string().max(20).optional().or(z.literal("")),
 });
 
 export const customerProfileSchema = z.object({
