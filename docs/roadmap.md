@@ -83,6 +83,10 @@ apps and prepare the listings.
 - [x] The shop's till screens deliberately untouched — worked on for eight hours a day,
       and still white
 
+## Phase 9 — the awkward customer (done)
+
+- [x] A no-show policy that asks for a deposit rather than barring anybody
+
 ## Phase 8 — the room itself (done)
 
 - [x] The screen on the wall: the live queue, the wait, and today's offers
@@ -136,7 +140,10 @@ new ones.
    barbers screen ("takes bookings in the customer app"); owners and managers with a
    login are hidden automatically.
 2. **Three bookings at once** per customer. Enough?
-3. **No-show policy** — does a customer who misses twice get blocked from booking online?
+3. ~~**No-show policy**~~ — answered: nobody is blocked. A customer who has missed
+   twice recently is asked for a deposit on anything they book, and the shop can
+   wipe their slate from their page. Off until you turn it on, on the deposits
+   screen.
 4. **Service lengths** are seeded estimates (haircut 30, beard 20, protein 120). They decide
    how many slots a day holds, so they are worth correcting on the services screen.
 5. **Rewards are switched off until you set them up** — the loyalty card, referrals and

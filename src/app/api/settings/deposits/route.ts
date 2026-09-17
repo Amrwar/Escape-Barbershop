@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth, requireOwner } from "@/lib/auth";
-import { getDepositPolicy, getInstapayAddress, saveDepositPolicy, INSTAPAY_KEY } from "@/lib/deposits-server";
+import {
+  getDepositPolicy,
+  getInstapayAddress,
+  getNoShowPolicy,
+  saveDepositPolicy,
+  saveNoShowPolicy,
+  INSTAPAY_KEY,
+} from "@/lib/deposits-server";
 import { recordAudit } from "@/lib/audit";
 
 /**
@@ -15,8 +22,12 @@ import { recordAudit } from "@/lib/audit";
 export async function GET() {
   try {
     await requireAuth();
-    const [policy, instapay] = await Promise.all([getDepositPolicy(), getInstapayAddress()]);
-    return NextResponse.json({ ...policy, instapay });
+    const [policy, instapay, noShow] = await Promise.all([
+      getDepositPolicy(),
+      getInstapayAddress(),
+      getNoShowPolicy(),
+    ]);
+    return NextResponse.json({ ...policy, instapay, noShow });
   } catch {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -55,6 +66,28 @@ export async function PATCH(req: NextRequest) {
       }
     }
 
+    if (body.noShow) {
+      const allowed = body.noShow.allowed === undefined ? undefined : parseInt(String(body.noShow.allowed), 10);
+      if (allowed !== undefined && (!Number.isFinite(allowed) || allowed < 1 || allowed > 10)) {
+        return NextResponse.json({ error: "Allow between 1 and 10 missed appointments" }, { status: 400 });
+      }
+      const windowDays = body.noShow.windowDays === undefined ? undefined : parseInt(String(body.noShow.windowDays), 10);
+      if (windowDays !== undefined && (!Number.isFinite(windowDays) || windowDays < 7 || windowDays > 730)) {
+        return NextResponse.json({ error: "Look back between a week and two years" }, { status: 400 });
+      }
+
+      // Asking a customer for money needs somewhere to send it, same as above.
+      if (body.noShow.enabled === true && !(instapay ?? (await getInstapayAddress()))) {
+        return NextResponse.json({ error: "Add the InstaPay number the money should go to first" }, { status: 400 });
+      }
+
+      await saveNoShowPolicy({
+        ...(body.noShow.enabled === undefined ? {} : { enabled: Boolean(body.noShow.enabled) }),
+        ...(allowed === undefined ? {} : { allowed }),
+        ...(windowDays === undefined ? {} : { windowDays }),
+      });
+    }
+
     await saveDepositPolicy({
       ...(body.enabled === undefined ? {} : { enabled: Boolean(body.enabled) }),
       ...(threshold === undefined ? {} : { threshold }),
@@ -70,7 +103,11 @@ export async function PATCH(req: NextRequest) {
       });
     }
 
-    const [policy, address] = await Promise.all([getDepositPolicy(), getInstapayAddress()]);
+    const [policy, address, noShow] = await Promise.all([
+      getDepositPolicy(),
+      getInstapayAddress(),
+      getNoShowPolicy(),
+    ]);
     await recordAudit(authSession, {
       action: "UPDATE",
       entity: "SETTING",
@@ -80,7 +117,7 @@ export async function PATCH(req: NextRequest) {
         : "Deposits off",
     });
 
-    return NextResponse.json({ ...policy, instapay: address });
+    return NextResponse.json({ ...policy, instapay: address, noShow });
   } catch (err: unknown) {
     if (err instanceof Error && err.message.includes("Unauthorized")) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

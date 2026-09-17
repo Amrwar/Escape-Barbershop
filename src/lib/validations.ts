@@ -12,6 +12,8 @@ export const customerSchema = z.object({
   notes: z.string().max(500).optional().or(z.literal("")),
   /** "1991-09-16", or empty to forget it. Only the day and month are ever used. */
   birthday: z.string().max(10).optional().or(z.literal("")),
+  /** Wipe the slate: misses before now stop counting against them. */
+  forgiveNoShows: z.boolean().optional(),
 });
 
 export const serviceSchema = z.object({

@@ -1,5 +1,6 @@
 import { prisma } from "./prisma";
 import { DEFAULT_DEPOSIT_POLICY, holdLapsed, type DepositPolicy } from "./deposits";
+import { DEFAULT_NO_SHOW_POLICY, mustPayUpFront, type NoShowPolicy } from "./no-shows";
 
 /**
  * The database side of deposits: the shop's policy, where to send the money,
@@ -15,6 +16,61 @@ const KEYS = {
 
 /** Where the customer sends it. Without this, nothing can be asked for. */
 export const INSTAPAY_KEY = "deposit_instapay_address";
+
+const NO_SHOW_KEYS = {
+  enabled: "no_show_deposit_enabled",
+  allowed: "no_show_allowed",
+  windowDays: "no_show_window_days",
+} as const;
+
+export async function getNoShowPolicy(): Promise<NoShowPolicy> {
+  const rows = await prisma.setting.findMany({ where: { key: { in: Object.values(NO_SHOW_KEYS) } } }).catch(() => []);
+  const value = (key: string) => rows.find((r) => r.key === key)?.value;
+  const number = (key: string, fallback: number) => {
+    const parsed = parseInt(value(key) ?? "", 10);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+  };
+
+  return {
+    enabled: (value(NO_SHOW_KEYS.enabled) ?? "0") === "1",
+    allowed: number(NO_SHOW_KEYS.allowed, DEFAULT_NO_SHOW_POLICY.allowed),
+    windowDays: number(NO_SHOW_KEYS.windowDays, DEFAULT_NO_SHOW_POLICY.windowDays),
+  };
+}
+
+export async function saveNoShowPolicy(input: Partial<NoShowPolicy>): Promise<void> {
+  const entries = Object.entries(NO_SHOW_KEYS).filter(([field]) => input[field as keyof NoShowPolicy] !== undefined);
+  await prisma.$transaction(
+    entries.map(([field, key]) => {
+      const raw = input[field as keyof NoShowPolicy];
+      const value = typeof raw === "boolean" ? (raw ? "1" : "0") : String(raw ?? "");
+      return prisma.setting.upsert({ where: { key }, update: { value }, create: { key, value } });
+    })
+  );
+}
+
+/**
+ * Does this customer have to pay something up front because of misses?
+ *
+ * Only ever adds a deposit; it never refuses a booking. Somebody who has missed
+ * twice is still a customer the shop would like to see.
+ */
+export async function owesUpFront(customerId: string): Promise<boolean> {
+  const policy = await getNoShowPolicy();
+  if (!policy.enabled) return false;
+
+  const [customer, missed] = await Promise.all([
+    prisma.customer.findUnique({ where: { id: customerId }, select: { noShowsForgivenAt: true } }),
+    prisma.appointment.findMany({
+      where: { customerId, status: "NO_SHOW" },
+      select: { startAt: true },
+      orderBy: { startAt: "desc" },
+      take: 20,
+    }),
+  ]);
+
+  return mustPayUpFront(missed, customer?.noShowsForgivenAt ?? null, Date.now(), policy);
+}
 
 export async function getDepositPolicy(): Promise<DepositPolicy> {
   const rows = await prisma.setting.findMany({ where: { key: { in: Object.values(KEYS) } } }).catch((err) => {

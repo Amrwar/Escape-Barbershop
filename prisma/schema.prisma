@@ -486,6 +486,10 @@ model Customer {
   birthdayGreetedAt DateTime?
   /// When they were last told it had been a while, so it stays rare.
   rebookNudgedAt    DateTime?
+  /// When the shop last wiped their missed appointments. Anything before this
+  /// stops counting against them — a policy with no way back loses a good
+  /// customer over a bad week.
+  noShowsForgivenAt DateTime?
   pushDevices       PushSubscription[]
   reviews           Review[]
   rewards           LoyaltyRedemption[]

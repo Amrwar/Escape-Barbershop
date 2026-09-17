@@ -36,6 +36,7 @@ interface Customer {
   birthday: string | null;
   createdAt: string;
   visits: Visit[];
+  noShows?: { misses: number; askForDeposit: boolean; allowed: number };
 }
 
 
@@ -48,6 +49,8 @@ export default function CustomerDetailPage() {
   const [visitsPage, setVisitsPage] = useState(1);
   const [loyalty, setLoyalty] = useState<{ text: string | null; available: number } | null>(null);
   const [referral, setReferral] = useState<{ text: string | null; waiting: number } | null>(null);
+  const [forgiving, setForgiving] = useState(false);
+  const [forgiven, setForgiven] = useState(false);
   const [birthday, setBirthday] = useState("");
   const [savingBirthday, setSavingBirthday] = useState(false);
   const PAGE_SIZE = 15;
@@ -84,6 +87,20 @@ export default function CustomerDetailPage() {
       });
     } finally {
       setSavingBirthday(false);
+    }
+  };
+
+  const forgiveNoShows = async () => {
+    setForgiving(true);
+    try {
+      const res = await fetch(`/api/customers/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ forgiveNoShows: true }),
+      });
+      if (res.ok) setForgiven(true);
+    } finally {
+      setForgiving(false);
     }
   };
 
@@ -157,6 +174,21 @@ export default function CustomerDetailPage() {
         />
         <span className="text-xs text-gray-400">{t("birthdays.hint")}</span>
       </div>
+
+      {(customer.noShows?.misses ?? 0) > 0 && (
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700">
+          <span>
+            {forgiven
+              ? t("noShow.forgiven")
+              : t("noShow.missed").replace("{count}", String(customer.noShows?.misses ?? 0))}
+          </span>
+          {!forgiven && (
+            <button type="button" onClick={forgiveNoShows} disabled={forgiving} className="btn-secondary text-xs">
+              {t("noShow.forgive")}
+            </button>
+          )}
+        </div>
+      )}
 
       {referral?.text && (
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">

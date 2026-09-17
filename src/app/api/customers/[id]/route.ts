@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth, requireOwner } from "@/lib/auth";
 import { recordAudit } from "@/lib/audit";
 import { customerSchema } from "@/lib/validations";
+import { getNoShowPolicy } from "@/lib/deposits-server";
+import { standing } from "@/lib/no-shows";
 
 export async function GET(
   _req: NextRequest,
@@ -25,7 +27,22 @@ export async function GET(
     if (!customer) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
-    return NextResponse.json(customer);
+
+    // Misses that still count against them, on the shop's own rule.
+    const [policy, missed] = await Promise.all([
+      getNoShowPolicy(),
+      prisma.appointment.findMany({
+        where: { customerId: params.id, status: "NO_SHOW" },
+        select: { startAt: true },
+        orderBy: { startAt: "desc" },
+        take: 20,
+      }),
+    ]);
+
+    return NextResponse.json({
+      ...customer,
+      noShows: standing(missed, customer.noShowsForgivenAt, Date.now(), policy),
+    });
   } catch (err: unknown) {
     if (err instanceof Error && err.message.includes("Unauthorized")) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -54,6 +71,7 @@ export async function PATCH(
         ...(data.name !== undefined && { name: data.name }),
         ...(data.phone !== undefined && { phone: data.phone || null }),
         ...(data.notes !== undefined && { notes: data.notes || null }),
+        ...(data.forgiveNoShows === true && { noShowsForgivenAt: new Date() }),
         ...(data.birthday !== undefined && {
           // Midday, so no timezone can nudge it onto the day before.
           birthday: data.birthday ? new Date(`${data.birthday}T12:00:00Z`) : null,

@@ -6,6 +6,7 @@ import { GET as listDeposits } from "@/app/api/deposits/route";
 import { PATCH as handleDeposit } from "@/app/api/deposits/[id]/route";
 import { POST as bookAsCustomer } from "@/app/api/customer/appointments/route";
 import { POST as createVisit } from "@/app/api/visits/route";
+import { PATCH as editCustomer } from "@/app/api/customers/[id]/route";
 
 /**
  * Deposits on the expensive work.
@@ -318,6 +319,103 @@ describe("when the customer never comes", () => {
     await turnOn();
     const booking = await (await bookExpensive()).json();
     expect((await handleDeposit(jsonRequest("/x", { action: "forfeited" }, "PATCH"), { params: { id: booking.id } })).status).toBe(409);
+  });
+});
+
+describe("somebody who keeps not turning up", () => {
+  /** Two appointments they were marked down for and never came to. */
+  async function missed(count: number, daysAgo = 10) {
+    for (let i = 0; i < count; i++) {
+      const start = new Date(Date.now() - (daysAgo + i) * 86_400_000);
+      await testPrisma().appointment.create({
+        data: {
+          customerId: shop.customer.id,
+          barberId: shop.barbers.abdullah,
+          startAt: start,
+          endAt: new Date(start.getTime() + 1_800_000),
+          durationMinutes: 30,
+          totalPrice: 300,
+          status: "NO_SHOW",
+        },
+      });
+    }
+  }
+
+  /** Deposits on, with the no-show rule switched on beside them. */
+  const withNoShowRule = (patch: Record<string, unknown> = {}) =>
+    saveDepositSettings(
+      jsonRequest(
+        "/api/settings/deposits",
+        {
+          instapay: "01099998888",
+          noShow: { enabled: true, allowed: 2, windowDays: 90, ...patch },
+        },
+        "PATCH"
+      )
+    );
+
+  /** An ordinary haircut, far below any price threshold. */
+  const bookOrdinary = async () => {
+    session = customerSession(login.id, login.customerId);
+    const res = await bookAsCustomer(
+      jsonRequest("/api/customer/appointments", {
+        startAt: at(dayAhead(2), 14 * 60).toISOString(),
+        serviceIds: [shop.services.haircut],
+      })
+    );
+    session = staffSession(shop.owner.id);
+    return res;
+  };
+
+  it("asks a repeat no-show for a deposit, even on a cheap haircut", async () => {
+    await withNoShowRule();
+    await missed(2);
+
+    const body = await (await bookOrdinary()).json();
+    expect(body.deposit).toBeTruthy();
+    expect(body.deposit.amount).toBeGreaterThan(0);
+    // Held rather than confirmed, like any other booking waiting on money.
+    expect((await testPrisma().appointment.findFirstOrThrow({ where: { status: "PENDING" } })).depositStatus).toBe("EXPECTED");
+  });
+
+  it("asks nothing of somebody who has missed once", async () => {
+    await withNoShowRule();
+    await missed(1);
+    expect((await (await bookOrdinary()).json()).deposit).toBeUndefined();
+  });
+
+  it("never refuses the booking — they are still a customer", async () => {
+    await withNoShowRule();
+    await missed(5);
+    expect((await bookOrdinary()).status).toBe(201);
+  });
+
+  it("forgets misses that have aged out of the window", async () => {
+    await withNoShowRule({ windowDays: 30 });
+    await missed(2, 200);
+    expect((await (await bookOrdinary()).json()).deposit).toBeUndefined();
+  });
+
+  it("lets the shop wipe the slate from the customer's own page", async () => {
+    await withNoShowRule();
+    await missed(2);
+
+    await editCustomer(jsonRequest(`/api/customers/${shop.customer.id}`, { forgiveNoShows: true }, "PATCH"), {
+      params: { id: shop.customer.id },
+    });
+
+    expect((await (await bookOrdinary()).json()).deposit).toBeUndefined();
+  });
+
+  it("asks nothing at all while the rule is switched off", async () => {
+    await saveDepositSettings(jsonRequest("/x", { instapay: "01099998888" }, "PATCH"));
+    await missed(5);
+    expect((await (await bookOrdinary()).json()).deposit).toBeUndefined();
+  });
+
+  it("refuses a rule that would ask everybody, or nobody ever", async () => {
+    expect((await withNoShowRule({ allowed: 0 })).status).toBe(400);
+    expect((await withNoShowRule({ windowDays: 2 })).status).toBe(400);
   });
 });
 

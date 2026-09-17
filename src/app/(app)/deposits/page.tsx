@@ -46,6 +46,7 @@ export default function DepositsPage() {
     percent: number;
     holdHours: number;
     instapay: string | null;
+    noShow: { enabled: boolean; allowed: number; windowDays: number };
   } | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -269,6 +270,50 @@ export default function DepositsPage() {
               .replace("{example}", String(Math.round((policy.threshold * policy.percent) / 100)))
               .replace("{hours}", String(policy.holdHours))}
           </p>
+
+          <div className="border-t border-gray-200 pt-4">
+            <label className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                checked={policy.noShow?.enabled ?? false}
+                onChange={(e) =>
+                  setPolicy({ ...policy, noShow: { ...policy.noShow, enabled: e.target.checked } })
+                }
+              />
+              <span className="text-sm text-gray-700">{t("noShow.enabled")}</span>
+            </label>
+
+            <div className="mt-3 grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className="label">{t("noShow.allowed")}</label>
+                <input
+                  type="number"
+                  min="1"
+                  max="10"
+                  className="input"
+                  value={policy.noShow?.allowed ?? 2}
+                  onChange={(e) =>
+                    setPolicy({ ...policy, noShow: { ...policy.noShow, allowed: Number(e.target.value) } })
+                  }
+                />
+              </div>
+              <div>
+                <label className="label">{t("noShow.window")}</label>
+                <input
+                  type="number"
+                  min="7"
+                  max="730"
+                  className="input"
+                  value={policy.noShow?.windowDays ?? 90}
+                  onChange={(e) =>
+                    setPolicy({ ...policy, noShow: { ...policy.noShow, windowDays: Number(e.target.value) } })
+                  }
+                />
+              </div>
+            </div>
+
+            <p className="mt-2 text-xs text-gray-500">{t("noShow.hint")}</p>
+          </div>
 
           <button type="submit" disabled={saving} className="btn-primary">
             {saving ? t("action.saving") : t("action.save")}

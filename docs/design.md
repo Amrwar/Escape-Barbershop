@@ -497,6 +497,27 @@ Photos are squared and shrunk to 900 pixels on the phone before they are sent,
 because a camera produces four megabytes and this is being done standing in a
 shop on whatever signal there is.
 
+## After a no-show
+
+A missed appointment costs the shop a chair it could have sold, and the customer
+nothing at all. The answer here is deliberately mild, and it reuses what already
+exists rather than inventing a punishment.
+
+**Nobody is ever refused a booking.** Somebody who has missed twice recently is
+asked for a deposit first — the same deposit the expensive work asks for, sent
+the same way, explained the same way. One mechanism, one thing for a cashier to
+know.
+
+Two shapes of forgiveness are built in, because a policy with no way back
+eventually loses a good customer over a bad week:
+
+- a miss stops counting once it is outside the shop's window, on its own;
+- and the shop can wipe somebody's slate from their own page, at any time.
+
+Off until the owner turns it on, beside the deposit policy — and it cannot be
+turned on without an InstaPay address, because asking for money with nowhere to
+send it is worse than not asking.
+
 ## Sessions
 
 Shop devices sit on a counter, so a staff login ends after 2 hours, or 30 minutes idle.

@@ -10,7 +10,7 @@ import { MAX_UPCOMING_APPOINTMENTS, UPCOMING_STATUSES, customerAppointmentView }
 import { sendPushQuietly } from "@/lib/push";
 import { bookingConfirmedMessage } from "@/lib/reminders";
 import { depositFor, holdExpiry, needsDeposit, referenceFor } from "@/lib/deposits";
-import { getDepositPolicy, getInstapayAddress } from "@/lib/deposits-server";
+import { getDepositPolicy, getInstapayAddress, owesUpFront } from "@/lib/deposits-server";
 
 export async function GET(req: NextRequest) {
   try {
@@ -69,11 +69,14 @@ export async function POST(req: NextRequest) {
       throw new BookingError(`You already have ${MAX_UPCOMING_APPOINTMENTS} appointments booked`, 409);
     }
 
-    // Expensive work is held rather than given, until the deposit arrives —
-    // but only when the shop has somewhere for the money to go. A policy with
-    // no InstaPay address behind it would ask for a transfer into thin air.
+    // Two independent reasons to ask for money up front — expensive work, or a
+    // customer who keeps not turning up — and either can be on without the
+    // other. Both need somewhere to send it: a policy with no InstaPay address
+    // behind it would ask for a transfer into thin air.
     const policy = await getDepositPolicy();
-    const instapay = policy.enabled ? await getInstapayAddress() : null;
+    const missedTooOften = await owesUpFront(session.user.customerId);
+    const askingAtAll = policy.enabled || missedTooOften;
+    const instapay = askingAtAll ? await getInstapayAddress() : null;
 
     // Priced from the shop's own list rather than anything the client sent.
     const quoted = await prisma.service.findMany({
@@ -82,8 +85,16 @@ export async function POST(req: NextRequest) {
     });
     const quotedTotal = quoted.reduce((sum, s) => sum + s.defaultPrice, 0);
 
-    const wantsDeposit = Boolean(instapay) && needsDeposit(quotedTotal, policy);
-    const depositAmount = wantsDeposit ? depositFor(quotedTotal, policy) : 0;
+    // The same deposit either way, so there is one mechanism and one thing to
+    // explain to a customer.
+    const wantsDeposit = Boolean(instapay) && (needsDeposit(quotedTotal, policy) || missedTooOften);
+
+    const depositAmount = wantsDeposit
+      ? Math.max(
+          depositFor(quotedTotal, policy),
+          missedTooOften ? Math.max(1, Math.round((quotedTotal * policy.percent) / 100)) : 0
+        )
+      : 0;
 
     const created = await createAppointment({
       customerId: session.user.customerId,
