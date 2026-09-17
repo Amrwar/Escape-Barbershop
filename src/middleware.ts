@@ -59,5 +59,7 @@ export const config = {
     "/appointments/:path*",
     "/barber/:path*",
     "/queue/:path*",
+    "/deposits/:path*",
+    "/wall/:path*",
   ],
 };

@@ -83,6 +83,12 @@ apps and prepare the listings.
 - [x] The shop's till screens deliberately untouched — worked on for eight hours a day,
       and still white
 
+## Phase 8 — the room itself (in progress)
+
+- [x] The screen on the wall: the live queue, the wait, and today's offers
+- [ ] Barbers asking for their own time off, approved in a tap
+- [ ] A barber's own portfolio of work on their profile
+
 ## Phase 7 — the counter (done)
 
 - [x] Sell products on a visit: the money on the takings, the stock off the shelf

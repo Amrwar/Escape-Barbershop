@@ -442,6 +442,25 @@ account while the customer is on the phone. Giving it back and keeping it are
 the owner's, because both are decisions about somebody else's money. All three
 are written to the activity log.
 
+## The screen on the wall
+
+A television in the shop, at /wall, showing who is in the chair, who is waiting
+and how long, with the day's offers along the bottom. It does two jobs at once:
+it stops people asking "how long?", and it advertises to an audience that cannot
+leave.
+
+It is read from across a room by somebody who is bored, so the type is enormous,
+there is no navigation, and nothing scrolls — anything that does not fit is left
+off rather than hidden below a fold nobody can reach. It refreshes itself every
+twenty seconds and keeps the last good picture if the network drops, because a
+shop television is left on for ten hours and must never show an error page.
+
+It has its own endpoint rather than the staff queue, for one reason: the screen
+faces the room. It carries **first names only** — which is what a barber calls
+out anyway — and no surnames, no phone numbers, and nothing about money against
+a person. The device still has to be signed in, because the shop's own day is
+nobody else's business.
+
 ## Sessions
 
 Shop devices sit on a counter, so a staff login ends after 2 hours, or 30 minutes idle.
