@@ -14,6 +14,9 @@ export const customerAppointmentView = {
   totalPrice: true,
   notes: true,
   cancelledAt: true,
+  depositAmount: true,
+  depositStatus: true,
+  depositRef: true,
   barber: { select: { id: true, name: true, photo: true } },
   services: { select: { id: true, serviceId: true, serviceName: true, price: true, durationMinutes: true } },
 } satisfies Prisma.AppointmentSelect;

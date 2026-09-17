@@ -411,6 +411,37 @@ anything touches the list — another cancellation, the customer opening the app
 or the nightly run. The slot itself stays bookable by anyone throughout, so
 nothing is ever held hostage by a lapsed offer.
 
+## Deposits
+
+A missed Hydrofacial costs the chair for two hours and the shop recovers
+nothing. So for work over a price the shop sets, booking online asks for a
+deposit by InstaPay first — over the rails the shop already takes money on, so
+there is no gateway and no fee.
+
+The accounting is the whole point, and the easy thing to get wrong. **A deposit
+is not revenue when it arrives.** It is the shop holding somebody's money
+against a haircut that has not happened. It becomes revenue in exactly one of
+two ways:
+
+- the customer comes, and it pays part of the visit — the till asks only for the
+  balance, the visit total stays the full price, and the deposit goes back into
+  the InstaPay side of the payment, which is the account it actually landed in;
+- the customer never comes and the owner keeps it — income, but not a haircut,
+  so it is reported on its own line rather than mixed into the day's sales.
+
+Counting it on the day it arrived would double it the moment the visit was rung
+up, and would put one booking's money in two places. It does not.
+
+**Holding, not giving.** A booking waiting on a deposit is `PENDING` with a
+hold time: the chair is kept for the hours the shop allows and goes back to
+everybody else if the money never comes. Once it arrives the booking is
+confirmed and the hold is dropped.
+
+Confirming money arrived is the cashier's job — they are the one watching the
+account while the customer is on the phone. Giving it back and keeping it are
+the owner's, because both are decisions about somebody else's money. All three
+are written to the activity log.
+
 ## Sessions
 
 Shop devices sit on a counter, so a staff login ends after 2 hours, or 30 minutes idle.

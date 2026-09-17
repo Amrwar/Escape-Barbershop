@@ -4,6 +4,7 @@ import { Suspense, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useTranslation } from "@/lib/i18n";
 import { AppointmentCard, type CustomerAppointment } from "@/components/customer/AppointmentCard";
+import { DepositNotice } from "@/components/customer/DepositNotice";
 import { EmptyState, ScreenTitle, Skeleton } from "@/components/customer/kit";
 
 /** Everything the customer has booked: what is coming, and what has been. */
@@ -97,8 +98,11 @@ function AppointmentsInner() {
       ) : (
         <div className="space-y-2">
           {items.map((a, i) => (
+            <div key={a.id} className="space-y-2">
+              {a.depositStatus === "EXPECTED" && (a.depositAmount ?? 0) > 0 && (
+                <DepositNotice amount={a.depositAmount!} reference={a.depositRef ?? null} />
+              )}
             <AppointmentCard
-              key={a.id}
               appointment={a}
               highlight={tab === "upcoming" && i === 0}
               actions={
@@ -125,6 +129,7 @@ function AppointmentsInner() {
                 )
               }
             />
+            </div>
           ))}
         </div>
       )}

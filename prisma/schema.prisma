@@ -111,36 +111,51 @@ model BarberService {
 /// A booked (or walked-in) appointment. It holds the chair; the money side stays
 /// with Visit, which an appointment points at once it has been rung up.
 model Appointment {
-  id              String               @id @default(cuid())
-  customerId      String
+  id               String               @id @default(cuid())
+  customerId       String
   /// Null while the customer has not been given a barber yet ("any barber").
-  barberId        String?
-  startAt         DateTime
-  endAt           DateTime
-  status          AppointmentStatus    @default(CONFIRMED)
-  source          AppointmentSource    @default(ONLINE)
-  notes           String?
+  barberId         String?
+  startAt          DateTime
+  endAt            DateTime
+  status           AppointmentStatus    @default(CONFIRMED)
+  source           AppointmentSource    @default(ONLINE)
+  notes            String?
   /// Snapshot of what was quoted at booking time, so a later price change
   /// never rewrites an old appointment.
-  totalPrice      Float                @default(0)
-  durationMinutes Int
-  cancelledAt     DateTime?
-  cancelReason    String?
+  totalPrice       Float                @default(0)
+  durationMinutes  Int
+  cancelledAt      DateTime?
+  cancelReason     String?
   /// When the customer was reminded, so nobody is reminded twice.
-  reminderSentAt  DateTime?
+  reminderSentAt   DateTime?
   /// When we asked what they thought, so nobody is asked twice.
-  reviewAskedAt   DateTime?
+  reviewAskedAt    DateTime?
+  /// What was asked for up front on expensive work. Zero on ordinary bookings.
+  ///
+  /// A deposit is not revenue when it arrives — it is the shop holding somebody's
+  /// money against a haircut that has not happened. It becomes revenue either as
+  /// part of the visit, or, if they never come, as a deposit kept, which the
+  /// report shows on its own line rather than mixed into the takings.
+  depositAmount    Float                @default(0)
+  depositStatus    DepositStatus?
+  /// What the customer writes on the transfer, so the shop can match it.
+  depositRef       String?
+  depositPaidAt    DateTime?
+  /// Who at the shop confirmed the money arrived.
+  depositTakenById String?
+  /// While a deposit is expected, the chair is held only until this.
+  holdUntil        DateTime?
   /// Set when the appointment is rung up. One visit per appointment.
-  visitId         String?              @unique
-  createdByUserId String?
-  createdAt       DateTime             @default(now())
-  updatedAt       DateTime             @updatedAt
-  customer        Customer             @relation(fields: [customerId], references: [id])
-  barber          Barber?              @relation(fields: [barberId], references: [id])
-  createdBy       User?                @relation("BookedAppointments", fields: [createdByUserId], references: [id])
-  visit           Visit?               @relation(fields: [visitId], references: [id])
-  services        AppointmentService[]
-  review          Review?
+  visitId          String?              @unique
+  createdByUserId  String?
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  customer         Customer             @relation(fields: [customerId], references: [id])
+  barber           Barber?              @relation(fields: [barberId], references: [id])
+  createdBy        User?                @relation("BookedAppointments", fields: [createdByUserId], references: [id])
+  visit            Visit?               @relation(fields: [visitId], references: [id])
+  services         AppointmentService[]
+  review           Review?
 
   @@index([startAt])
   @@index([barberId, startAt])
@@ -740,6 +755,20 @@ enum AppointmentStatus {
   COMPLETED_UNPAID
   CANCELLED
   NO_SHOW
+}
+
+/// Where a deposit stands. It is money held until it is one of the last three.
+enum DepositStatus {
+  /// Asked for, not yet sent. A hope, not money.
+  EXPECTED
+  /// In the shop's account, against a booking that has not happened.
+  RECEIVED
+  /// It paid for the visit. Inside the takings now.
+  USED
+  /// Given back.
+  REFUNDED
+  /// They never came, and the shop kept it.
+  FORFEITED
 }
 
 enum AppointmentSource {

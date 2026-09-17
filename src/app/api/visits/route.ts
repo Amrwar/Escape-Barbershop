@@ -6,6 +6,7 @@ import { paymentMethodName, resolvePaymentAmounts, tipPaidInCash } from "@/lib/p
 import { recordAudit } from "@/lib/audit";
 import { getBalances } from "@/lib/stock";
 import { round2 } from "@/lib/finance";
+import { balanceAfterDeposit } from "@/lib/deposits";
 import { priceLines, problemsWith, productsTotal, type PricedLine } from "@/lib/retail";
 
 /** A refusal the cashier should read, rather than a bare "invalid data". */
@@ -94,11 +95,38 @@ export async function POST(req: NextRequest) {
 
     const tip = data.tip ?? 0;
 
+    // A deposit already sent by InstaPay pays for part of this visit, so the
+    // customer is only asked for the rest today. The visit total stays the full
+    // price — the deposit is not a discount, it is money that arrived early —
+    // and it is added back into the InstaPay side below, which is the account it
+    // actually landed in.
+    const heldDeposit = data.appointmentId
+      ? await prisma.appointment.findUnique({
+          where: { id: data.appointmentId },
+          select: { depositAmount: true, depositStatus: true },
+        })
+      : null;
+
+    const depositApplied =
+      heldDeposit?.depositStatus === "RECEIVED" ? Math.min(heldDeposit.depositAmount, total) : 0;
+    const dueToday = balanceAfterDeposit(total, depositApplied, heldDeposit?.depositStatus ?? null);
+
     // The tip is stored separately, never inside the payment amounts.
-    const amounts = resolvePaymentAmounts(data.paymentMethod, total, data);
-    if (!amounts) {
+    const paidToday = resolvePaymentAmounts(data.paymentMethod, dueToday, data);
+    if (!paidToday) {
       return NextResponse.json({ error: "The payment split must add up to the total" }, { status: 400 });
     }
+
+    const amounts = {
+      cashAmount: paidToday.cashAmount,
+      cardAmount: paidToday.cardAmount,
+      instapayAmount: round2(paidToday.instapayAmount + depositApplied),
+    };
+
+    // With a deposit in it, the visit was genuinely paid two ways unless the
+    // rest came by InstaPay as well.
+    const paymentMethod =
+      depositApplied > 0 && (amounts.cashAmount > 0 || amounts.cardAmount > 0) ? "MIXED" : data.paymentMethod;
 
     // Link to open cash drawer session and assign sequential receipt number
     const visit = await prisma.$transaction(async (tx) => {
@@ -137,7 +165,7 @@ export async function POST(req: NextRequest) {
           customerId: data.customerId,
           barberId: data.barberId,
           visitAt: data.visitAt ? new Date(data.visitAt) : new Date(),
-          paymentMethod: data.paymentMethod,
+          paymentMethod,
           discount: data.discount ?? 0,
           total,
           ...amounts,
@@ -189,13 +217,13 @@ export async function POST(req: NextRequest) {
       }
 
       // A tip paid by card or InstaPay: the barber is paid it in cash from the drawer
-      if (!tipPaidInCash({ paymentMethod: data.paymentMethod, cashAmount: amounts.cashAmount }) && tip > 0 && sessionId) {
+      if (!tipPaidInCash({ paymentMethod, cashAmount: amounts.cashAmount }) && tip > 0 && sessionId) {
         await tx.cashMovement.create({
           data: {
             sessionId,
             type: "OUT",
             amount: tip,
-            reason: `${paymentMethodName(data.paymentMethod)} tip — ${newVisit.barber?.name ?? ""}`,
+            reason: `${paymentMethodName(paymentMethod)} tip — ${newVisit.barber?.name ?? ""}`,
             createdByUserId: authSession.user.id,
             visitId: newVisit.id,
           },
@@ -207,7 +235,12 @@ export async function POST(req: NextRequest) {
       if (data.appointmentId) {
         await tx.appointment.update({
           where: { id: data.appointmentId },
-          data: { status: "COMPLETED", visitId: newVisit.id },
+          data: {
+            status: "COMPLETED",
+            visitId: newVisit.id,
+            // The deposit has done its job: it is inside the takings now.
+            ...(depositApplied > 0 ? { depositStatus: "USED" as const } : {}),
+          },
         });
       }
 

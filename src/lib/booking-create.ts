@@ -29,6 +29,12 @@ export interface CreateAppointmentInput {
   requireBarber?: boolean;
   /** A walk-in is already in the shop, so the working-hours check does not apply. */
   skipHoursCheck?: boolean;
+  /**
+   * Ask for a deposit before the chair is really theirs. Set by the customer
+   * app when the work is expensive enough; the shop booking by phone never
+   * does, because the customer is on the line and can be asked directly.
+   */
+  deposit?: { amount: number; holdUntil: Date } | null;
 }
 
 export async function createAppointment(input: CreateAppointmentInput) {
@@ -132,7 +138,16 @@ export async function createAppointment(input: CreateAppointmentInput) {
           totalPrice,
           notes: input.notes || null,
           source: input.source,
-          status: "CONFIRMED",
+          // A booking waiting on a deposit is pending, not confirmed: the chair
+          // is held, not given.
+          status: input.deposit ? "PENDING" : "CONFIRMED",
+          ...(input.deposit
+            ? {
+                depositAmount: input.deposit.amount,
+                depositStatus: "EXPECTED" as const,
+                holdUntil: input.deposit.holdUntil,
+              }
+            : {}),
           createdByUserId: input.createdByUserId ?? null,
           services: {
             create: services.map((s) => ({

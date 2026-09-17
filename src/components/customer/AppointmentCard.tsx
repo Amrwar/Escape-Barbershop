@@ -12,6 +12,9 @@ export interface CustomerAppointment {
   durationMinutes: number;
   totalPrice: number;
   barber: { id: string; name: string; photo: string | null } | null;
+  depositAmount?: number;
+  depositStatus?: string | null;
+  depositRef?: string | null;
   services: { id: string; serviceId: string; serviceName: string; price: number; durationMinutes: number }[];
 }
 
