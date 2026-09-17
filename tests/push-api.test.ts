@@ -277,6 +277,99 @@ describe("the reminder run", () => {
     expect(sent).toHaveLength(0);
   });
 
+  it("tells a regular who is late by their own rhythm, once", async () => {
+    await subscribeDevice("https://push.example/phone");
+    await testPrisma().setting.upsert({
+      where: { key: "booking_rebooking_enabled" },
+      update: { value: "1" },
+      create: { key: "booking_rebooking_enabled", value: "1" },
+    });
+
+    // Every 28 days, and now 40 days out.
+    for (const daysAgo of [96, 68, 40]) {
+      await testPrisma().visit.create({
+        data: {
+          customerId: shop.customer.id,
+          barberId: shop.barbers.abdullah,
+          total: 150,
+          paymentMethod: "CASH",
+          cashAmount: 150,
+          visitAt: new Date(Date.now() - daysAgo * 86_400_000),
+        },
+      });
+    }
+    sent.length = 0;
+
+    const first = await (await runReminders(getRequest("/api/cron/reminders"))).json();
+    expect(first.nudged).toBe(1);
+    const message = JSON.parse(sent[0].payload);
+    expect(message.title).toBe("It has been a while");
+    expect(message.body).toContain("Abdullah");
+
+    // Stamped, so tomorrow night says nothing.
+    sent.length = 0;
+    expect((await (await runReminders(getRequest("/api/cron/reminders"))).json()).nudged).toBe(0);
+    expect(sent).toHaveLength(0);
+  });
+
+  it("says nothing to a regular who already has an appointment booked", async () => {
+    await subscribeDevice("https://push.example/phone");
+    await testPrisma().setting.upsert({
+      where: { key: "booking_rebooking_enabled" },
+      update: { value: "1" },
+      create: { key: "booking_rebooking_enabled", value: "1" },
+    });
+
+    for (const daysAgo of [96, 68, 40]) {
+      await testPrisma().visit.create({
+        data: {
+          customerId: shop.customer.id,
+          barberId: shop.barbers.abdullah,
+          total: 150,
+          paymentMethod: "CASH",
+          cashAmount: 150,
+          visitAt: new Date(Date.now() - daysAgo * 86_400_000),
+        },
+      });
+    }
+    await testPrisma().appointment.create({
+      data: {
+        customerId: shop.customer.id,
+        barberId: shop.barbers.abdullah,
+        startAt: new Date(Date.now() + 3 * 86_400_000),
+        endAt: new Date(Date.now() + 3 * 86_400_000 + 1_800_000),
+        durationMinutes: 30,
+        totalPrice: 150,
+        status: "CONFIRMED",
+        reminderSentAt: new Date(),
+      },
+    });
+    sent.length = 0;
+
+    expect((await (await runReminders(getRequest("/api/cron/reminders"))).json()).nudged).toBe(0);
+    expect(sent).toHaveLength(0);
+  });
+
+  it("nudges nobody while the shop has not asked for it", async () => {
+    await subscribeDevice("https://push.example/phone");
+    for (const daysAgo of [96, 68, 40]) {
+      await testPrisma().visit.create({
+        data: {
+          customerId: shop.customer.id,
+          barberId: shop.barbers.abdullah,
+          total: 150,
+          paymentMethod: "CASH",
+          cashAmount: 150,
+          visitAt: new Date(Date.now() - daysAgo * 86_400_000),
+        },
+      });
+    }
+    sent.length = 0;
+
+    expect((await (await runReminders(getRequest("/api/cron/reminders"))).json()).nudged).toBe(0);
+    expect(sent).toHaveLength(0);
+  });
+
   it("is closed to anyone without the scheduler's secret", async () => {
     process.env.CRON_SECRET = "let-me-in";
     try {

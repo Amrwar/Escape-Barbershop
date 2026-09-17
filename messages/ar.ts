@@ -565,6 +565,8 @@ const ar: Record<TranslationKey, string> = {
   "booking.maxDaysAheadHint": "بالأيام",
   "booking.buffer": "فاصل بين المواعيد",
   "booking.bufferHint": "بالدقائق، للتنظيف والتأخير",
+  "booking.rebookingEnabled": "تذكير الزبائن المنتظمين عند تأخرهم",
+  "booking.rebookingHint": "إشعار واحد للزبون المنتظم بعد أسبوع من موعده المعتاد، ولا شيء بعده لثلاثة أشهر. لا يُرسل لمن لديه حجز، ولا لمن انقطع تماماً.",
   "booking.onlineEnabled": "السماح للعملاء بالحجز إلكترونياً",
   "booking.cancelWindow": "يمكن للعميل الإلغاء حتى",
   "booking.cancelWindowHint": "بالدقائق قبل الموعد",

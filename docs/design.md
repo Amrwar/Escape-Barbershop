@@ -324,6 +324,30 @@ them on: subscribing is the opt-in, so there is no setting to forget to switch
 on. A day with no visits, no no-shows and nothing booked for tomorrow sends
 nothing at all, because a closed day is not news.
 
+## "It has been a while"
+
+Every regular has a rhythm — three weeks, five weeks — and the insight screens
+already work it out. This uses each customer's own rhythm to notice when they
+are late, and says so once, with their barber's name and their own number of
+weeks. The tap lands on the home screen, where **the usual** is waiting with
+times, so a nudge turns into a booking in two taps.
+
+The whole design problem is restraint. A shop that writes to people who did not
+ask loses them, and loses their notifications with them, so the rule refuses far
+more often than it sends:
+
+- three visits before the shop presumes to know anyone's rhythm;
+- a week of grace past their own gap before they count as late;
+- never while they already have an appointment booked;
+- never twice within three months;
+- and nothing at all once they are two months beyond due — somebody that far
+  gone has left rather than forgotten, which is a different conversation and
+  belongs to the customer groups screen.
+
+Twenty-five a night at most, longest overdue first, so a shop turning it on for
+the first time does not message three hundred people at once. Off until the
+owner asks for it, on the booking settings screen.
+
 ## Sessions
 
 Shop devices sit on a counter, so a staff login ends after 2 hours, or 30 minutes idle.

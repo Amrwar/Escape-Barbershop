@@ -83,7 +83,7 @@ apps and prepare the listings.
 - [x] The shop's till screens deliberately untouched — worked on for eight hours a day,
       and still white
 
-## Phase 6 — the chair, filled (in progress)
+## Phase 6 — the chair, filled (done)
 
 Three things aimed at the customers the shop already has, rather than at finding
 new ones.
@@ -91,7 +91,7 @@ new ones.
 - [x] **The usual** — their barber, their cut and the times nearest their hour,
       booked in one tap from the home screen
 - [x] The owner's nightly digest on the phone: takings, no-shows, tomorrow
-- [ ] "It's been a while" — a nudge when a regular is past their own rhythm
+- [x] "It's been a while" — a nudge when a regular is past their own rhythm
 
 ## Phase 5 — loyalty and depth (done)
 

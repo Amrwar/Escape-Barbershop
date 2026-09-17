@@ -30,9 +30,12 @@ export interface BookingSettings {
   cancelWindowMinutes: number;
   timezone: string;
   onlineBookingEnabled: boolean;
+  /** Tell a regular when they are past their own rhythm. Off until asked for. */
+  rebookingRemindersEnabled: boolean;
 }
 
 export const DEFAULT_BOOKING_SETTINGS: BookingSettings = {
+  rebookingRemindersEnabled: false,
   slotMinutes: DEFAULT_SLOT_MINUTES,
   minNoticeMinutes: DEFAULT_MIN_NOTICE_MINUTES,
   maxDaysAhead: DEFAULT_MAX_DAYS_AHEAD,

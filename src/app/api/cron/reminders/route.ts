@@ -4,14 +4,16 @@ import { getBookingSettings } from "@/lib/booking-server";
 import { DEFAULT_REMIND_HOURS_AHEAD, dueForReminder, reminderMessage, reviewRequestMessage } from "@/lib/reminders";
 import { ASK_WITHIN_HOURS, shouldAskForReview } from "@/lib/reviews";
 import { birthdayMessage, shouldGreet } from "@/lib/birthdays";
+import { dueTonight, nudgeMessage } from "@/lib/rebooking";
 import { getBirthdaySettings } from "@/lib/loyalty-server";
 import { sendPush } from "@/lib/push";
 
 /**
- * The evening run. Vercel calls this once a day, and it does three things: it
+ * The evening run. Vercel calls this once a day, and it does four things: it
  * reminds everyone with a booking in the next twenty hours, asks anyone who was
- * in the chair yesterday what they thought, and wishes a happy birthday to
- * anyone whose day it is.
+ * in the chair yesterday what they thought, wishes a happy birthday to anyone
+ * whose day it is, and — when the shop has asked for it — tells a regular who is
+ * past their own rhythm that it has been a while.
  *
  * Each appointment is stamped as it goes out, so a second run — a retry, a
  * manual trigger, a cron that fires twice — cannot remind the same person
@@ -129,7 +131,55 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    return NextResponse.json({ considered: appointments.length, reminded, asked, greeted, notificationsSent: sent });
+    // And the regulars who are late by their own standard, if the shop wants it.
+    let nudged = 0;
+    if (settings.rebookingRemindersEnabled) {
+      // Only customers with a login can be written to at all, so only they are
+      // considered — and only their paid visits count as a rhythm.
+      const customers = await prisma.customer.findMany({
+        where: { user: { isNot: null }, visits: { some: {} } },
+        select: {
+          id: true,
+          rebookNudgedAt: true,
+          visits: { select: { visitAt: true, barberId: true }, orderBy: { visitAt: "desc" }, take: 12 },
+          appointments: {
+            where: { startAt: { gte: new Date() }, status: { in: ["PENDING", "CONFIRMED", "CHECKED_IN", "IN_PROGRESS"] } },
+            select: { id: true },
+            take: 1,
+          },
+        },
+      });
+
+      const due = dueTonight(
+        customers.map((customer) => ({
+          customerId: customer.id,
+          visits: customer.visits.map((v) => v.visitAt),
+          hasUpcoming: customer.appointments.length > 0,
+          nudgedAt: customer.rebookNudgedAt,
+        }))
+      );
+
+      const barberNames = new Map(
+        (await prisma.barber.findMany({ select: { id: true, name: true } })).map((b) => [b.id, b.name])
+      );
+
+      for (const row of due) {
+        const customer = customers.find((c) => c.id === row.customerId);
+        const lastBarberId = customer?.visits.find((v) => v.barberId)?.barberId ?? null;
+
+        sent += await sendPush(
+          { customerId: row.customerId },
+          nudgeMessage(row, lastBarberId ? (barberNames.get(lastBarberId) ?? null) : null)
+        );
+
+        // Stamped whether or not a phone was listening, so the quiet period is
+        // about the person and not about their device.
+        await prisma.customer.update({ where: { id: row.customerId }, data: { rebookNudgedAt: new Date() } });
+        nudged += 1;
+      }
+    }
+
+    return NextResponse.json({ considered: appointments.length, reminded, asked, greeted, nudged, notificationsSent: sent });
   } catch (err) {
     console.error("[cron/reminders]", err);
     return NextResponse.json({ error: "Reminder run failed" }, { status: 500 });

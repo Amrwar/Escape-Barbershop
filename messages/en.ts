@@ -563,6 +563,8 @@ const en = {
   "booking.maxDaysAheadHint": "In days",
   "booking.buffer": "Gap kept around each appointment",
   "booking.bufferHint": "In minutes, for cleaning up and overrunning",
+  "booking.rebookingEnabled": "Remind regulars when they are due",
+  "booking.rebookingHint": "One notification to a regular who is a week past their own usual gap, and nothing for three months after. Never to somebody with an appointment booked, and never to somebody who has clearly stopped coming.",
   "booking.onlineEnabled": "Customers may book online",
   "booking.cancelWindow": "Customers may cancel until",
   "booking.cancelWindowHint": "In minutes before the appointment",

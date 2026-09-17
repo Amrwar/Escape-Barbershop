@@ -26,6 +26,7 @@ const SETTING_KEYS = {
   cancelWindowMinutes: "booking_cancel_window_minutes",
   timezone: "shop_timezone",
   onlineBookingEnabled: "booking_online_enabled",
+  rebookingRemindersEnabled: "booking_rebooking_enabled",
 } as const;
 
 /** Escape's normal week: open every day, 11:00 to 23:00. */
@@ -56,6 +57,9 @@ export async function getBookingSettings(): Promise<BookingSettings> {
     cancelWindowMinutes: number(SETTING_KEYS.cancelWindowMinutes, DEFAULT_BOOKING_SETTINGS.cancelWindowMinutes),
     timezone: value(SETTING_KEYS.timezone) || DEFAULT_BOOKING_SETTINGS.timezone,
     onlineBookingEnabled: (value(SETTING_KEYS.onlineBookingEnabled) ?? "1") !== "0",
+    // Off until the shop asks for it: writing to people who did not ask is how
+    // a shop loses their notifications for good.
+    rebookingRemindersEnabled: (value(SETTING_KEYS.rebookingRemindersEnabled) ?? "0") === "1",
   };
 }
 

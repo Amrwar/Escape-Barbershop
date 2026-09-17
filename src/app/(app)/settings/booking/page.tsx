@@ -24,6 +24,7 @@ interface Settings {
   bufferMinutes: number;
   cancelWindowMinutes: number;
   onlineBookingEnabled: boolean;
+  rebookingRemindersEnabled: boolean;
   timezone: string;
 }
 
@@ -210,6 +211,19 @@ export default function BookingSettingsPage() {
             className="w-4 h-4"
           />
           <span className="text-sm text-gray-700">{t("booking.onlineEnabled")}</span>
+        </label>
+
+        <label className="flex items-start gap-2 mt-3">
+          <input
+            type="checkbox"
+            checked={settings.rebookingRemindersEnabled}
+            onChange={(e) => setSettings({ ...settings, rebookingRemindersEnabled: e.target.checked })}
+            className="mt-0.5 w-4 h-4"
+          />
+          <span className="text-sm text-gray-700">
+            {t("booking.rebookingEnabled")}
+            <span className="block text-xs text-gray-500">{t("booking.rebookingHint")}</span>
+          </span>
         </label>
       </div>
 

@@ -372,6 +372,8 @@ model Customer {
   birthday          DateTime?
   /// Stops a birthday greeting going twice in the same year.
   birthdayGreetedAt DateTime?
+  /// When they were last told it had been a while, so it stays rare.
+  rebookNudgedAt    DateTime?
   pushDevices       PushSubscription[]
   reviews           Review[]
   rewards           LoyaltyRedemption[]
