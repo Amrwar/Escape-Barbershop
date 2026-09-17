@@ -58,6 +58,7 @@ model Barber {
   timeOff        BarberTimeOff[]
   services       BarberService[]
   reviews        Review[]
+  waitlist       WaitlistEntry[]
 }
 
 /// The shop's normal opening hours, one row per weekday (0 = Sunday). A missing
@@ -221,6 +222,7 @@ model Service {
   visitItems            VisitItem[]
   barbers               BarberService[]
   appointmentServices   AppointmentService[]
+  waitlistLines         WaitlistService[]
 }
 
 /// A phone that has agreed to be notified. One row per browser or app install,
@@ -242,6 +244,61 @@ model PushSubscription {
 
   @@index([customerId])
   @@index([userId])
+}
+
+/// Somebody who wants a day that is already full.
+///
+/// A cancellation is the shop's most wasteful event: a chair that was spoken for
+/// goes empty, and the person who wanted it never hears. An entry here says
+/// "this customer wants this day, with these services" — and when a slot frees,
+/// the longest-waiting one it suits is offered it.
+///
+/// The offer is theirs alone for a short while, because two people racing for
+/// one chair is worse than waiting twenty minutes. If they let it lapse, the
+/// next in line is offered the same slot.
+model WaitlistEntry {
+  id             String            @id @default(cuid())
+  customerId     String
+  /// The shop's own date, as the customer picked it: "2026-09-19".
+  dateISO        String
+  /// Null when any barber will do.
+  barberId       String?
+  status         WaitlistStatus    @default(WAITING)
+  /// The slot they have been offered, while an offer stands.
+  offeredStartAt DateTime?
+  offeredAt      DateTime?
+  offerExpiresAt DateTime?
+  /// Set when they take it, so the entry closes with the booking it became.
+  appointmentId  String?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  customer       Customer          @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  barber         Barber?           @relation(fields: [barberId], references: [id])
+  services       WaitlistService[]
+
+  @@index([dateISO, status])
+  @@index([customerId])
+}
+
+/// What they want done, copied in the way an appointment copies its lines.
+model WaitlistService {
+  id        String        @id @default(cuid())
+  entryId   String
+  serviceId String
+  entry     WaitlistEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  service   Service       @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@unique([entryId, serviceId])
+}
+
+enum WaitlistStatus {
+  WAITING
+  /// A slot has been offered, and is theirs for the moment.
+  OFFERED
+  /// They took it, and it became a booking.
+  TAKEN
+  /// They came off the list, or the day went by.
+  CLOSED
 }
 
 /// Somebody brought somebody in.
@@ -379,6 +436,7 @@ model Customer {
   rewards           LoyaltyRedemption[]
   referralsMade     Referral[]          @relation("ReferralsMade")
   referredBy        Referral?           @relation("ReferredBy")
+  waitlist          WaitlistEntry[]
 }
 
 model Visit {

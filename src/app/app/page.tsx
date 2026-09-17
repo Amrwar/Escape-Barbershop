@@ -11,6 +11,7 @@ import { ReviewPrompt, type Reviewable } from "@/components/customer/ReviewPromp
 import { RatingLine } from "@/components/customer/Stars";
 import { LoyaltyCard, type Loyalty } from "@/components/customer/LoyaltyCard";
 import { UsualCard, type Usual } from "@/components/customer/UsualCard";
+import { WaitlistOffer, type WaitlistEntry } from "@/components/customer/WaitlistCard";
 
 /**
  * Home answers one question — "when is my next haircut?" — and offers one
@@ -59,6 +60,7 @@ export default function CustomerHomePage() {
   const [toRate, setToRate] = useState<Reviewable | null>(null);
   const [loyalty, setLoyalty] = useState<Loyalty | null>(null);
   const [usual, setUsual] = useState<Usual | null>(null);
+  const [waiting, setWaiting] = useState<WaitlistEntry[]>([]);
 
   useEffect(() => {
     fetch("/api/customer/appointments?scope=upcoming")
@@ -77,6 +79,11 @@ export default function CustomerHomePage() {
       .then((r) => r.json())
       .then((d) => setLoyalty(d?.loyalty ?? null))
       .catch(() => setLoyalty(null));
+    // A chair that has opened for them, if one has.
+    fetch("/api/customer/waitlist")
+      .then((r) => r.json())
+      .then((d) => setWaiting(Array.isArray(d) ? d : []))
+      .catch(() => setWaiting([]));
     // What they always have, if the shop knows them well enough to say.
     fetch("/api/customer/usual")
       .then((r) => r.json())
@@ -142,6 +149,14 @@ export default function CustomerHomePage() {
           />
         )}
       </section>
+
+      {waiting
+        .filter((entry) => entry.offer)
+        .map((entry) => (
+          <section key={entry.id}>
+            <WaitlistOffer entry={entry} onTaken={() => setWaiting((prev) => prev.filter((e) => e.id !== entry.id))} />
+          </section>
+        ))}
 
       {usual && (
         <section>

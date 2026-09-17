@@ -381,6 +381,36 @@ The period report breaks the counter out of the takings: what products brought
 in, what that stock cost, and how many left the shelf. A bottle and a haircut
 are two different businesses with two different margins.
 
+## The waiting list
+
+A cancellation is the most wasteful thing that happens in a barbershop: a chair
+that was spoken for goes empty, and the person who wanted that day never hears.
+So a customer who finds a day full is offered the list instead of a dead end.
+
+When a booking is cancelled — from the diary or from the customer's own phone —
+the freed chair is offered to the longest-waiting customer it actually suits:
+
+- the day has to match, and the work has to fit in the gap;
+- somebody who asked for Abdullah is never offered Khaled's chair, because they
+  asked for a person rather than a time; somebody who asked for anybody takes
+  whatever frees;
+- the offer is theirs alone for twenty minutes. Two people racing for one chair
+  is worse than one person waiting twenty minutes.
+
+The offer is written down before the notification goes out, so a slow push can
+never hand the same slot to two people, and it is checked again when they tap —
+a lapsed offer belongs to whoever is next, and the booking itself goes through
+the ordinary path, so every rule about clashes and opening hours still holds.
+
+Three days at a time per customer: enough to be useful, few enough that the list
+stays a list rather than a wish.
+
+**One honest limitation.** There is no minute-by-minute sweep, because the host
+runs scheduled work once a day; an offer that lapses is passed on the next time
+anything touches the list — another cancellation, the customer opening the app,
+or the nightly run. The slot itself stays bookable by anyone throughout, so
+nothing is ever held hostage by a lapsed offer.
+
 ## Sessions
 
 Shop devices sit on a counter, so a staff login ends after 2 hours, or 30 minutes idle.

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth, requireOwnerOrCashier } from "@/lib/auth";
 import { appointmentUpdateSchema } from "@/lib/validations";
 import { recordAudit } from "@/lib/audit";
+import { offerFreedSlot } from "@/lib/waitlist-server";
 import { getBookingSettings, getShopHours } from "@/lib/booking-server";
 import { MINUTE, shopDateISO, workingWindow } from "@/lib/booking";
 import { BookingError, appointmentInclude, bookingErrorResponse } from "@/lib/appointment-api";
@@ -152,6 +153,12 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       details: { before: describeAppointment(before) },
     });
 
+    // The diary can cancel by changing the status as well as through the cancel
+    // button, and either way the chair is free: tell whoever has waited longest.
+    if (updated.status === "CANCELLED" && before.status !== "CANCELLED") {
+      await offerFreedSlot(updated.id);
+    }
+
     return NextResponse.json(updated);
   } catch (err: unknown) {
     return bookingErrorResponse(err);
@@ -175,6 +182,9 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
       data: { status: "CANCELLED", cancelledAt: new Date(), cancelReason: reason || null },
       include: appointmentInclude,
     });
+
+    // The chair is free again: tell whoever has waited longest for it.
+    await offerFreedSlot(params.id);
 
     await recordAudit(authSession, {
       action: "UPDATE",

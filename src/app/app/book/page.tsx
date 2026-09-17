@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslation } from "@/lib/i18n";
 import { Icon } from "@/components/ui/Icon";
 import { ActionBar, Avatar, EmptyState, Pill, ScreenTitle, Skeleton } from "@/components/customer/kit";
+import { JoinWaitlist } from "@/components/customer/WaitlistCard";
 
 /**
  * Booking, in the order a customer thinks: what am I having, with whom, when.
@@ -282,7 +283,10 @@ export default function BookPage() {
               ))}
             </div>
           ) : slots.length === 0 ? (
-            <EmptyState icon="calendar" title={t("app.noTimesThatDay")} hint={t("app.noTimesThatDayHint")} />
+            <div className="space-y-4">
+              <EmptyState icon="calendar" title={t("app.noTimesThatDay")} hint={t("app.noTimesThatDayHint")} />
+              <JoinWaitlist dateISO={day} serviceIds={serviceIds} barberId={barberId} />
+            </div>
           ) : (
             <div className="space-y-5">
               {groupByPartOfDay(slots).map((group) => (

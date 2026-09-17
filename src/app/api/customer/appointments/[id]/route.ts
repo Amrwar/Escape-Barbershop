@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { requireCustomer } from "@/lib/auth";
 import { customerRescheduleSchema } from "@/lib/validations";
 import { BookingError, bookingErrorResponse } from "@/lib/appointment-api";
+import { offerFreedSlot } from "@/lib/waitlist-server";
 import { getBookingSettings, getShopHours } from "@/lib/booking-server";
 import { MINUTE, shopDateISO, workingWindow } from "@/lib/booking";
 import { UPCOMING_STATUSES, customerAppointmentView } from "@/lib/customer-api";
@@ -144,6 +145,10 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
       data: { status: "CANCELLED", cancelledAt: new Date(), cancelReason: "Cancelled by the customer" },
       select: customerAppointmentView,
     });
+
+    // The chair is free again: tell whoever has waited longest for it.
+    await offerFreedSlot(before.id);
+
     return NextResponse.json(cancelled);
   } catch (err) {
     return bookingErrorResponse(err);

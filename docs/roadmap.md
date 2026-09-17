@@ -86,7 +86,7 @@ apps and prepare the listings.
 ## Phase 7 — the counter (in progress)
 
 - [x] Sell products on a visit: the money on the takings, the stock off the shelf
-- [ ] A waiting list when the day is full, offered to the first in line when
+- [x] A waiting list when the day is full, offered to the first in line when
       somebody cancels
 - [ ] Deposits by InstaPay for the long, expensive services
 
