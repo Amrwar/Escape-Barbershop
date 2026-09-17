@@ -69,7 +69,10 @@ export async function PATCH(req: NextRequest) {
     if (data.phone !== undefined) {
       const normalised = normalizePhone(data.phone);
       if (!normalised) {
-        return NextResponse.json({ error: "Please enter a valid Egyptian mobile number" }, { status: 400 });
+        return NextResponse.json(
+          { error: "That number does not look right — it should be 11 digits, like 010 1234 5678" },
+          { status: 400 }
+        );
       }
       const taken = await prisma.user.findFirst({
         where: { phone: normalised, NOT: { id: session.user.id } },

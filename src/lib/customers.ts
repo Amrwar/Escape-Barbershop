@@ -6,9 +6,22 @@
  * same eleven digits before it is stored or looked up.
  */
 
+/**
+ * Arabic-Indic and Persian digits, as they come off an Arabic keyboard. Half of
+ * this shop's app is in Arabic, so ٠١٠ is a number somebody will type — and
+ * being told it is not a valid number is no way to be welcomed.
+ */
+function toLatinDigits(input: string): string {
+  return input.replace(/[٠-٩۰-۹]/g, (digit) => {
+    const code = digit.charCodeAt(0);
+    const zero = code >= 0x06f0 ? 0x06f0 : 0x0660;
+    return String(code - zero);
+  });
+}
+
 export function normalizePhone(input: string | null | undefined): string | null {
   if (!input) return null;
-  let digits = input.replace(/[^\d+]/g, "");
+  let digits = toLatinDigits(input).replace(/[^\d+]/g, "");
   if (digits.startsWith("+")) digits = digits.slice(1);
   if (digits.startsWith("0020")) digits = digits.slice(4);
   // "20" then either the local number with its 0 (+20 01…) or without (+20 1…).

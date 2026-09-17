@@ -295,6 +295,26 @@ describe("the profile", () => {
     expect((await testPrisma().customer.findUniqueOrThrow({ where: { id: login.customerId } })).phone).toBe("01277776666");
   });
 
+  it("saves a name on its own, without the number being re-examined", async () => {
+    // The screen sends only what changed; this proves the server is happy with
+    // that, which is what stopped a plain rename going through.
+    const res = await updateProfile(jsonRequest("/api/customer/me", { name: "Ahmed Samir" }, "PATCH"));
+    expect(res.status).toBe(200);
+    expect((await (await getProfile()).json()).name).toBe("Ahmed Samir");
+  });
+
+  it("takes a number typed on an Arabic keyboard", async () => {
+    const res = await updateProfile(jsonRequest("/api/customer/me", { phone: "٠١٢٧٧٧٧٦٦٦٦" }, "PATCH"));
+    expect(res.status).toBe(200);
+    expect((await testPrisma().user.findUniqueOrThrow({ where: { id: login.id } })).phone).toBe("01277776666");
+  });
+
+  it("says what a good number looks like when it refuses one", async () => {
+    const res = await updateProfile(jsonRequest("/api/customer/me", { phone: "12345" }, "PATCH"));
+    expect(res.status).toBe(400);
+    expect((await res.json()).error).toContain("010 1234 5678");
+  });
+
   it("refuses a number that is not a mobile", async () => {
     expect((await updateProfile(jsonRequest("/api/customer/me", { phone: "12345" }, "PATCH"))).status).toBe(400);
   });

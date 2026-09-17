@@ -2,6 +2,14 @@ import { describe, it, expect } from 'vitest';
 import { formatPhone, isValidPhone, normalizePhone } from './customers';
 
 describe('normalizePhone', () => {
+  it('takes the digits off an Arabic keyboard', () => {
+    // Half the app is in Arabic, so these are numbers people will type.
+    expect(normalizePhone('٠١٠٩٩٩٩٨٨٨٨')).toBe('01099998888');
+    expect(normalizePhone('٠١٠ ٩٩٩٩ ٨٨٨٨')).toBe('01099998888');
+    expect(normalizePhone('۰۱۰۹۹۹۹۸۸۸۸')).toBe('01099998888'); // Persian digits
+    expect(normalizePhone('٠١٠99998888')).toBe('01099998888'); // half and half
+  });
+
   it('accepts a number the way people actually type it', () => {
     for (const typed of [
       '01099998888',

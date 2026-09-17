@@ -19,7 +19,10 @@ export async function POST(req: NextRequest) {
 
     const phone = normalizePhone(data.phone);
     if (!phone) {
-      return NextResponse.json({ error: "Please enter a valid Egyptian mobile number" }, { status: 400 });
+      return NextResponse.json(
+        { error: "That number does not look right — it should be 11 digits, like 010 1234 5678" },
+        { status: 400 }
+      );
     }
 
     const existingLogin = await prisma.user.findFirst({ where: { phone }, select: { id: true } });

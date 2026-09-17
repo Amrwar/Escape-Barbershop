@@ -190,7 +190,15 @@ export default function CustomerProfilePage() {
 
           <button
             type="button"
-            onClick={() => save({ name: name.trim(), phone: phone.trim(), birthday })}
+            onClick={() =>
+              // Only what actually changed: saving a name must never be refused
+              // because of the number sitting untouched in the next field.
+              save({
+                ...(name.trim() !== profile.name ? { name: name.trim() } : {}),
+                ...(phone.trim() !== (profile.phone ?? "") ? { phone: phone.trim() } : {}),
+                ...(birthday !== savedBirthday ? { birthday } : {}),
+              })
+            }
             disabled={saving || !detailsChanged || name.trim().length < 2}
             className="c-btn-secondary w-full"
           >

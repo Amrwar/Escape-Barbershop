@@ -316,8 +316,12 @@ export const customerRegisterSchema = z.object({
 
 export const customerProfileSchema = z.object({
   name: z.string().min(2, "Please enter your name").max(100).optional(),
-  /** Their login as well as their number, so changing it moves both. */
-  phone: z.string().min(6).max(20).optional(),
+  /**
+   * Their login as well as their number, so changing it moves both. Deliberately
+   * unfussy here: the phone rule itself decides, and says something useful when
+   * it refuses. A length check at this level only produces "invalid data".
+   */
+  phone: z.string().max(20).optional(),
   /** "1994-09-18", or empty to forget it. Only the day and month are used. */
   birthday: z.string().max(10).optional().or(z.literal("")),
   /** A data URL from the phone, already resized. Empty removes the picture. */
