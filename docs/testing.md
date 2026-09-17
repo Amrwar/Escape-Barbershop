@@ -1,6 +1,6 @@
 # Testing
 
-Two suites, for two different jobs.
+Two suites for two different jobs, and a third thing that is not a suite at all.
 
 | Command | What runs | Needs | Takes |
 | --- | --- | --- | --- |
@@ -8,14 +8,19 @@ Two suites, for two different jobs.
 | `npm run test:integration` | The API against a real Postgres | Docker | ~30 seconds |
 | `npm run test:all` | Both | Docker | ~35 seconds |
 | `npm run test:db:stop` | Removes the test database container | Docker | — |
+| `npm run test:preview` | A walk through the customer app on the demo shop | the preview running | ~2 seconds |
 
-167 tests today: 83 unit, 84 integration.
+**478 tests today: 212 on the rules, 266 on the API.** Both suites must be green before
+anything is pushed; the preview walk is run by hand when the demo shop is up.
 
 ## The rules (`src/**/*.test.ts`)
 
 Pure functions with no database: free slots and opening hours, how a visit was
-paid, session lengths, phone numbers, receipts, who may use which door. Fast
-enough to keep running while you work (`npm run test:watch`).
+paid, session lengths, phone numbers, receipts, who may use which door — and
+since, the loyalty card's arithmetic, what a rating averages to, who belongs in
+which customer group, when a birthday falls in shop time, and what the insight
+screens count. Eighteen files, fast enough to keep running while you work
+(`npm run test:watch`).
 
 These exist because the awkward parts of this system are arithmetic — a buffer
 around an appointment, a mixed payment that must add up, a clock that changes
@@ -24,7 +29,7 @@ twice a year. Arithmetic is cheap to test and expensive to get wrong.
 ## The API (`tests/*.test.ts`)
 
 The route handlers, against a real Postgres in a container, with the session
-mocked to whichever role the test is about. Eleven files, of which the ones
+mocked to whichever role the test is about. Sixteen files, of which the ones
 worth knowing about are:
 
 - **`booking-api.test.ts`** — booking, clashes, opening hours, buffers, time off,

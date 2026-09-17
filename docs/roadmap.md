@@ -2,7 +2,7 @@
 
 Ticked means built, tested and deployed. This is the page to keep current.
 
-Last updated: 16 September 2026.
+Last updated: 17 September 2026.
 
 ---
 
@@ -72,6 +72,17 @@ never install the app — worth revisiting once we see how many turn notificatio
 ($99 a year). The accounts must be in the shop's name, and only you can submit. I build the
 apps and prepare the listings.
 
+## The app's look and the customer's own record (done)
+
+- [x] **Brass & Ink** across the customer and barber apps: one set of tokens, square
+      corners, hairline rules, brass on the one action that matters, and Bodoni on
+      anything read as a number
+- [x] Light and dark, switched in the header and remembered on that phone
+- [x] The customer owns their record: their picture, name, the number they sign in with,
+      and the birthday the shop wishes them on
+- [x] The shop's till screens deliberately untouched — worked on for eight hours a day,
+      and still white
+
 ## Phase 5 — loyalty and depth (done)
 
 - [x] Loyalty: a punch card — a stamp per paid visit, a reward you describe
@@ -89,8 +100,10 @@ apps and prepare the listings.
 
 ## Quality
 
-- [x] 278 tests: 125 on the rules, 153 on the API against a real database
+- [x] 478 tests: 212 on the rules, 266 on the API against a real database
 - [x] Every endpoint tested for what it does *and* who it refuses
+- [x] A walk through the preview shop end to end (`npm run test:preview`), kept out of
+      the suite so a green run means the code is sound rather than that Docker was up
 - [ ] Tests for the screens themselves (clicking through a browser)
 
 ## Open questions
@@ -103,6 +116,8 @@ apps and prepare the listings.
 3. **No-show policy** — does a customer who misses twice get blocked from booking online?
 4. **Service lengths** are seeded estimates (haircut 30, beard 20, protein 120). They decide
    how many slots a day holds, so they are worth correcting on the services screen.
+5. **Rewards are switched off until you set them up** — the loyalty card, referrals and
+   birthdays all wait on Setup → Rewards, where you decide how many visits earn what.
 
 ## How to try it
 

@@ -59,7 +59,10 @@ Not "the screen exists". For each item:
 
 ## Where the MVP stands
 
-**The MVP is complete.** The sentence at the top now holds: a customer books on their phone, the shop sees them in
-the diary, seats them from the queue, rings them up, and the money lands once — in the
-drawer, the commission and the report. What is left of the MVP is the owner's view of the
-day at a glance, and counting no-shows.
+**The MVP is complete, and has been passed.** The sentence at the top holds: a customer
+books on their phone, the shop sees them in the diary, seats them from the queue, rings
+them up, and the money lands once — in the drawer, the commission and the report. The
+owner's day at a glance and the no-show count, the last two MVP items, are done.
+
+Everything since is beyond the MVP: reminders and reviews on the phone, the loyalty card,
+referrals, birthdays, the insight screens, customer groups, and the app's own look.

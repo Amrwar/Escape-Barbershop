@@ -14,21 +14,33 @@ Five documents, each answering a different question.
 
 ## Where things stand
 
-The shop's management system has been running for a while: visits, the cash drawer,
-expenses, advances, payroll, the warehouse and the reports. Customer booking is newer:
-the booking rules, the shop's appointment screens and the customer app are built and
-tested, and the till side of an appointment is next.
+Everything on the roadmap is built, tested and deployed except the phone apps.
 
-A phone app for the App Store and Google Play comes after that, built on the same API
-the customer app already uses.
+The management system runs the shop as it always did — visits, the drawer, expenses,
+advances, payroll, the warehouse, the reports. On top of it now: customers book from
+their phone and are rung up as one visit; the queue and the diary; barbers with their own
+day, earnings and reviews; reminders, confirmations and review requests as phone
+notifications; a loyalty card, referrals and birthdays; reviews; insight screens; and
+customer groups the owner can message.
+
+What is left is **phase 4** — the same app published to Google Play and the App Store —
+which waits on the shop's own developer accounts. The roadmap says what those cost.
 
 ## For whoever works on this next
 
 - `npm run dev` — the app on <http://localhost:3000>
-- `npm test` — the rules (booking, payments, sessions, receipts), no database, seconds
+- `npm test` — the rules (booking, payments, loyalty, reviews, sessions), no database, seconds
 - `npm run test:all` — those plus the API against a real Postgres (needs Docker)
+- `npm run test:preview` — a walk through the customer app against the demo shop
+- `npm run docs:pdf` — rebuild the PDFs in `docs/pdf`
 - `docker compose up --build` — the whole thing with its own database and demo data
 
-The money and booking rules live in `src/lib` as plain functions with tests
-(`booking.ts`, `payments.ts`, `finance.ts`, `session-policy.ts`). They are the part worth
-reading first: every screen is a view onto those.
+The rules live in `src/lib` as plain functions with tests beside them — `booking.ts`,
+`payments.ts`, `finance.ts`, `session-policy.ts`, `loyalty.ts`, `reviews.ts`,
+`referrals.ts`, `birthdays.ts`, `segments.ts`, `insights.ts`. They are the part worth
+reading first: every screen is a view onto those, and the server enforces them
+independently of what any screen allows.
+
+The two apps are dressed from one set of tokens at the top of `src/app/globals.css`.
+Nothing in the customer or barber app names a colour of its own, which is what lets the
+whole thing turn from night to day by swapping that block.
