@@ -25,10 +25,12 @@ export type IconName =
   | "plus"
   | "list"
   | "drawer"
+  | "star"
   | "pie";
 
 const PATHS: Record<IconName, React.ReactNode> = {
   shield: <path d="M12 3l7 3v6c0 4-3 7.2-7 9-4-1.8-7-5-7-9V6l7-3z" />,
+  star: <path d="M12 3.5l2.6 5.3 5.9.9-4.2 4.1 1 5.8-5.3-2.8-5.3 2.8 1-5.8L3.5 9.7l5.9-.9z" />,
   "chart-bar": (
     <>
       <path d="M4 20h16" />

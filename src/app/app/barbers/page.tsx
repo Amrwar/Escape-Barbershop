@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useTranslation } from "@/lib/i18n";
 import { Avatar, EmptyState, ScreenTitle, Skeleton } from "@/components/customer/kit";
+import { RatingLine } from "@/components/customer/Stars";
 
 interface Barber {
   id: string;
@@ -11,6 +12,7 @@ interface Barber {
   bio: string | null;
   photo: string | null;
   serviceIds: string[];
+  rating: { average: number | null; count: number };
 }
 
 /** The team, for a customer who has a favourite — most of them do. */
@@ -49,6 +51,9 @@ export default function BarbersPage() {
               <div className="min-w-0 flex-1">
                 <div className="font-medium text-white">{b.name}</div>
                 {b.bio && <div className="mt-0.5 truncate text-xs text-white/45">{b.bio}</div>}
+                <div className="mt-1">
+                  <RatingLine rating={b.rating ?? { average: null, count: 0 }} />
+                </div>
               </div>
               <span className="text-white/25">›</span>
             </Link>

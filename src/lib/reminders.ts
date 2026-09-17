@@ -97,6 +97,31 @@ export function bookingConfirmedMessage(
       };
 }
 
+/**
+ * "How was it?", the day after. One ask, ever — a customer who ignores it is
+ * answering as clearly as one who taps it.
+ */
+export function reviewRequestMessage(
+  appointment: AppointmentForMessage,
+  lang: "en" | "ar" = "en"
+): PushMessage {
+  return lang === "ar"
+    ? {
+        title: "كيف كانت زيارتك؟",
+        body: appointment.barberName ? `قيّم زيارتك مع ${appointment.barberName} — ثانية واحدة` : "قيّم زيارتك — ثانية واحدة",
+        url: "/app",
+        tag: `review-${appointment.id}`,
+      }
+    : {
+        title: "How was your visit?",
+        body: appointment.barberName
+          ? `Rate your visit with ${appointment.barberName} — it takes a second`
+          : "Rate your visit — it takes a second",
+        url: "/app",
+        tag: `review-${appointment.id}`,
+      };
+}
+
 export function reminderMessage(
   appointment: AppointmentForMessage,
   lang: "en" | "ar" = "en",

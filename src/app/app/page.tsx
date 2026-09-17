@@ -7,6 +7,8 @@ import { useTranslation } from "@/lib/i18n";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { AppointmentCard, type CustomerAppointment } from "@/components/customer/AppointmentCard";
 import { Avatar, EmptyState, ScreenTitle, SectionTitle, Skeleton } from "@/components/customer/kit";
+import { ReviewPrompt, type Reviewable } from "@/components/customer/ReviewPrompt";
+import { RatingLine } from "@/components/customer/Stars";
 
 /**
  * Home answers one question — "when is my next haircut?" — and offers one
@@ -26,6 +28,7 @@ interface Barber {
   name: string;
   bio: string | null;
   photo: string | null;
+  rating: { average: number | null; count: number };
 }
 
 interface Service {
@@ -51,6 +54,7 @@ export default function CustomerHomePage() {
   const [services, setServices] = useState<Service[]>([]);
   const [offers, setOffers] = useState<Offer[]>([]);
   const [barbers, setBarbers] = useState<Barber[]>([]);
+  const [toRate, setToRate] = useState<Reviewable | null>(null);
 
   useEffect(() => {
     fetch("/api/customer/appointments?scope=upcoming")
@@ -65,6 +69,12 @@ export default function CustomerHomePage() {
         setBarbers(Array.isArray(d?.barbers) ? d.barbers.slice(0, 6) : []);
       })
       .catch(() => setServices([]));
+    // The last visit they have not said anything about yet — asked once, here,
+    // and gone as soon as they answer or ignore it.
+    fetch("/api/customer/reviews")
+      .then((r) => r.json())
+      .then((d: Reviewable[]) => setToRate(Array.isArray(d) ? (d.find((x) => x.canReview && !x.review) ?? null) : null))
+      .catch(() => setToRate(null));
   }, []);
 
   const next = upcoming?.[0];
@@ -119,6 +129,13 @@ export default function CustomerHomePage() {
           />
         )}
       </section>
+
+      {toRate && (
+        <section>
+          <SectionTitle>{t("app.rate")}</SectionTitle>
+          <ReviewPrompt item={toRate} onSaved={() => undefined} />
+        </section>
+      )}
 
       {upcoming && upcoming.length > 1 && (
         <section>
@@ -180,6 +197,9 @@ export default function CustomerHomePage() {
               <Link key={b.id} href={`/app/barbers/${b.id}`} className="w-[84px] shrink-0 text-center">
                 <Avatar name={b.name} photo={b.photo} size={64} />
                 <div className="mt-2 truncate text-xs text-white/70">{b.name}</div>
+                <div className="mt-1 flex justify-center">
+                  <RatingLine rating={b.rating ?? { average: null, count: 0 }} size={11} />
+                </div>
               </Link>
             ))}
           </div>

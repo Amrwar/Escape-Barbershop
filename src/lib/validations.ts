@@ -324,6 +324,13 @@ export const customerBookingSchema = z.object({
   notes: z.string().max(300).optional().or(z.literal("")),
 });
 
+/** Stars, and a line if they feel like writing one. */
+export const reviewSchema = z.object({
+  appointmentId: z.string().min(1),
+  rating: z.number().int().min(1).max(5),
+  comment: z.string().max(500).optional().or(z.literal("")),
+});
+
 export const customerRescheduleSchema = z.object({
   startAt: z.string().min(1),
   barberId: z.string().nullable().optional(),

@@ -162,6 +162,29 @@ provider, sender name or contract.
 - Sending never blocks a booking, and never fails one: it is fire-and-forget, and a
   subscription the push service reports as gone is deleted rather than retried nightly.
 
+## Reviews
+
+Stars, and a line if they feel like writing one. The rules are deliberately
+narrow, because a rating nobody believes is worse than no rating at all:
+
+- Only a finished appointment can carry a review — including one they left
+  without paying, since they still sat in the chair. Cancelled and missed
+  appointments are silent.
+- One per appointment. Writing it again is a change of mind, not a second
+  opinion: the row is updated.
+- The window closes after a month. Nobody is asked in March what they thought of
+  a haircut in January.
+- The evening run asks yesterday's customers once, on the phone. Ignoring the
+  ask is an answer too, so it is never repeated.
+
+The shop's only power over a review is `hiddenAt`: the owner can take an abusive
+one off the app, where it counts for nothing and is shown to nobody, but it is
+not deleted and the activity log records who hid it. A shop that can quietly
+delete criticism has a rating worth nothing, including to itself.
+
+Averages are `null` when nobody has said anything — never zero, which reads as
+"terrible" rather than "new".
+
 ## Sessions
 
 Shop devices sit on a counter, so a staff login ends after 2 hours, or 30 minutes idle.

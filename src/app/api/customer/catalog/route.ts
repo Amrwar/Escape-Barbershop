@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getBookingSettings } from "@/lib/booking-server";
 import { CUSTOMER_FACING_BARBER } from "@/lib/barbers";
 import { isRunning } from "@/lib/offers";
+import { ratingsByBarber } from "@/lib/reviews";
 
 /**
  * What a customer may book: the services and barbers the shop has opened to
@@ -12,7 +13,7 @@ import { isRunning } from "@/lib/offers";
 export async function GET() {
   try {
     const settings = await getBookingSettings();
-    const [services, barbers, offers] = await Promise.all([
+    const [services, barbers, offers, reviews] = await Promise.all([
       prisma.service.findMany({
         where: { isActive: true, bookableOnline: true },
         orderBy: { name: "asc" },
@@ -28,7 +29,11 @@ export async function GET() {
         orderBy: { createdAt: "desc" },
         select: { id: true, title: true, titleAr: true, description: true, price: true, wasPrice: true, startsAt: true, endsAt: true, isActive: true },
       }),
+      // Hidden ones count for nothing, here or anywhere else.
+      prisma.review.findMany({ where: { hiddenAt: null }, select: { barberId: true, rating: true } }),
     ]);
+
+    const ratings = ratingsByBarber(reviews);
 
     return NextResponse.json({
       // Only what is running today: a scheduled or finished offer is the shop's
@@ -42,6 +47,8 @@ export async function GET() {
         photo: b.photo,
         // An empty list means this barber does everything.
         serviceIds: b.services.map((s) => s.serviceId),
+        // Null average when nobody has reviewed them: unknown, not bad.
+        rating: ratings[b.id] ?? { average: null, count: 0 },
       })),
       booking: {
         onlineBookingEnabled: settings.onlineBookingEnabled,

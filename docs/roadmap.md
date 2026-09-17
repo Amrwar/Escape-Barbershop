@@ -41,14 +41,14 @@ The piece that makes booking worth having: one appointment, one visit, one set o
 - [x] No-shows counted, with what they cost, on the overview and in the day journal
 - [x] Who appears in the customer app is the shop's choice, per person
 
-## Phase 3 — keeping customers (in progress)
+## Phase 3 — keeping customers (done)
 
 - [x] Barber logins and their own day: schedule, their customers, their earnings
 - [x] Customer notes the barber sees ("low fade, same as last time")
 - [x] Barber profiles in the customer app: photo, bio, book with them
 - [x] Reminders the day before, and a booking confirmation — on the phone itself, free
 - [x] Offers, shown in the app (a notice, never a price the till enforces)
-- [ ] Reviews after a visit
+- [x] Reviews after a visit: stars and a line, asked for on the phone the day after
 
 Reminders go to the phone as a notification, not as a text message: there is nothing to
 pay per message and no sender name to register. The customer turns them on once, from

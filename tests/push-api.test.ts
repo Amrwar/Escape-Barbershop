@@ -227,6 +227,56 @@ describe("the reminder run", () => {
     expect((await testPrisma().appointment.findUnique({ where: { id: appointment.id } }))?.reminderSentAt).toBeTruthy();
   });
 
+  it("asks yesterday's customer what they thought, once", async () => {
+    await subscribeDevice("https://push.example/phone");
+    const end = new Date(Date.now() - 20 * 3_600_000);
+    const appointment = await testPrisma().appointment.create({
+      data: {
+        customerId: shop.customer.id,
+        barberId: shop.barbers.abdullah,
+        startAt: new Date(end.getTime() - 30 * 60_000),
+        endAt: end,
+        durationMinutes: 30,
+        totalPrice: 150,
+        status: "COMPLETED",
+        services: { create: [{ serviceId: shop.services.haircut, serviceName: "Hair cut", price: 150, durationMinutes: 30 }] },
+      },
+    });
+    sent.length = 0;
+
+    const first = await (await runReminders(getRequest("/api/cron/reminders"))).json();
+    expect(first.asked).toBe(1);
+    expect(JSON.parse(sent[0].payload).title).toBe("How was your visit?");
+    expect((await testPrisma().appointment.findUnique({ where: { id: appointment.id } }))?.reviewAskedAt).toBeTruthy();
+
+    sent.length = 0;
+    expect((await (await runReminders(getRequest("/api/cron/reminders"))).json()).asked).toBe(0);
+    expect(sent).toHaveLength(0);
+  });
+
+  it("does not ask about a visit they have already reviewed", async () => {
+    await subscribeDevice("https://push.example/phone");
+    const end = new Date(Date.now() - 20 * 3_600_000);
+    const appointment = await testPrisma().appointment.create({
+      data: {
+        customerId: shop.customer.id,
+        barberId: shop.barbers.abdullah,
+        startAt: new Date(end.getTime() - 30 * 60_000),
+        endAt: end,
+        durationMinutes: 30,
+        totalPrice: 150,
+        status: "COMPLETED",
+      },
+    });
+    await testPrisma().review.create({
+      data: { appointmentId: appointment.id, customerId: shop.customer.id, barberId: shop.barbers.abdullah, rating: 5 },
+    });
+    sent.length = 0;
+
+    expect((await (await runReminders(getRequest("/api/cron/reminders"))).json()).asked).toBe(0);
+    expect(sent).toHaveLength(0);
+  });
+
   it("is closed to anyone without the scheduler's secret", async () => {
     process.env.CRON_SECRET = "let-me-in";
     try {

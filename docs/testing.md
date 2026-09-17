@@ -24,7 +24,8 @@ twice a year. Arithmetic is cheap to test and expensive to get wrong.
 ## The API (`tests/*.test.ts`)
 
 The route handlers, against a real Postgres in a container, with the session
-mocked to whichever role the test is about. Four files:
+mocked to whichever role the test is about. Eleven files, of which the ones
+worth knowing about are:
 
 - **`booking-api.test.ts`** — booking, clashes, opening hours, buffers, time off,
   moving, cancelling, and who may use the shop's diary.
@@ -35,6 +36,13 @@ mocked to whichever role the test is about. Four files:
   day journal and the period report: cash, card, InstaPay, mixed, tips,
   expenses, advances.
 - **`auth.test.ts`** — signing in by email or phone, and how long a login lasts.
+- **`checkout-api.test.ts`**, **`queue-api.test.ts`**, **`diary-summary-api.test.ts`**
+  — ringing a booking up, the live queue, and the day at a glance.
+- **`barber-app.test.ts`**, **`barber-visibility.test.ts`** — a barber's own day
+  and earnings, and who the customer app is allowed to show.
+- **`offers-api.test.ts`**, **`push-api.test.ts`**, **`reviews-api.test.ts`** —
+  offers, notifications and reminders, and reviews: who may leave one, one per
+  visit, and the owner's power to hide but not delete.
 
 A mock cannot tell you that two people took the same slot, or that the drawer
 and the report disagree. These can.

@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getBookingSettings } from "@/lib/booking-server";
-import { DEFAULT_REMIND_HOURS_AHEAD, dueForReminder, reminderMessage } from "@/lib/reminders";
+import { DEFAULT_REMIND_HOURS_AHEAD, dueForReminder, reminderMessage, reviewRequestMessage } from "@/lib/reminders";
+import { ASK_WITHIN_HOURS, shouldAskForReview } from "@/lib/reviews";
 import { sendPush } from "@/lib/push";
 
 /**
- * The evening reminder run. Vercel calls this once a day; it messages everyone
- * with a booking in the next twenty hours who has not already been told.
+ * The evening run. Vercel calls this once a day, and it does two things: it
+ * reminds everyone with a booking in the next twenty hours, and it asks anyone
+ * who was in the chair yesterday what they thought.
  *
  * Each appointment is stamped as it goes out, so a second run — a retry, a
  * manual trigger, a cron that fires twice — cannot remind the same person
@@ -67,7 +69,43 @@ export async function GET(req: NextRequest) {
       sent += delivered;
     }
 
-    return NextResponse.json({ considered: appointments.length, reminded, notificationsSent: sent });
+    // And, while we are here: yesterday's customers, asked once each.
+    const finished = await prisma.appointment.findMany({
+      where: {
+        status: { in: ["COMPLETED", "COMPLETED_UNPAID"] },
+        endAt: { gte: new Date(Date.now() - ASK_WITHIN_HOURS * 3_600_000), lte: new Date() },
+        reviewAskedAt: null,
+        review: { is: null },
+      },
+      select: {
+        id: true,
+        status: true,
+        endAt: true,
+        customerId: true,
+        reviewAskedAt: true,
+        barber: { select: { name: true } },
+        services: { select: { serviceName: true } },
+      },
+    });
+
+    let asked = 0;
+    for (const appointment of finished.filter((a) => shouldAskForReview(a))) {
+      sent += await sendPush(
+        { customerId: appointment.customerId },
+        reviewRequestMessage({
+          id: appointment.id,
+          startAt: appointment.endAt,
+          barberName: appointment.barber?.name ?? null,
+          services: appointment.services.map((s) => s.serviceName),
+        })
+      );
+
+      // Stamped either way, for the same reason reminders are: one ask, ever.
+      await prisma.appointment.update({ where: { id: appointment.id }, data: { reviewAskedAt: new Date() } });
+      asked += 1;
+    }
+
+    return NextResponse.json({ considered: appointments.length, reminded, asked, notificationsSent: sent });
   } catch (err) {
     console.error("[cron/reminders]", err);
     return NextResponse.json({ error: "Reminder run failed" }, { status: 500 });

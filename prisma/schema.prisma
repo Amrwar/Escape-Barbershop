@@ -26,6 +26,7 @@ model User {
   recordedVisits     Visit[]             @relation("RecordedVisits")
   bookedAppointments Appointment[]       @relation("BookedAppointments")
   writtenNotes       CustomerNote[]      @relation("WrittenNotes")
+  hiddenReviews      Review[]            @relation("HiddenReviews")
   pushDevices        PushSubscription[]
   barber             Barber?             @relation(fields: [barberId], references: [id])
   customer           Customer?           @relation(fields: [customerId], references: [id])
@@ -54,6 +55,7 @@ model Barber {
   workingHours   BarberWorkingHours[]
   timeOff        BarberTimeOff[]
   services       BarberService[]
+  reviews        Review[]
 }
 
 /// The shop's normal opening hours, one row per weekday (0 = Sunday). A missing
@@ -123,6 +125,8 @@ model Appointment {
   cancelReason    String?
   /// When the customer was reminded, so nobody is reminded twice.
   reminderSentAt  DateTime?
+  /// When we asked what they thought, so nobody is asked twice.
+  reviewAskedAt   DateTime?
   /// Set when the appointment is rung up. One visit per appointment.
   visitId         String?              @unique
   createdByUserId String?
@@ -133,6 +137,7 @@ model Appointment {
   createdBy       User?                @relation("BookedAppointments", fields: [createdByUserId], references: [id])
   visit           Visit?               @relation(fields: [visitId], references: [id])
   services        AppointmentService[]
+  review          Review?
 
   @@index([startAt])
   @@index([barberId, startAt])
@@ -237,6 +242,35 @@ model PushSubscription {
   @@index([userId])
 }
 
+/// What a customer thought of a visit: stars, and a line if they feel like it.
+///
+/// One per appointment, and only for an appointment they actually sat through —
+/// a cancelled or missed one has nothing to say about a barber. They may change
+/// their mind and write it again; the row is updated, never duplicated.
+///
+/// `hiddenAt` is the shop's only power over a review: it can take an abusive one
+/// off the app. A hidden review counts for nothing and is shown to nobody, but is
+/// not deleted, so the shop can put it back.
+model Review {
+  id            String      @id @default(cuid())
+  appointmentId String      @unique
+  customerId    String
+  barberId      String?
+  rating        Int
+  comment       String?
+  hiddenAt      DateTime?
+  hiddenById    String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  customer      Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  barber        Barber?     @relation(fields: [barberId], references: [id])
+  hiddenBy      User?       @relation("HiddenReviews", fields: [hiddenById], references: [id])
+
+  @@index([barberId, hiddenAt])
+  @@index([customerId])
+}
+
 /// Something the shop is running this month: "Haircut + beard, 400 instead of 450".
 ///
 /// An offer is a notice, not a rule the till enforces. The shop decides at the
@@ -288,6 +322,7 @@ model Customer {
   user         User?
   notes_       CustomerNote[]
   pushDevices  PushSubscription[]
+  reviews      Review[]
 }
 
 model Visit {

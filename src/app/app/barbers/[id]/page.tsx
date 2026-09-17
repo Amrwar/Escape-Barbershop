@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useTranslation } from "@/lib/i18n";
 import { Avatar, EmptyState, Pill, ScreenTitle, Skeleton } from "@/components/customer/kit";
+import { RatingLine, Stars } from "@/components/customer/Stars";
 
 interface Service {
   id: string;
@@ -20,6 +21,15 @@ interface Barber {
   bio: string | null;
   photo: string | null;
   serviceIds: string[];
+  rating: { average: number | null; count: number };
+}
+
+interface Review {
+  id: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+  name: string;
 }
 
 /** One barber: who they are, what they do, and a way to book them. */
@@ -27,6 +37,7 @@ export default function BarberProfilePage() {
   const { id } = useParams<{ id: string }>();
   const { t, fmtCurrency, lang } = useTranslation();
   const [data, setData] = useState<{ barber: Barber | null; services: Service[] } | null>(null);
+  const [reviews, setReviews] = useState<{ summary: { average: number | null; count: number }; reviews: Review[] } | null>(null);
 
   useEffect(() => {
     fetch("/api/customer/catalog")
@@ -36,6 +47,11 @@ export default function BarberProfilePage() {
         setData({ barber, services: d?.services ?? [] });
       })
       .catch(() => setData({ barber: null, services: [] }));
+
+    fetch(`/api/customer/barbers/${id}/reviews`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then(setReviews)
+      .catch(() => setReviews(null));
   }, [id]);
 
   if (!data) {
@@ -76,11 +92,33 @@ export default function BarberProfilePage() {
         </div>
         <div className="p-5">
           <ScreenTitle title={barber.name} hint={barber.bio ?? undefined} />
+          {reviews && reviews.summary.count > 0 && (
+            <div className="mt-3">
+              <RatingLine rating={reviews.summary} size={16} />
+            </div>
+          )}
           <Link href="/app/book" className="c-btn-primary mt-4 w-full">
             {t("app.bookWith").replace("{name}", barber.name)}
           </Link>
         </div>
       </section>
+
+      {reviews && reviews.reviews.length > 0 && (
+        <section>
+          <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/40">{t("app.reviews")}</h2>
+          <div className="space-y-2">
+            {reviews.reviews.map((r) => (
+              <div key={r.id} className="c-card p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="truncate text-sm font-medium text-white/85">{r.name}</span>
+                  <Stars rating={r.rating} size={13} />
+                </div>
+                <p className="mt-2 text-sm leading-relaxed text-white/55">{r.comment}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {theirs.length > 0 && (
         <section>

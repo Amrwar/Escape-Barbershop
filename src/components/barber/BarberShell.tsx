@@ -13,9 +13,14 @@ import { LanguageToggle } from "@/components/ui/LanguageToggle";
  * their work, not the shop's.
  */
 
-const TABS: { href: string; labelKey: "barberApp.navToday" | "barberApp.navEarnings"; icon: IconName }[] = [
+const TABS: {
+  href: string;
+  labelKey: "barberApp.navToday" | "barberApp.navEarnings" | "barberApp.navReviews";
+  icon: IconName;
+}[] = [
   { href: "/barber", labelKey: "barberApp.navToday", icon: "calendar" },
   { href: "/barber/earnings", labelKey: "barberApp.navEarnings", icon: "wallet" },
+  { href: "/barber/reviews", labelKey: "barberApp.navReviews", icon: "star" },
 ];
 
 export function BarberShell({ children }: { children: React.ReactNode }) {
@@ -47,7 +52,7 @@ export function BarberShell({ children }: { children: React.ReactNode }) {
       <main className="relative mx-auto w-full max-w-2xl px-5 pb-28 pt-3">{children}</main>
 
       <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-white/10 bg-primary-950/85 backdrop-blur-lg pb-[env(safe-area-inset-bottom)]">
-        <div className="mx-auto grid max-w-2xl grid-cols-2">
+        <div className="mx-auto grid max-w-2xl grid-cols-3">
           {TABS.map((tab) => {
             const active = tab.href === "/barber" ? pathname === "/barber" : pathname.startsWith(tab.href);
             return (
