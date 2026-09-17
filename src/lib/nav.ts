@@ -64,6 +64,7 @@ export const ADMIN_NAV: NavGroup[] = [
     items: [
       { href: "/salaries", labelKey: "nav.salaries", icon: "wallet" },
       { href: "/attendance", labelKey: "nav.attendance", icon: "calendar" },
+      { href: "/time-off", labelKey: "nav.timeOff", icon: "calendar" },
       { href: "/barbers", labelKey: "nav.barbers", icon: "users" },
       { href: "/reviews", labelKey: "nav.reviews", icon: "star" },
     ],
@@ -112,6 +113,7 @@ const ADMIN_PREFIXES = [
   "/customers",
   "/inventory",
   "/attendance",
+  "/time-off",
   "/settings",
   "/expenses",
   "/issue-notes",

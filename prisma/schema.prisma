@@ -29,6 +29,7 @@ model User {
   hiddenReviews        Review[]            @relation("HiddenReviews")
   givenRewards         LoyaltyRedemption[] @relation("GivenRewards")
   givenReferralRewards Referral[]          @relation("GivenReferralRewards")
+  timeOffDecisions     BarberTimeOff[]     @relation("TimeOffDecisions")
   pushDevices          PushSubscription[]
   barber               Barber?             @relation(fields: [barberId], references: [id])
   customer             Customer?           @relation(fields: [customerId], references: [id])
@@ -84,17 +85,36 @@ model BarberWorkingHours {
   @@unique([barberId, weekday])
 }
 
-/// Holiday, sick day, or an hour out. Blocks booking for the whole span.
+/// Holiday, sick day, or an hour out.
+///
+/// An **approved** absence blocks booking for its whole span. A requested one
+/// blocks nothing at all — otherwise a barber could empty their own diary just
+/// by asking, and the shop would find out when the day arrived. The shop's own
+/// entries are approved as they are written, which is also what every row made
+/// before this existed is treated as.
 model BarberTimeOff {
-  id        String   @id @default(cuid())
-  barberId  String
-  startAt   DateTime
-  endAt     DateTime
-  reason    String?
-  createdAt DateTime @default(now())
-  barber    Barber   @relation(fields: [barberId], references: [id], onDelete: Cascade)
+  id          String        @id @default(cuid())
+  barberId    String
+  startAt     DateTime
+  endAt       DateTime
+  reason      String?
+  status      TimeOffStatus @default(APPROVED)
+  /// Who said yes or no, and when.
+  decidedById String?
+  decidedAt   DateTime?
+  createdAt   DateTime      @default(now())
+  barber      Barber        @relation(fields: [barberId], references: [id], onDelete: Cascade)
+  decidedBy   User?         @relation("TimeOffDecisions", fields: [decidedById], references: [id])
 
   @@index([barberId, startAt])
+  @@index([status, startAt])
+}
+
+enum TimeOffStatus {
+  /// A barber has asked. Blocks nothing until somebody answers.
+  REQUESTED
+  APPROVED
+  DECLINED
 }
 
 /// Which barber does which service. A barber with no rows does everything, so

@@ -61,5 +61,6 @@ export const config = {
     "/queue/:path*",
     "/deposits/:path*",
     "/wall/:path*",
+    "/time-off/:path*",
   ],
 };

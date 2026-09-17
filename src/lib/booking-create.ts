@@ -67,19 +67,32 @@ export async function createAppointment(input: CreateAppointmentInput) {
       const busyFrom = new Date(startAt.getTime() - pad);
       const busyTo = new Date(endAt.getTime() + pad);
 
-      const isFree = async (barberId: string) => {
+      /**
+       * Why a barber cannot take this slot, or null when they can.
+       *
+       * The two reasons want different answers from whoever is booking: a clash
+       * means try another time, and a day off means try another barber. Saying
+       * "just been taken" for both sends the shop looking for a booking that is
+       * not there.
+       */
+      const whyNotFree = async (barberId: string): Promise<string | null> => {
         const [clash, off] = await Promise.all([
           tx.appointment.findFirst({
             where: { barberId, status: { in: [...BLOCKING] }, startAt: { lt: busyTo }, endAt: { gt: busyFrom } },
             select: { id: true },
           }),
           tx.barberTimeOff.findFirst({
-            where: { barberId, startAt: { lt: endAt }, endAt: { gt: startAt } },
+            // A requested absence blocks nothing until somebody answers it.
+            where: { barberId, status: 'APPROVED', startAt: { lt: endAt }, endAt: { gt: startAt } },
             select: { id: true },
           }),
         ]);
-        return !clash && !off;
+        if (off) return "The barber is off at that time";
+        if (clash) return "That time has just been taken";
+        return null;
       };
+
+      const isFree = async (barberId: string) => (await whyNotFree(barberId)) === null;
 
       const worksThen = (hours: { weekday: number; startMinute: number; endMinute: number; isWorking: boolean }[]) => {
         const window = workingWindow(dateISO, shopHours, hours, settings.timezone);
@@ -110,7 +123,8 @@ export async function createAppointment(input: CreateAppointmentInput) {
         if (!input.skipHoursCheck && !worksThen(barber.workingHours)) {
           throw new BookingError("That time is outside the barber's working hours", 409);
         }
-        if (!(await isFree(barber.id))) throw new BookingError("That time has just been taken", 409);
+        const why = await whyNotFree(barber.id);
+        if (why) throw new BookingError(why, 409);
       } else if (requireBarber) {
         const candidates = await tx.barber.findMany({
           where: { isActive: true, ...(input.onlineOnly ? { bookableOnline: true, ...CUSTOMER_FACING_BARBER } : {}) },

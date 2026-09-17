@@ -85,7 +85,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
               select: { id: true },
             }),
             tx.barberTimeOff.findFirst({
-              where: { barberId, startAt: { lt: endAt }, endAt: { gt: startAt } },
+              // A requested absence blocks nothing until somebody answers it.
+              where: { barberId, status: 'APPROVED', startAt: { lt: endAt }, endAt: { gt: startAt } },
               select: { id: true },
             }),
           ]);

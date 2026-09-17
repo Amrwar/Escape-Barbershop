@@ -248,7 +248,8 @@ export async function isBarberFree(
       select: { id: true },
     }),
     prisma.barberTimeOff.findFirst({
-      where: { barberId, startAt: { lt: end }, endAt: { gt: start } },
+      // A requested absence blocks nothing until somebody answers it.
+      where: { barberId, status: 'APPROVED', startAt: { lt: end }, endAt: { gt: start } },
       select: { id: true },
     }),
   ]);

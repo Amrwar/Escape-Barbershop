@@ -1,6 +1,6 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { resetDatabase, startTestDatabase, testPrisma } from "./db";
-import { at, customerSession, dayAhead, getRequest, seedCustomerLogin, seedShop, staffSession, type Shop } from "./fixtures";
+import { at, customerSession, dayAhead, seedCustomerLogin, seedShop, staffSession, type Shop } from "./fixtures";
 import { GET as wall } from "@/app/api/wall/route";
 
 /**
@@ -42,7 +42,7 @@ async function inShop(name: string, phone: string, status: "CHECKED_IN" | "IN_PR
   });
 }
 
-const board = async () => (await wall(getRequest("/api/wall"))).json();
+const board = async () => (await wall()).json();
 
 describe("what the room can read", () => {
   it("shows who is in the chair and who is waiting", async () => {
@@ -127,12 +127,12 @@ describe("what the room can read", () => {
 describe("who may put it on a screen", () => {
   it("needs a signed-in device — the shop's day is nobody else's business", async () => {
     session = null;
-    expect((await wall(getRequest("/api/wall"))).status).toBe(401);
+    expect((await wall()).status).toBe(401);
   });
 
   it("is not a customer's to open", async () => {
     const login = await seedCustomerLogin(shop.customer.id);
     session = customerSession(login.id, login.customerId);
-    expect((await wall(getRequest("/api/wall"))).status).toBe(401);
+    expect((await wall()).status).toBe(401);
   });
 });

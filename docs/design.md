@@ -461,6 +461,28 @@ out anyway — and no surnames, no phone numbers, and nothing about money agains
 a person. The device still has to be signed in, because the shop's own day is
 nobody else's business.
 
+## Time off
+
+A barber asks for a day from their own phone, and the owner answers with a tap.
+It used to arrive as a phone call on somebody's day off.
+
+One rule carries the whole feature: **asking blocks nothing**. Until the owner
+answers, the diary keeps booking that barber — a barber who could empty their
+own week by asking is a diary the shop cannot trust. Approving is the moment new
+bookings stop.
+
+Approving never cancels anything either. It counts what is already booked in
+that span and says so, and the shop moves those appointments itself, because a
+customer's booking is not something to drop without a word.
+
+What the shop writes straight into the diary is approved as it is written, and
+so is every absence recorded before any of this existed.
+
+While working on it: a booking refused because the barber was off used to say
+"that time has just been taken", which sends the shop looking for a booking that
+is not there. The two reasons now answer differently, because they want
+different things — another time, or another barber.
+
 ## Sessions
 
 Shop devices sit on a counter, so a staff login ends after 2 hours, or 30 minutes idle.
