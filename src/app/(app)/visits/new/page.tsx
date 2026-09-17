@@ -350,7 +350,10 @@ function NewVisitInner() {
                     <div className="absolute z-10 top-full mt-1 start-0 end-0 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
                       {customers.map((c) => (
                         <button key={c.id} type="button"
+                          // onMouseDown fires before the input's blur closes the list;
+                          // onClick is what a keyboard sends, so both are needed.
                           onMouseDown={() => { setSelectedCustomer(c); setCustomerSearch(""); setShowDropdown(false); }}
+                          onClick={() => { setSelectedCustomer(c); setCustomerSearch(""); setShowDropdown(false); }}
                           className="w-full text-start px-4 py-2.5 hover:bg-gray-50 border-b border-gray-100 last:border-0">
                           <div className="text-sm font-medium text-gray-900">{c.name}</div>
                           {c.phone && <div className="text-xs text-gray-400">{c.phone}</div>}
