@@ -192,6 +192,12 @@ const en = {
 
   // Customer app
   "app.tagline": "Book your chair",
+  "app.notifications": "Notifications",
+  "app.remindMe": "Remind me about my appointments",
+  "app.remindHint": "A note when you book, and a reminder the day before",
+  "app.remindIos": "On an iPhone, add Escape to your Home Screen first — then you can turn reminders on",
+  "app.remindUnsupported": "This browser cannot show reminders",
+  "app.remindBlocked": "Notifications are blocked for this site in your browser settings",
   "app.offers": "Offers",
   "app.offersHint": "What the shop is running right now",
   "app.noOffers": "No offers at the moment",

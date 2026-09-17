@@ -194,6 +194,12 @@ const ar: Record<TranslationKey, string> = {
 
   // Customer app
   "app.tagline": "احجز كرسيك",
+  "app.notifications": "الإشعارات",
+  "app.remindMe": "ذكّرني بمواعيدي",
+  "app.remindHint": "رسالة عند الحجز، وتذكير قبل الموعد بيوم",
+  "app.remindIos": "على الآيفون، أضف إسكيب إلى الشاشة الرئيسية أولاً، ثم فعّل التذكير",
+  "app.remindUnsupported": "هذا المتصفح لا يدعم التذكيرات",
+  "app.remindBlocked": "الإشعارات محظورة لهذا الموقع في إعدادات متصفحك",
   "app.offers": "العروض",
   "app.offersHint": "عروض المحل الحالية",
   "app.noOffers": "لا توجد عروض حالياً",

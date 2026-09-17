@@ -1,0 +1,75 @@
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { getBookingSettings } from "@/lib/booking-server";
+import { DEFAULT_REMIND_HOURS_AHEAD, dueForReminder, reminderMessage } from "@/lib/reminders";
+import { sendPush } from "@/lib/push";
+
+/**
+ * The evening reminder run. Vercel calls this once a day; it messages everyone
+ * with a booking in the next twenty hours who has not already been told.
+ *
+ * Each appointment is stamped as it goes out, so a second run — a retry, a
+ * manual trigger, a cron that fires twice — cannot remind the same person
+ * again. That matters more than getting every reminder out on the first
+ * attempt: a missed reminder is a shame, a repeated one is a nuisance.
+ */
+export async function GET(req: NextRequest) {
+  // Vercel sends this header on scheduled calls when CRON_SECRET is set.
+  const secret = process.env.CRON_SECRET;
+  if (secret && req.headers.get("authorization") !== `Bearer ${secret}`) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const settings = await getBookingSettings();
+    const horizon = new Date(Date.now() + DEFAULT_REMIND_HOURS_AHEAD * 3_600_000);
+
+    const appointments = await prisma.appointment.findMany({
+      where: {
+        startAt: { gt: new Date(), lte: horizon },
+        status: { in: ["PENDING", "CONFIRMED"] },
+        reminderSentAt: null,
+      },
+      select: {
+        id: true,
+        startAt: true,
+        status: true,
+        reminderSentAt: true,
+        customerId: true,
+        barber: { select: { name: true } },
+        services: { select: { serviceName: true } },
+      },
+    });
+
+    const due = dueForReminder(appointments);
+    let sent = 0;
+    let reminded = 0;
+
+    for (const appointment of due) {
+      const delivered = await sendPush(
+        { customerId: appointment.customerId },
+        reminderMessage(
+          {
+            id: appointment.id,
+            startAt: appointment.startAt,
+            barberName: appointment.barber?.name ?? null,
+            services: appointment.services.map((s) => s.serviceName),
+          },
+          "en",
+          settings.timezone
+        )
+      );
+
+      // Stamped whether or not a phone was listening: a customer with no
+      // notifications on should not be retried every night for ever.
+      await prisma.appointment.update({ where: { id: appointment.id }, data: { reminderSentAt: new Date() } });
+      reminded += 1;
+      sent += delivered;
+    }
+
+    return NextResponse.json({ considered: appointments.length, reminded, notificationsSent: sent });
+  } catch (err) {
+    console.error("[cron/reminders]", err);
+    return NextResponse.json({ error: "Reminder run failed" }, { status: 500 });
+  }
+}

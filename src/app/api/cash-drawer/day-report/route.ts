@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { getVisaCommissionPercent, visaCommissionOn, round2 } from "@/lib/finance";
 import { drawerSales, outflowAccount } from "@/lib/payments";
+import { shopDateISO, shopTime } from "@/lib/booking";
 
 export async function GET(req: NextRequest) {
   try {
@@ -18,11 +19,12 @@ export async function GET(req: NextRequest) {
       from = new Date(fromParam);
       to = new Date(toParam);
     } else {
-      // Business day: midnight of date → 3AM of next day
-      const date = dateParam ? new Date(dateParam + "T00:00:00") : new Date();
-      date.setHours(0, 0, 0, 0);
-      from = date;
-      to = new Date(date); to.setDate(to.getDate() + 1); to.setHours(3, 0, 0, 0);
+// The shop's business day: its own midnight through to 3AM the next morning.
+      // Shop time, not the server's — the server may be in another country, and a
+      // late night's takings belong to the night the shop worked.
+      const dateISO = dateParam ?? shopDateISO(Date.now());
+      from = new Date(shopTime(dateISO, 0));
+      to = new Date(shopTime(dateISO, 27 * 60));
     }
 
     const sessions = await prisma.cashDrawerSession.findMany({

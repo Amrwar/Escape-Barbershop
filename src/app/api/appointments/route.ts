@@ -6,6 +6,8 @@ import { appointmentSchema } from "@/lib/validations";
 import { recordAudit } from "@/lib/audit";
 import { appointmentInclude, bookingErrorResponse } from "@/lib/appointment-api";
 import { createAppointment } from "@/lib/booking-create";
+import { sendPushQuietly } from "@/lib/push";
+import { bookingConfirmedMessage } from "@/lib/reminders";
 
 export async function GET(req: NextRequest) {
   try {
@@ -63,6 +65,17 @@ export async function POST(req: NextRequest) {
         .join(", ")}`,
       details: { startAt: appointment.startAt, source: appointment.source },
     });
+
+    // The shop booked it for them; their phone should still hear about it.
+    sendPushQuietly(
+      { customerId: appointment.customerId },
+      bookingConfirmedMessage({
+        id: appointment.id,
+        startAt: appointment.startAt,
+        barberName: appointment.barber?.name ?? null,
+        services: appointment.services.map((s) => s.serviceName),
+      })
+    );
 
     return NextResponse.json(appointment, { status: 201 });
   } catch (err: unknown) {

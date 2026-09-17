@@ -194,6 +194,15 @@ export const userCreateSchema = z
     path: ["barberId"],
   });
 
+/** A phone asking to be notified, as the browser hands it over. */
+export const pushSubscriptionSchema = z.object({
+  endpoint: z.string().url(),
+  keys: z.object({
+    p256dh: z.string().min(1),
+    auth: z.string().min(1),
+  }),
+});
+
 /** Something the shop is running: "Haircut + beard, 400 instead of 450". */
 export const offerSchema = z.object({
   title: z.string().min(1, "Give the offer a name").max(120),

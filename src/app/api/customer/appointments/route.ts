@@ -7,6 +7,8 @@ import { createAppointment } from "@/lib/booking-create";
 import { getBookingSettings } from "@/lib/booking-server";
 import { MINUTE } from "@/lib/booking";
 import { MAX_UPCOMING_APPOINTMENTS, UPCOMING_STATUSES, customerAppointmentView } from "@/lib/customer-api";
+import { sendPushQuietly } from "@/lib/push";
+import { bookingConfirmedMessage } from "@/lib/reminders";
 
 export async function GET(req: NextRequest) {
   try {
@@ -79,6 +81,21 @@ export async function POST(req: NextRequest) {
       where: { id: created.id },
       select: customerAppointmentView,
     });
+
+    sendPushQuietly(
+      { customerId: session.user.customerId },
+      bookingConfirmedMessage(
+        {
+          id: created.id,
+          startAt: created.startAt,
+          barberName: created.barber?.name ?? null,
+          services: created.services.map((s) => s.serviceName),
+        },
+        "en",
+        settings.timezone
+      )
+    );
+
     return NextResponse.json(appointment, { status: 201 });
   } catch (err: unknown) {
     return bookingErrorResponse(err);

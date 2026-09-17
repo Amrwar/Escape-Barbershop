@@ -9,6 +9,7 @@ import { GET as getReports } from "@/app/api/reports/route";
 import { POST as addExpense } from "@/app/api/expenses/route";
 import { POST as addAdvance } from "@/app/api/advances/route";
 import { PATCH as saveFinance } from "@/app/api/settings/finance/route";
+import { shopDateISO } from "@/lib/booking";
 
 /**
  * The money, end to end: a visit rung up at the till, through the drawer, the
@@ -46,7 +47,9 @@ const ringUp = (payment: Record<string, unknown>) =>
   );
 
 const drawer = async () => (await (await getDrawer()).json()).visitSummary;
-const today = () => new Date().toISOString().slice(0, 10);
+// The shop's own date, not the server's: the day report is asked for the day the
+// shop is having, and on a machine in another country those differ for hours.
+const today = () => shopDateISO(Date.now());
 
 describe("taking money at the till", () => {
   it("puts cash in the drawer and leaves the other accounts alone", async () => {

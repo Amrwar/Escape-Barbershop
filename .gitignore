@@ -43,3 +43,4 @@ public/workbox-*.js.map
 # PWA build artifact
 public/swe-worker-*.js
 
+public/worker-*.js

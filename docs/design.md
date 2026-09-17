@@ -141,6 +141,27 @@ here:
 - A tip that was not handed over in cash is paid to the barber out of the drawer, and
   recorded as a movement.
 
+## Reminders
+
+A booking is worth nothing if the customer forgets it, so the app reminds them on the
+phone itself — a web push notification, which costs nothing per message and needs no
+provider, sender name or contract.
+
+- A customer turns it on once, from their profile. The phone hands us a subscription (an
+  address at Apple's, Google's or Mozilla's push service); we keep it against that
+  customer, one row per phone.
+- On an iPhone, notifications only exist once the app has been added to the Home Screen.
+  The switch says so in as many words rather than failing silently.
+- Two messages: **booking confirmed**, sent the moment it is booked, whoever booked it,
+  and **a reminder**, sent the evening before. Both are written by pure functions in
+  `reminders.ts`, in English or Arabic, in shop time.
+- A nightly run (`/api/cron/reminders`, on the scheduler, behind `CRON_SECRET`) picks up
+  everything starting within the next 20 hours that has not been reminded, sends, and
+  stamps `reminderSentAt`. The stamp goes on even when the customer has no phone
+  subscribed, so nobody is retried for ever.
+- Sending never blocks a booking, and never fails one: it is fire-and-forget, and a
+  subscription the push service reports as gone is deleted rather than retried nightly.
+
 ## Sessions
 
 Shop devices sit on a counter, so a staff login ends after 2 hours, or 30 minutes idle.

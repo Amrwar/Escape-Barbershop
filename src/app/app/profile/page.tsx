@@ -5,6 +5,7 @@ import { signOut } from "next-auth/react";
 import { useTranslation } from "@/lib/i18n";
 import { formatPhone } from "@/lib/customers";
 import { Avatar, ScreenTitle, SectionTitle, Skeleton } from "@/components/customer/kit";
+import { PushToggle } from "@/components/customer/PushToggle";
 
 interface Profile {
   id: string;
@@ -91,6 +92,11 @@ export default function CustomerProfilePage() {
             <div className="mt-0.5 text-[11px] text-white/40">{t("app.upcomingCount")}</div>
           </div>
         </div>
+      </section>
+
+      <section>
+        <SectionTitle>{t("app.notifications")}</SectionTitle>
+        <PushToggle />
       </section>
 
       <section>

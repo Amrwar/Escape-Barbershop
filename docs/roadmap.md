@@ -46,19 +46,25 @@ The piece that makes booking worth having: one appointment, one visit, one set o
 - [x] Barber logins and their own day: schedule, their customers, their earnings
 - [x] Customer notes the barber sees ("low fade, same as last time")
 - [x] Barber profiles in the customer app: photo, bio, book with them
-- [ ] Reminders the day before, and a booking confirmation
+- [x] Reminders the day before, and a booking confirmation — on the phone itself, free
 - [x] Offers, shown in the app (a notice, never a price the till enforces)
 - [ ] Reviews after a visit
 
-**Needs from you:** an SMS or WhatsApp provider (a monthly cost, plus a registered sender
-name) for reminders — the last piece of this phase, and the best thing for no-shows.
-Photos for each barber whenever you have them; the slots are already in place, and a line
-of bio can be written on the barbers screen today.
+Reminders go to the phone as a notification, not as a text message: there is nothing to
+pay per message and no sender name to register. The customer turns them on once, from
+their profile in the app. On an iPhone they must first add the app to the Home Screen —
+Apple allows notifications only then — and the app says so plainly instead of failing
+quietly. A booking is confirmed straight away, and a reminder goes out the evening before.
+
+**Needs from you:** photos for each barber whenever you have them; the slots are already in
+place, and a line of bio can be written on the barbers screen today. An SMS or WhatsApp
+provider is no longer needed for reminders, and would only add reach to customers who
+never install the app — worth revisiting once we see how many turn notifications on.
 
 ## Phase 4 — the phone apps
 
 - [ ] React Native (Expo) app over the same API
-- [ ] Push notifications instead of SMS where the app is installed
+- [x] Push notifications (already working in the web app; the phone apps inherit them)
 - [ ] Android build, then submission to Google Play
 - [ ] iPhone build, then submission to the App Store
 

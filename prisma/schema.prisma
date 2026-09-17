@@ -26,6 +26,7 @@ model User {
   recordedVisits     Visit[]             @relation("RecordedVisits")
   bookedAppointments Appointment[]       @relation("BookedAppointments")
   writtenNotes       CustomerNote[]      @relation("WrittenNotes")
+  pushDevices        PushSubscription[]
   barber             Barber?             @relation(fields: [barberId], references: [id])
   customer           Customer?           @relation(fields: [customerId], references: [id])
 }
@@ -120,6 +121,8 @@ model Appointment {
   durationMinutes Int
   cancelledAt     DateTime?
   cancelReason    String?
+  /// When the customer was reminded, so nobody is reminded twice.
+  reminderSentAt  DateTime?
   /// Set when the appointment is rung up. One visit per appointment.
   visitId         String?              @unique
   createdByUserId String?
@@ -213,6 +216,27 @@ model Service {
   appointmentServices   AppointmentService[]
 }
 
+/// A phone that has agreed to be notified. One row per browser or app install,
+/// so a customer with a phone and a tablet gets both.
+///
+/// Endpoints go stale when someone clears their browser or reinstalls; a push
+/// that comes back "gone" removes the row rather than being retried forever.
+model PushSubscription {
+  id         String    @id @default(cuid())
+  endpoint   String    @unique
+  p256dh     String
+  auth       String
+  customerId String?
+  userId     String?
+  createdAt  DateTime  @default(now())
+  lastSentAt DateTime?
+  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  user       User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([customerId])
+  @@index([userId])
+}
+
 /// Something the shop is running this month: "Haircut + beard, 400 instead of 450".
 ///
 /// An offer is a notice, not a rule the till enforces. The shop decides at the
@@ -253,16 +277,17 @@ model CustomerNote {
 }
 
 model Customer {
-  id           String         @id @default(cuid())
+  id           String             @id @default(cuid())
   name         String
   phone        String?
   notes        String?
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
   visits       Visit[]
   appointments Appointment[]
   user         User?
   notes_       CustomerNote[]
+  pushDevices  PushSubscription[]
 }
 
 model Visit {
