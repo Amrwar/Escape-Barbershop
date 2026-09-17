@@ -315,6 +315,8 @@ const ar: Record<TranslationKey, string> = {
   "app.referralCount": "{invited} سجّلوا، و{earned} زاروا المحل",
   "app.referralWaiting": "اسأل الكاشير — مكافأتك جاهزة",
   "app.referralCodeField": "كود صديق (اختياري)",
+  "app.usualTitle": "كالعادة",
+  "app.usualFailed": "هذا الموعد حُجز للتو — اختر غيره",
   "app.loyaltyTitle": "كارت الولاء",
   "app.loyaltyHint": "باقي {count} زيارات وتكسب {reward}",
   "app.rewardReady": "مكافأتك جاهزة",

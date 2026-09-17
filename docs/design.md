@@ -293,6 +293,24 @@ month drifting away from the rest.
 - The shop's own till screens are deliberately *not* on these tokens. They are
   worked on for eight hours a day and stay white.
 
+## The usual
+
+A regular books the same barber, the same cut, at the same sort of hour, and
+makes the same four taps every time. Their own history already says all of it,
+so the app offers it back: the cut, the barber, and the three free times nearest
+the hour they normally come.
+
+It is read from appointments rather than visits, because an appointment knows
+what was asked for and who was asked for. Only ones they sat through count — a
+cancelled booking says nothing about a habit — and it takes two before the app
+will call anything usual, so it never guesses from a single visit.
+
+Two things it will not do. It will not offer a barber who has left or been taken
+out of the app, or a service the shop has stopped doing: the cut survives, the
+barber quietly drops to "any barber", and if the service itself has gone there
+is no usual to offer. And it will not book anything by itself — a booking holds
+a chair, so the customer always presses the button.
+
 ## Sessions
 
 Shop devices sit on a counter, so a staff login ends after 2 hours, or 30 minutes idle.

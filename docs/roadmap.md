@@ -83,6 +83,16 @@ apps and prepare the listings.
 - [x] The shop's till screens deliberately untouched — worked on for eight hours a day,
       and still white
 
+## Phase 6 — the chair, filled (in progress)
+
+Three things aimed at the customers the shop already has, rather than at finding
+new ones.
+
+- [x] **The usual** — their barber, their cut and the times nearest their hour,
+      booked in one tap from the home screen
+- [ ] The owner's nightly digest on the phone: takings, no-shows, tomorrow
+- [ ] "It's been a while" — a nudge when a regular is past their own rhythm
+
 ## Phase 5 — loyalty and depth (done)
 
 - [x] Loyalty: a punch card — a stamp per paid visit, a reward you describe

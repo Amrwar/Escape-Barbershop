@@ -10,6 +10,7 @@ import { Avatar, EmptyState, ScreenTitle, SectionTitle, Skeleton } from "@/compo
 import { ReviewPrompt, type Reviewable } from "@/components/customer/ReviewPrompt";
 import { RatingLine } from "@/components/customer/Stars";
 import { LoyaltyCard, type Loyalty } from "@/components/customer/LoyaltyCard";
+import { UsualCard, type Usual } from "@/components/customer/UsualCard";
 
 /**
  * Home answers one question — "when is my next haircut?" — and offers one
@@ -57,6 +58,7 @@ export default function CustomerHomePage() {
   const [barbers, setBarbers] = useState<Barber[]>([]);
   const [toRate, setToRate] = useState<Reviewable | null>(null);
   const [loyalty, setLoyalty] = useState<Loyalty | null>(null);
+  const [usual, setUsual] = useState<Usual | null>(null);
 
   useEffect(() => {
     fetch("/api/customer/appointments?scope=upcoming")
@@ -75,6 +77,11 @@ export default function CustomerHomePage() {
       .then((r) => r.json())
       .then((d) => setLoyalty(d?.loyalty ?? null))
       .catch(() => setLoyalty(null));
+    // What they always have, if the shop knows them well enough to say.
+    fetch("/api/customer/usual")
+      .then((r) => r.json())
+      .then((d) => setUsual(d?.usual?.times?.length ? d.usual : null))
+      .catch(() => setUsual(null));
     // The last visit they have not said anything about yet — asked once, here,
     // and gone as soon as they answer or ignore it.
     fetch("/api/customer/reviews")
@@ -135,6 +142,13 @@ export default function CustomerHomePage() {
           />
         )}
       </section>
+
+      {usual && (
+        <section>
+          <SectionTitle>{t("app.usualTitle")}</SectionTitle>
+          <UsualCard usual={usual} />
+        </section>
+      )}
 
       {loyalty && loyalty.available > 0 && (
         <section>

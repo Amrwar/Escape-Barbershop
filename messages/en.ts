@@ -313,6 +313,8 @@ const en = {
   "app.referralCount": "{invited} signed up, {earned} have been in",
   "app.referralWaiting": "Ask at the counter — your reward is ready",
   "app.referralCodeField": "A friend's code (optional)",
+  "app.usualTitle": "The usual",
+  "app.usualFailed": "That time has just gone — try another",
   "app.loyaltyTitle": "Your card",
   "app.loyaltyHint": "{count} more visits and yours is {reward}",
   "app.rewardReady": "Your reward is ready",
