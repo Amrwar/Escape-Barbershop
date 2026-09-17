@@ -24,6 +24,12 @@ interface Barber {
   rating: { average: number | null; count: number };
 }
 
+interface Photo {
+  id: string;
+  image: string;
+  caption: string | null;
+}
+
 interface Review {
   id: string;
   rating: number;
@@ -37,7 +43,11 @@ export default function BarberProfilePage() {
   const { id } = useParams<{ id: string }>();
   const { t, fmtCurrency, lang } = useTranslation();
   const [data, setData] = useState<{ barber: Barber | null; services: Service[] } | null>(null);
-  const [reviews, setReviews] = useState<{ summary: { average: number | null; count: number }; reviews: Review[] } | null>(null);
+  const [reviews, setReviews] = useState<{
+    summary: { average: number | null; count: number };
+    reviews: Review[];
+    photos?: Photo[];
+  } | null>(null);
 
   useEffect(() => {
     fetch("/api/customer/catalog")
@@ -102,6 +112,20 @@ export default function BarberProfilePage() {
           </Link>
         </div>
       </section>
+
+      {reviews && (reviews.photos?.length ?? 0) > 0 && (
+        <section>
+          <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-faint">{t("portfolio.their")}</h2>
+          <div className="scroll-clean -mx-5 flex gap-3 overflow-x-auto px-5 pb-1">
+            {reviews.photos!.map((photo) => (
+              <div key={photo.id} className="w-44 shrink-0 overflow-hidden border border-hair">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={photo.image} alt={photo.caption ?? ""} className="aspect-square w-full object-cover" />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {reviews && reviews.reviews.length > 0 && (
         <section>

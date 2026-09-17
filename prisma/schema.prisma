@@ -60,6 +60,7 @@ model Barber {
   services       BarberService[]
   reviews        Review[]
   waitlist       WaitlistEntry[]
+  photos         BarberPhoto[]
 }
 
 /// The shop's normal opening hours, one row per weekday (0 = Sunday). A missing
@@ -115,6 +116,25 @@ enum TimeOffStatus {
   REQUESTED
   APPROVED
   DECLINED
+}
+
+/// A photo of work a barber is proud of, shown on their profile in the app.
+///
+/// Customers pick a barber by their work far more readily than by their name,
+/// and a shop that shows none is asking people to guess. Stored as a data URL
+/// like every other picture here, squared and shrunk on the phone before it is
+/// sent, so a camera's four megabytes never reaches the database.
+model BarberPhoto {
+  id        String   @id @default(cuid())
+  barberId  String
+  image     String
+  caption   String?
+  /// Lowest first, so a barber can lead with their best.
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+  barber    Barber   @relation(fields: [barberId], references: [id], onDelete: Cascade)
+
+  @@index([barberId, position])
 }
 
 /// Which barber does which service. A barber with no rows does everything, so

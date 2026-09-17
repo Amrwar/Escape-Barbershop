@@ -28,6 +28,13 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
     });
     if (!barber) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
+    const photos = await prisma.barberPhoto.findMany({
+      where: { barberId: barber.id },
+      orderBy: [{ position: "asc" }, { createdAt: "desc" }],
+      take: 12,
+      select: { id: true, image: true, caption: true },
+    });
+
     const reviews = await prisma.review.findMany({
       where: { barberId: barber.id, hiddenAt: null },
       orderBy: { createdAt: "desc" },
@@ -36,6 +43,7 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
     });
 
     return NextResponse.json({
+      photos,
       summary: ratingSummary(reviews),
       reviews: reviews
         .filter((r) => r.comment)

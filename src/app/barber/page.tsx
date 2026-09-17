@@ -94,7 +94,18 @@ export default function BarberTodayPage() {
 
   return (
     <div className="space-y-6">
-      <ScreenTitle title={t("barberApp.today")} hint={t("barberApp.todayHint")} />
+      <ScreenTitle
+        title={t("barberApp.today")}
+        hint={t("barberApp.todayHint")}
+      />
+
+      <Link href="/barber/portfolio" className="c-card flex items-center justify-between gap-3 p-4">
+        <span className="min-w-0">
+          <span className="block text-sm font-medium text-ink">{t("portfolio.mine")}</span>
+          <span className="block text-xs text-soft">{t("portfolio.hint")}</span>
+        </span>
+        <span className="shrink-0 text-faint">›</span>
+      </Link>
 
       <section className="c-card-raised grid grid-cols-3 divide-x divide-hair rtl:divide-x-reverse">
         <Stat label={t("barberApp.done")} value={String(day.summary.completed)} />

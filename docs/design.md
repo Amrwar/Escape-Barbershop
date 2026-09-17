@@ -483,6 +483,20 @@ While working on it: a booking refused because the barber was off used to say
 is not there. The two reasons now answer differently, because they want
 different things — another time, or another barber.
 
+## A barber's portfolio
+
+Customers choose a barber by their work long before they choose one by name, so
+each barber can show up to twelve photos of cuts they are proud of. They appear
+on that barber's profile in the app, above the reviews.
+
+Theirs to add and theirs to remove, and nobody else's in either direction — not
+another barber's, and not the shop's. The one thing the shop controls is whether
+that barber appears in the app at all, and hiding them takes the work with them.
+
+Photos are squared and shrunk to 900 pixels on the phone before they are sent,
+because a camera produces four megabytes and this is being done standing in a
+shop on whatever signal there is.
+
 ## Sessions
 
 Shop devices sit on a counter, so a staff login ends after 2 hours, or 30 minutes idle.
