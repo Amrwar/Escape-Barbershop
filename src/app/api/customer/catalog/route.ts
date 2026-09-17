@@ -6,6 +6,15 @@ import { isRunning } from "@/lib/offers";
 import { ratingsByBarber } from "@/lib/reviews";
 
 /**
+ * Read fresh every time. This route takes no session, so Next would otherwise
+ * render it once at build and serve that copy from the edge — and the shop's
+ * own changes (a barber hidden, a price, an offer, a rating) would not reach
+ * the app until the next deploy.
+ */
+export const dynamic = "force-dynamic";
+
+
+/**
  * What a customer may book: the services and barbers the shop has opened to
  * online booking. Public, because the booking screen shows this before anyone
  * signs in — it is the same thing a passer-by reads on the price list.

@@ -4,6 +4,15 @@ import { CUSTOMER_FACING_BARBER } from "@/lib/barbers";
 import { ratingSummary } from "@/lib/reviews";
 
 /**
+ * Read fresh every time. This route takes no session, so Next would otherwise
+ * render it once at build and serve that copy from the edge — and the shop's
+ * own changes (a barber hidden, a price, an offer, a rating) would not reach
+ * the app until the next deploy.
+ */
+export const dynamic = "force-dynamic";
+
+
+/**
  * What people have said about one barber, for their profile in the app.
  *
  * Public, like the rest of the profile — this is the shop's shop window. Only

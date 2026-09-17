@@ -13,6 +13,9 @@ import { pushSubscriptionSchema } from "@/lib/validations";
  * session rather than the request.
  */
 
+// Read fresh: the key lives in the database, not in the build.
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   const keys = await getVapidKeys();
   if (!keys) return NextResponse.json({ error: "Notifications are not set up" }, { status: 503 });

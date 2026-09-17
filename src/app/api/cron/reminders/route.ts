@@ -15,6 +15,9 @@ import { sendPush } from "@/lib/push";
  * again. That matters more than getting every reminder out on the first
  * attempt: a missed reminder is a shame, a repeated one is a nuisance.
  */
+// Never a cached answer: this one sends messages.
+export const dynamic = "force-dynamic";
+
 export async function GET(req: NextRequest) {
   // Vercel sends this header on scheduled calls when CRON_SECRET is set.
   const secret = process.env.CRON_SECRET;
