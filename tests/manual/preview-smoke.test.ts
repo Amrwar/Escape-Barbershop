@@ -1,6 +1,15 @@
 import { PrismaClient } from "@prisma/client";
 import { NextRequest } from "next/server";
 import { beforeAll, describe, expect, it, vi } from "vitest";
+import { GET as getMe, PATCH as saveMe } from "@/app/api/customer/me/route";
+import { GET as getCatalog } from "@/app/api/customer/catalog/route";
+import { GET as getSlots } from "@/app/api/customer/slots/route";
+import { GET as listAppointments, POST as book } from "@/app/api/customer/appointments/route";
+import { DELETE as cancel } from "@/app/api/customer/appointments/[id]/route";
+import { GET as listReviewable, POST as leaveReview } from "@/app/api/customer/reviews/route";
+import { GET as getReferral } from "@/app/api/customer/referral/route";
+import { GET as getPushKey } from "@/app/api/push/subscribe/route";
+import { GET as getBarberReviews } from "@/app/api/customer/barbers/[id]/reviews/route";
 
 /**
  * A walk through the customer app against the preview shop.
@@ -24,15 +33,7 @@ vi.mock("@/lib/prisma", async () => ({
 let session: unknown = null;
 vi.mock("next-auth", () => ({ getServerSession: async () => session }));
 
-const { GET: getMe, PATCH: saveMe } = await import("@/app/api/customer/me/route");
-const { GET: getCatalog } = await import("@/app/api/customer/catalog/route");
-const { GET: getSlots } = await import("@/app/api/customer/slots/route");
-const { GET: listAppointments, POST: book } = await import("@/app/api/customer/appointments/route");
-const { DELETE: cancel } = await import("@/app/api/customer/appointments/[id]/route");
-const { GET: listReviewable, POST: leaveReview } = await import("@/app/api/customer/reviews/route");
-const { GET: getReferral } = await import("@/app/api/customer/referral/route");
-const { GET: getPushKey } = await import("@/app/api/push/subscribe/route");
-const { GET: getBarberReviews } = await import("@/app/api/customer/barbers/[id]/reviews/route");
+
 
 const get = (url: string) => new NextRequest(`http://localhost${url}`);
 const post = (url: string, body: unknown) =>
