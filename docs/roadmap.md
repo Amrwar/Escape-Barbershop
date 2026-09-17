@@ -77,7 +77,7 @@ apps and prepare the listings.
 - [x] Loyalty: a punch card — a stamp per paid visit, a reward you describe
 - [ ] Referrals and birthday offers
 - [x] Deeper reports: retention, busiest times, barber utilisation, new versus returning
-- [ ] Customer segments for offers
+- [x] Customer groups, and a notification the owner can send one of them
 
 ## Kept in mind, not scheduled
 

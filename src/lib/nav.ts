@@ -86,6 +86,7 @@ export const ADMIN_NAV: NavGroup[] = [
       { href: "/settings/loyalty", labelKey: "nav.loyalty", icon: "hand-coins" },
       { href: "/services", labelKey: "nav.services", icon: "scissors" },
       { href: "/customers", labelKey: "nav.customers", icon: "users" },
+      { href: "/customers/segments", labelKey: "nav.segments", icon: "pie" },
       { href: "/inventory", labelKey: "nav.inventory", icon: "pie" },
       { href: "/settings/receipt", labelKey: "nav.settings", icon: "cog" },
       { href: "/settings/finance", labelKey: "finance.visaCommission", icon: "card" },

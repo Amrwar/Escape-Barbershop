@@ -48,6 +48,9 @@ worth knowing about are:
 - **`insights-api.test.ts`** — the owner's read of the shop: the window, who may
   ask, and the proof that a long-standing customer is never counted as a new
   face.
+- **`segments-api.test.ts`** — the groups, and the guardrails on writing to one:
+  who may send, once every twelve hours, and only to people who asked for
+  notifications.
 
 A mock cannot tell you that two people took the same slot, or that the drawer
 and the report disagree. These can.

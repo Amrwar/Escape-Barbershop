@@ -222,6 +222,30 @@ Two of the questions cannot be answered from a window, and are not:
 Times are bucketed in shop time, so a visit at half past midnight belongs to the
 night the shop worked.
 
+## Customer groups
+
+Six groups, worked out from the visits every time they are asked for: newcomers,
+regulars, slipping away, lapsed, big spenders, and the ones who tried the shop
+once. Nothing is stored — a customer joins a group by living their life and
+leaves it the same way, so a group can never go stale behind the shop's back.
+
+The thresholds are written down in one place (`segments.ts`) because a shop that
+cannot say exactly what "a regular" means will argue with the number on the
+screen. Slipping and lapsed are kept apart deliberately, so the same person is
+not chased twice.
+
+The owner can send one group a notification. Three limits, because the quickest
+way to lose someone's notifications for ever is to send them something they did
+not ask for:
+
+- the owner alone, never the cashier and certainly never a customer;
+- the same group at most once every twelve hours;
+- only customers who turned notifications on — and the screen says how many that
+  is before the message is written, which is usually far fewer than the group.
+
+Every send is written to the activity log with the words that were sent. For
+everyone else, the screen copies the phone numbers so the shop can ring them.
+
 ## Sessions
 
 Shop devices sit on a counter, so a staff login ends after 2 hours, or 30 minutes idle.

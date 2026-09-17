@@ -101,6 +101,21 @@ export async function sendPush(audience: PushAudience, message: PushMessage): Pr
   return delivered;
 }
 
+/**
+ * The same message to a group of customers, one at a time.
+ *
+ * Sequential on purpose: a shop announcement is not urgent, and firing a
+ * hundred requests at Apple and Google at once is how a sender gets throttled.
+ * Returns how many devices actually took it.
+ */
+export async function sendPushToCustomers(customerIds: string[], message: PushMessage): Promise<number> {
+  let delivered = 0;
+  for (const customerId of customerIds) {
+    delivered += await sendPush({ customerId }, message);
+  }
+  return delivered;
+}
+
 /** Fire and forget: a notification must never take a booking down with it. */
 export function sendPushQuietly(audience: PushAudience, message: PushMessage): void {
   sendPush(audience, message).catch((err) => console.error("[push]", err));
