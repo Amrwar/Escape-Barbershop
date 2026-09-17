@@ -34,7 +34,16 @@ vi.mock("web-push", () => ({
 
 let shop: Shop;
 let login: { id: string; customerId: string };
-const DAY = () => dayAhead(2);
+
+/**
+ * The day under test, pinned once per test rather than recomputed.
+ *
+ * dayAhead() reads the clock each time it is called, so a test that asks for it
+ * twice can straddle midnight in Cairo and compare two different days — which
+ * is exactly what happened on a build server running in UTC.
+ */
+let day: string;
+const DAY = () => day;
 
 beforeAll(() => startTestDatabase());
 
@@ -44,6 +53,7 @@ beforeEach(async () => {
   shop = await seedShop();
   login = await seedCustomerLogin(shop.customer.id);
   session = customerSession(login.id, login.customerId);
+  day = dayAhead(2);
 });
 
 const join = (body: Record<string, unknown> = {}) =>

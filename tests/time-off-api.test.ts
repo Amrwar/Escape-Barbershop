@@ -31,6 +31,15 @@ vi.mock("web-push", () => ({
 let shop: Shop;
 let barberLogin: { id: string; barberId: string };
 
+/**
+ * The days under test, pinned once rather than recomputed.
+ *
+ * dayAhead() reads the clock on every call, so asking for it twice in one test
+ * can straddle midnight in Cairo and compare two different days — which is how
+ * this first failed, on a build server running in UTC.
+ */
+let days: Record<number, string>;
+
 const barberSession = (userId: string, barberId: string) => ({
   user: { id: userId, email: "", name: "Abdullah", role: "BARBER", barberId },
   loginAt: Date.now(),
@@ -54,26 +63,27 @@ beforeEach(async () => {
   });
   barberLogin = { id: user.id, barberId: shop.barbers.abdullah };
   session = barberSession(user.id, shop.barbers.abdullah);
+  days = { [-3]: dayAhead(-3), 2: dayAhead(2), 3: dayAhead(3) };
 });
 
 /** A whole day away, two days from now. */
-const ask = (reason = "Family wedding", days = 2) =>
+const ask = (reason = "Family wedding", which = 2) =>
   askForTimeOff(
     jsonRequest("/api/barber/time-off", {
-      startAt: at(dayAhead(days), 11 * 60).toISOString(),
-      endAt: at(dayAhead(days), 23 * 60).toISOString(),
+      startAt: at(days[which], 11 * 60).toISOString(),
+      endAt: at(days[which], 23 * 60).toISOString(),
       reason,
     })
   );
 
 /** The shop booking somebody in with that barber, on that day. */
-const bookThatDay = (days = 2, minutes = 15 * 60) => {
+const bookThatDay = (which = 2, minutes = 15 * 60) => {
   session = staffSession(shop.owner.id);
   return bookAsStaff(
     jsonRequest("/api/appointments", {
       customerId: shop.customer.id,
       barberId: shop.barbers.abdullah,
-      startAt: at(dayAhead(days), minutes).toISOString(),
+      startAt: at(days[which], minutes).toISOString(),
       serviceIds: [shop.services.haircut],
       source: "PHONE",
     })
@@ -102,16 +112,16 @@ describe("asking", () => {
     session = barberSession(barberLogin.id, barberLogin.barberId);
     const backwards = await askForTimeOff(
       jsonRequest("/api/barber/time-off", {
-        startAt: at(dayAhead(2), 20 * 60).toISOString(),
-        endAt: at(dayAhead(2), 12 * 60).toISOString(),
+        startAt: at(days[2], 20 * 60).toISOString(),
+        endAt: at(days[2], 12 * 60).toISOString(),
       })
     );
     expect(backwards.status).toBe(400);
 
     const past = await askForTimeOff(
       jsonRequest("/api/barber/time-off", {
-        startAt: at(dayAhead(-3), 11 * 60).toISOString(),
-        endAt: at(dayAhead(-3), 23 * 60).toISOString(),
+        startAt: at(days[-3], 11 * 60).toISOString(),
+        endAt: at(days[-3], 23 * 60).toISOString(),
       })
     );
     expect(past.status).toBe(400);
@@ -247,8 +257,8 @@ describe("the shop's list", () => {
     await testPrisma().barberTimeOff.create({
       data: {
         barberId: shop.barbers.khaled,
-        startAt: at(dayAhead(3), 11 * 60),
-        endAt: at(dayAhead(3), 23 * 60),
+        startAt: at(days[3], 11 * 60),
+        endAt: at(days[3], 23 * 60),
         reason: "Entered by the shop",
       },
     });
