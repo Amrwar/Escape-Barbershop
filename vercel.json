@@ -2,7 +2,6 @@
   "framework": "nextjs",
   "crons": [
     {
-      "comment": "Reminders for tomorrow's appointments, at 18:00 Cairo time",
       "path": "/api/cron/reminders",
       "schedule": "0 15 * * *"
     }
