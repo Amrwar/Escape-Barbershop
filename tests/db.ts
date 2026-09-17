@@ -9,11 +9,19 @@ import { PrismaClient } from "@prisma/client";
  * running afterwards so a repeat run is quick. `npm run test:db:stop` removes it.
  * Nothing here ever touches the shop's real database: the connection string is
  * built from scratch and overrides whatever is in .env.
+ *
+ * On a build server there is already a Postgres beside the job and no Docker to
+ * start one with, so TEST_DATABASE_URL takes over when it is set: the container
+ * is skipped and that database is used instead.
  */
 
 const CONTAINER = "escape-test-db";
 const PORT = 55499;
-export const TEST_DATABASE_URL = `postgresql://escape:escape@localhost:${PORT}/escape?schema=public`;
+
+/** A database handed to us — a CI service container — rather than one we start. */
+const PROVIDED = process.env.TEST_DATABASE_URL?.trim() || null;
+
+export const TEST_DATABASE_URL = PROVIDED ?? `postgresql://escape:escape@localhost:${PORT}/escape?schema=public`;
 
 const docker = (args: string[]) => execFileSync("docker", args, { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim();
 
@@ -44,7 +52,7 @@ function waitForPostgres() {
 
 /** Starts the container if needed and brings the schema up to date. */
 export function startTestDatabase() {
-  if (!isRunning()) {
+  if (!PROVIDED && !isRunning()) {
     try {
       docker(["rm", "-f", CONTAINER]);
     } catch {
