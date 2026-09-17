@@ -90,7 +90,7 @@ new ones.
 
 - [x] **The usual** — their barber, their cut and the times nearest their hour,
       booked in one tap from the home screen
-- [ ] The owner's nightly digest on the phone: takings, no-shows, tomorrow
+- [x] The owner's nightly digest on the phone: takings, no-shows, tomorrow
 - [ ] "It's been a while" — a nudge when a regular is past their own rhythm
 
 ## Phase 5 — loyalty and depth (done)

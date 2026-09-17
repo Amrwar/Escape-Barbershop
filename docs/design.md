@@ -311,6 +311,19 @@ barber quietly drops to "any barber", and if the service itself has gone there
 is no usual to offer. And it will not book anything by itself — a booking holds
 a chair, so the customer always presses the button.
 
+## The owner's nightly line
+
+One notification at closing: what the shop took and how it was paid, how many
+people came, what the no-shows cost, and how many bookings stand for tomorrow.
+It answers the question the owner would otherwise open a laptop for.
+
+Counted from the same rows as the day journal, over the same shop day — its own
+midnight through to 3am — so the line and the reports can never disagree. It
+goes to owners who have turned notifications on, on whichever device they turned
+them on: subscribing is the opt-in, so there is no setting to forget to switch
+on. A day with no visits, no no-shows and nothing booked for tomorrow sends
+nothing at all, because a closed day is not news.
+
 ## Sessions
 
 Shop devices sit on a counter, so a staff login ends after 2 hours, or 30 minutes idle.
