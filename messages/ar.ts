@@ -417,6 +417,8 @@ const ar: Record<TranslationKey, string> = {
   "app.usualTitle": "كالعادة",
   "app.usualFailed": "هذا الموعد حُجز للتو — اختر غيره",
   "app.loyaltyTitle": "كارت الولاء",
+  "app.stampEarned": "زيارة مدفوعة",
+  "app.stampEmpty": "لم تتم بعد",
   "app.loyaltyHint": "باقي {count} زيارات وتكسب {reward}",
   "app.rewardReady": "مكافأتك جاهزة",
   "app.rewardReadyHint": "اطلبها من الكاشير في زيارتك القادمة: {reward}",

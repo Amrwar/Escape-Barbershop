@@ -415,6 +415,8 @@ const en = {
   "app.usualTitle": "The usual",
   "app.usualFailed": "That time has just gone — try another",
   "app.loyaltyTitle": "Your card",
+  "app.stampEarned": "Visit paid for",
+  "app.stampEmpty": "Not yet",
   "app.loyaltyHint": "{count} more visits and yours is {reward}",
   "app.rewardReady": "Your reward is ready",
   "app.rewardReadyHint": "Ask at the counter on your next visit: {reward}",

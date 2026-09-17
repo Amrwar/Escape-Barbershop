@@ -105,6 +105,7 @@ html[data-app-theme="light"] {
   .bg-accent { background-color: var(--c-accent); }
   .bg-accent-soft { background-color: var(--c-accent-soft); }
   .bg-line { background-color: var(--c-line); }
+  .bg-accent-ink { background-color: var(--c-accent-ink); }
   .text-ink { color: var(--c-ink); }
   .text-mid { color: var(--c-mid); }
   .text-soft { color: var(--c-soft); }
@@ -114,6 +115,7 @@ html[data-app-theme="light"] {
   .border-hair { border-color: var(--c-line); }
   .border-hair-strong { border-color: var(--c-line-strong); }
   .border-accent { border-color: var(--c-accent); }
+  .border-faint { border-color: var(--c-faint); }
   .divide-hair > :not([hidden]) ~ :not([hidden]) { border-color: var(--c-line); }
   .ring-hair { --tw-ring-color: var(--c-line); }
   .ring-accent { --tw-ring-color: var(--c-accent); }
