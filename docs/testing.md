@@ -10,8 +10,12 @@ Two suites for two different jobs, and a third thing that is not a suite at all.
 | `npm run test:db:stop` | Removes the test database container | Docker | — |
 | `npm run test:preview` | A walk through the customer app on the demo shop | the preview running | ~2 seconds |
 
-**478 tests today: 212 on the rules, 266 on the API.** Both suites must be green before
+**620 tests today: 231 on the rules, 389 on the API.** Both suites must be green before
 anything is pushed; the preview walk is run by hand when the demo shop is up.
+
+Every one of them also runs on every push, in GitHub Actions: types, lint and the rules in
+one job, the whole API against a real Postgres in another, and the production build
+against an empty database — which proves the schema still applies to a fresh shop.
 
 ## The rules (`src/**/*.test.ts`)
 
@@ -53,6 +57,18 @@ worth knowing about are:
 - **`insights-api.test.ts`** — the owner's read of the shop: the window, who may
   ask, and the proof that a long-standing customer is never counted as a new
   face.
+- **`drawer-api.test.ts`** — opening, moving money by hand, and closing against
+  what was counted. No second session over an open one, nothing added to a
+  drawer that is shut.
+- **`payroll-api.test.ts`** — penalties, advances, expenses and the salary sheet
+  they land on. A cashier may take an expense; only the owner may fine a barber.
+- **`shop-setup-api.test.ts`** — the price list, the customer book, and the PINs
+  in front of a discount and an edit.
+- **`warehouse-api.test.ts`** — a purchase raises the balance, a transfer moves
+  it without creating any, nothing can be issued that is not there.
+- **`reporting-api.test.ts`** — the overview, discounts, absences, and the
+  activity trail, which must outlive the thing it recorded and stay unreadable
+  to the people it watches.
 - **`segments-api.test.ts`** — the groups, and the guardrails on writing to one:
   who may send, once every twelve hours, and only to people who asked for
   notifications.
