@@ -10,7 +10,7 @@ Two suites for two different jobs, and a third thing that is not a suite at all.
 | `npm run test:db:stop` | Removes the test database container | Docker | — |
 | `npm run test:preview` | A walk through the customer app on the demo shop | the preview running | ~2 seconds |
 
-**620 tests today: 231 on the rules, 389 on the API.** Both suites must be green before
+**787 tests today: 326 on the rules, 461 on the API.** Both suites must be green before
 anything is pushed; the preview walk is run by hand when the demo shop is up.
 
 Every one of them also runs on every push, in GitHub Actions: types, lint and the rules in
@@ -22,9 +22,10 @@ against an empty database — which proves the schema still applies to a fresh s
 Pure functions with no database: free slots and opening hours, how a visit was
 paid, session lengths, phone numbers, receipts, who may use which door — and
 since, the loyalty card's arithmetic, what a rating averages to, who belongs in
-which customer group, when a birthday falls in shop time, and what the insight
-screens count. Eighteen files, fast enough to keep running while you work
-(`npm run test:watch`).
+which customer group, when a birthday falls in shop time, what the insight
+screens count, what a customer always books, how much of a deposit to ask for,
+who a freed chair suits, and when a miss stops counting. Twenty-five files, fast
+enough to keep running while you work (`npm run test:watch`).
 
 These exist because the awkward parts of this system are arithmetic — a buffer
 around an appointment, a mixed payment that must add up, a clock that changes
@@ -33,7 +34,7 @@ twice a year. Arithmetic is cheap to test and expensive to get wrong.
 ## The API (`tests/*.test.ts`)
 
 The route handlers, against a real Postgres in a container, with the session
-mocked to whichever role the test is about. Sixteen files, of which the ones
+mocked to whichever role the test is about. Twenty-nine files, of which the ones
 worth knowing about are:
 
 - **`booking-api.test.ts`** — booking, clashes, opening hours, buffers, time off,
@@ -69,6 +70,15 @@ worth knowing about are:
 - **`reporting-api.test.ts`** — the overview, discounts, absences, and the
   activity trail, which must outlive the thing it recorded and stay unreadable
   to the people it watches.
+- **`retail-api.test.ts`** — selling a product: the money and the shelf moving
+  together, and never selling what is not there.
+- **`waitlist-api.test.ts`** — a cancellation offered to the longest waiter it
+  suits, one offer at a time.
+- **`deposits-api.test.ts`** — the one that matters most for money: a deposit is
+  never revenue when it arrives, and is counted once rather than twice.
+- **`time-off-api.test.ts`** — asking blocks nothing until somebody answers.
+- **`wall-api.test.ts`**, **`portfolio-api.test.ts`** — what the screen on the
+  wall may say about a customer, and whose photos are whose.
 - **`segments-api.test.ts`** — the groups, and the guardrails on writing to one:
   who may send, once every twelve hours, and only to people who asked for
   notifications.

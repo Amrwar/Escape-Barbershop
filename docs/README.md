@@ -23,6 +23,11 @@ day, earnings and reviews; reminders, confirmations and review requests as phone
 notifications; a loyalty card, referrals and birthdays; reviews; insight screens; and
 customer groups the owner can message.
 
+Since then: products sold at the till, a waiting list that turns a cancellation back into
+a booking, deposits on the expensive work, a screen for the shop wall, barbers asking for
+their own time off, their own portfolios, and a no-show policy that asks for a deposit
+rather than barring anybody.
+
 What is left is **phase 4** — the same app published to Google Play and the App Store —
 which waits on the shop's own developer accounts. The roadmap says what those cost.
 
