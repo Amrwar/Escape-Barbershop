@@ -21,6 +21,7 @@ interface CustomerFile {
   visits: { id: string; visitAt: string; total: number; items: { quantity: number; service: { name: string; arabicName: string | null } | null }[] }[];
   notes: { id: string; text: string; createdAt: string; barber: { name: string } | null }[];
   upcoming: { id: string; startAt: string; services: { serviceName: string }[] }[];
+  cutsWanted: { id: string; image: string; note: string | null }[];
 }
 
 export default function BarberCustomerPage() {
@@ -114,6 +115,31 @@ export default function BarberCustomerPage() {
           </div>
         )}
       </section>
+
+      {(file.cutsWanted?.length ?? 0) > 0 && (
+        <section>
+          <SectionTitle>{t("wanted.barberTitle")}</SectionTitle>
+          <div className="c-card p-4">
+            <div className="grid grid-cols-3 gap-2">
+              {file.cutsWanted.map((photo) => (
+                <div key={photo.id} className="overflow-hidden border border-hair">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={photo.image} alt={photo.note ?? ""} className="aspect-square w-full object-cover" />
+                </div>
+              ))}
+            </div>
+            {file.cutsWanted.some((p) => p.note) && (
+              <ul className="mt-3 space-y-1 text-xs text-soft">
+                {file.cutsWanted
+                  .filter((p) => p.note)
+                  .map((p) => (
+                    <li key={p.id}>· {p.note}</li>
+                  ))}
+              </ul>
+            )}
+          </div>
+        </section>
+      )}
 
       {file.upcoming.length > 0 && (
         <section>

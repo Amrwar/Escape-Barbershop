@@ -145,3 +145,23 @@ export async function requireOwnerOrCashier() {
 export async function requireAuth() {
   return requireStaff();
 }
+
+/**
+ * Anybody who works here — the till and the chair both.
+ *
+ * For records that belong to the shop rather than to one role: a report on a
+ * cut can come from the barber who did it or from whoever was at the counter
+ * when it went wrong, and either is a legitimate author.
+ *
+ * Deliberately not `isStaffRole`: that one guards the shop screens, where a
+ * barber does not belong. This is about working here, not about the till.
+ */
+const WORKS_HERE = ["OWNER", "CASHIER", "BARBER"];
+
+export async function requireShopPerson() {
+  const session = await getSession();
+  if (!session || !WORKS_HERE.includes(String(session.user.role))) {
+    throw new Error("Unauthorized: Staff login required");
+  }
+  return session;
+}

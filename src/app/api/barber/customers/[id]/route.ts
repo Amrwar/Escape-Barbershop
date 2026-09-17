@@ -26,7 +26,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
-    const [customer, visits, notes, upcoming] = await Promise.all([
+    const [customer, visits, notes, upcoming, cutsWanted] = await Promise.all([
       prisma.customer.findUnique({ where: { id: params.id }, select: { id: true, name: true, phone: true } }),
       prisma.visit.findMany({
         where: { customerId: params.id, barberId },
@@ -50,6 +50,12 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
         orderBy: { startAt: "asc" },
         select: { id: true, startAt: true, services: { select: { serviceName: true } } },
       }),
+      // The pictures they have kept of what they want.
+      prisma.cutWanted.findMany({
+        where: { customerId: params.id },
+        orderBy: { createdAt: "desc" },
+        select: { id: true, image: true, note: true, createdAt: true },
+      }),
     ]);
     if (!customer) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
@@ -64,6 +70,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
 
     return NextResponse.json({
       customer,
+      cutsWanted,
       visitCount: visits.length,
       lastVisit: visits[0]?.visitAt ?? null,
       totalSpent: visits.reduce((s, v) => s + v.total, 0),

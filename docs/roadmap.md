@@ -83,6 +83,11 @@ apps and prepare the listings.
 - [x] The shop's till screens deliberately untouched — worked on for eight hours a day,
       and still white
 
+## Phase 10 — the conversation around the chair (done)
+
+- [x] Photos of the cut a customer wants, on the barber's day screen and their file
+- [x] A report on a cut from whoever was standing there, read by the owner alone
+
 ## Phase 9 — the awkward customer (done)
 
 - [x] A no-show policy that asks for a deposit rather than barring anybody

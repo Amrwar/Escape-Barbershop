@@ -30,6 +30,7 @@ model User {
   givenRewards         LoyaltyRedemption[] @relation("GivenRewards")
   givenReferralRewards Referral[]          @relation("GivenReferralRewards")
   timeOffDecisions     BarberTimeOff[]     @relation("TimeOffDecisions")
+  writtenReports       CutReport[]         @relation("WrittenReports")
   pushDevices          PushSubscription[]
   barber               Barber?             @relation(fields: [barberId], references: [id])
   customer             Customer?           @relation(fields: [customerId], references: [id])
@@ -118,6 +119,60 @@ enum TimeOffStatus {
   DECLINED
 }
 
+/// Something that happened during a cut, written down by whoever was there.
+///
+/// Not a review — a review is the customer's opinion afterwards, and public.
+/// This is the shop's own record: the clippers failed, the customer was unhappy
+/// with the fade, somebody was abusive, it ran forty minutes over. Filed against
+/// the appointment it happened on, so it sits beside the money and the customer
+/// rather than in somebody's head until the end of the week.
+model CutReport {
+  id            String      @id @default(cuid())
+  appointmentId String
+  /// Who wrote it. The name is copied in, so removing an account never erases
+  /// who said what.
+  authorId      String?
+  authorName    String
+  kind          ReportKind  @default(NOTE)
+  body          String
+  /// Set when the owner has read it, so a shift's reports can be worked through.
+  seenAt        DateTime?
+  createdAt     DateTime    @default(now())
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  author        User?       @relation("WrittenReports", fields: [authorId], references: [id])
+
+  @@index([appointmentId])
+  @@index([seenAt, createdAt])
+}
+
+enum ReportKind {
+  /// Worth knowing; nothing went wrong.
+  NOTE
+  /// The customer was not happy.
+  COMPLAINT
+  /// Something broke, or ran out.
+  EQUIPMENT
+  /// Behaviour the owner should know about.
+  INCIDENT
+}
+
+/// A picture of the cut a customer wants, so the barber can see it rather than
+/// hear it described.
+///
+/// "Short on the sides" means five different things to five people. A photo
+/// ends that conversation — and every barber already asks for one, so this
+/// only puts it somewhere they will actually find it.
+model CutWanted {
+  id         String   @id @default(cuid())
+  customerId String
+  image      String
+  note       String?
+  createdAt  DateTime @default(now())
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId, createdAt])
+}
+
 /// A photo of work a barber is proud of, shown on their profile in the app.
 ///
 /// Customers pick a barber by their work far more readily than by their name,
@@ -196,6 +251,7 @@ model Appointment {
   visit            Visit?               @relation(fields: [visitId], references: [id])
   services         AppointmentService[]
   review           Review?
+  reports          CutReport[]
 
   @@index([startAt])
   @@index([barberId, startAt])
@@ -496,6 +552,7 @@ model Customer {
   referralsMade     Referral[]          @relation("ReferralsMade")
   referredBy        Referral?           @relation("ReferredBy")
   waitlist          WaitlistEntry[]
+  cutsWanted        CutWanted[]
 }
 
 model Visit {

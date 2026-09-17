@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useTranslation } from "@/lib/i18n";
 import { appointmentStatusKey } from "@/lib/appointments";
 import { EmptyState, Pill, ScreenTitle, SectionTitle, Skeleton } from "@/components/customer/kit";
+import { CutReport } from "@/components/barber/CutReport";
 
 /**
  * A barber's day. The next customer sits at the top with what to know about
@@ -23,7 +24,12 @@ interface Appointment {
   durationMinutes: number;
   totalPrice: number;
   visitId: string | null;
-  customer: { id: string; name: string; phone: string | null };
+  customer: {
+    id: string;
+    name: string;
+    phone: string | null;
+    cutsWanted?: { id: string; image: string; note: string | null }[];
+  };
   services: { id: string; serviceName: string }[];
 }
 
@@ -90,7 +96,11 @@ export default function BarberTodayPage() {
 
   const live = day.appointments.filter((a) => a.status !== "CANCELLED");
   const next = live.find((a) => ["CONFIRMED", "CHECKED_IN", "IN_PROGRESS"].includes(a.status));
-  const rest = live.filter((a) => a.id !== next?.id);
+  // Finished cuts get their own section, because the moment a cut ends the next
+  // customer becomes "next" — and that is exactly when there is something to
+  // report about the one just done.
+  const done = live.filter((a) => a.status === "COMPLETED");
+  const rest = live.filter((a) => a.id !== next?.id && a.status !== "COMPLETED");
 
   return (
     <div className="space-y-6">
@@ -148,6 +158,22 @@ export default function BarberTodayPage() {
                   <p className="mt-3 rounded-[3px] bg-accent-soft px-4 py-2.5 text-sm text-accent">{next.notes}</p>
                 )}
 
+                {(next.customer.cutsWanted?.length ?? 0) > 0 && (
+                  <div className="mt-3">
+                    <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.18em] text-faint">
+                      {t("wanted.barberTitle")}
+                    </p>
+                    <div className="scroll-clean flex gap-2 overflow-x-auto pb-1">
+                      {next.customer.cutsWanted!.map((photo) => (
+                        <div key={photo.id} className="w-28 shrink-0 overflow-hidden border border-hair">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={photo.image} alt={photo.note ?? ""} className="aspect-square w-full object-cover" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div className="mt-4 flex gap-2">
                   {next.status === "CONFIRMED" && (
                     <button onClick={() => mark(next, "CHECKED_IN")} disabled={busyId === next.id} className="c-btn-secondary flex-1">
@@ -174,6 +200,38 @@ export default function BarberTodayPage() {
                     </button>
                   )}
                 </div>
+
+                {next.status === "IN_PROGRESS" && <CutReport appointmentId={next.id} />}
+              </div>
+            </section>
+          )}
+
+          {done.length > 0 && (
+            <section>
+              <SectionTitle>{t("barberApp.doneToday")}</SectionTitle>
+              <div className="space-y-2">
+                {done.map((a) => (
+                  <div key={a.id} className="c-card p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-14 shrink-0 text-center">
+                        <div className="font-bold tabular-nums leading-none">{fmtTime(a.startAt)}</div>
+                        <div className="mt-1 text-[11px] text-faint">
+                          {a.durationMinutes} {t("appointments.minutesShort")}
+                        </div>
+                      </div>
+                      <div className="h-9 w-px bg-raised" />
+                      <Link href={`/barber/customers/${a.customer.id}`} className="min-w-0 flex-1">
+                        <div className="truncate font-medium">{a.customer.name}</div>
+                        <div className="truncate text-xs text-soft">
+                          {a.services.map((s) => s.serviceName).join(", ")}
+                        </div>
+                      </Link>
+                      <Pill tone={TONES[a.status] ?? "muted"}>{t(appointmentStatusKey(a.status))}</Pill>
+                    </div>
+
+                    <CutReport appointmentId={a.id} />
+                  </div>
+                ))}
               </div>
             </section>
           )}

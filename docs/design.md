@@ -497,6 +497,35 @@ Photos are squared and shrunk to 900 pixels on the phone before they are sent,
 because a camera produces four megabytes and this is being done standing in a
 shop on whatever signal there is.
 
+## The cut you want, and what happened during it
+
+Two halves of the same conversation, one in each direction.
+
+**Before the cut.** A customer keeps up to six photos of what they are after on
+their own profile. The barber sees them on their day screen the moment that
+customer is next in the chair, and again on the customer's file — before a word
+is exchanged. "Short on the sides" means five different things to five people; a
+photograph means one. Squared and shrunk to 900 pixels on the phone before it is
+sent, like every other picture here.
+
+They are the customer's: theirs to add, theirs to remove, and nobody at the shop
+can add one on somebody's behalf.
+
+**After the cut.** Whoever was standing there can report what happened — the
+clippers gave out, the customer was unhappy with the fade, it ran forty minutes
+over. Four kinds, a line or two, one tap from the finished cut on the barber's
+own day screen.
+
+This is not a review. A review is the customer's opinion, afterwards and in
+public; this is the shop's own record of its own day, and only the owner reads
+it, on **Floor reports**. A complaint about one barber is not another barber's
+business — a barber can read back the ones they wrote themselves and nothing
+else. Unread ones sit at the top and are marked read one at a time, because a
+list nobody clears is a list nobody reads.
+
+Both are deliberately two taps deep. A report that takes a minute gets written
+at the end of the week, from memory, if at all.
+
 ## After a no-show
 
 A missed appointment costs the shop a chair it could have sold, and the customer

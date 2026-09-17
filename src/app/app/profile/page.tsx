@@ -7,6 +7,7 @@ import { formatPhone } from "@/lib/customers";
 import { ScreenTitle, SectionTitle, Skeleton } from "@/components/customer/kit";
 import { PushToggle } from "@/components/customer/PushToggle";
 import { PhotoPicker } from "@/components/customer/PhotoPicker";
+import { CutsWanted } from "@/components/customer/CutsWanted";
 import { LoyaltyCard, type Loyalty } from "@/components/customer/LoyaltyCard";
 import { ReferralCard, type Referral } from "@/components/customer/ReferralCard";
 
@@ -127,6 +128,8 @@ export default function CustomerProfilePage() {
           </div>
         </div>
       </section>
+
+      <CutsWanted />
 
       {profile.loyalty && (
         <section>

@@ -10,7 +10,7 @@ Two suites for two different jobs, and a third thing that is not a suite at all.
 | `npm run test:db:stop` | Removes the test database container | Docker | — |
 | `npm run test:preview` | A walk through the customer app on the demo shop | the preview running | ~2 seconds |
 
-**787 tests today: 326 on the rules, 461 on the API.** Both suites must be green before
+**813 tests today: 326 on the rules, 487 on the API.** Both suites must be green before
 anything is pushed; the preview walk is run by hand when the demo shop is up.
 
 Every one of them also runs on every push, in GitHub Actions: types, lint and the rules in
@@ -79,6 +79,10 @@ worth knowing about are:
 - **`time-off-api.test.ts`** — asking blocks nothing until somebody answers.
 - **`wall-api.test.ts`**, **`portfolio-api.test.ts`** — what the screen on the
   wall may say about a customer, and whose photos are whose.
+- **`cut-reports-api.test.ts`** — who may write one (a barber about their own
+  chair only) and who may read the shop's (the owner alone).
+- **`cuts-wanted-api.test.ts`** — the photos are the customer's in both
+  directions, and they reach the barber's day screen.
 - **`segments-api.test.ts`** — the groups, and the guardrails on writing to one:
   who may send, once every twelve hours, and only to people who asked for
   notifications.

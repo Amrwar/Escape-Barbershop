@@ -38,7 +38,15 @@ export async function GET(req: NextRequest) {
           durationMinutes: true,
           totalPrice: true,
           visitId: true,
-          customer: { select: { id: true, name: true, phone: true } },
+          customer: {
+            select: {
+              id: true,
+              name: true,
+              phone: true,
+              // What they want, in a picture, right where the barber is looking.
+              cutsWanted: { orderBy: { createdAt: "desc" }, take: 3, select: { id: true, image: true, note: true } },
+            },
+          },
           services: { select: { id: true, serviceName: true } },
         },
       }),
