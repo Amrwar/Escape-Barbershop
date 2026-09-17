@@ -185,6 +185,24 @@ delete criticism has a rating worth nothing, including to itself.
 Averages are `null` when nobody has said anything — never zero, which reads as
 "terrible" rather than "new".
 
+## Loyalty
+
+The paper punch card without the paper. A stamp for every visit the customer
+paid for; after however many the shop sets, a reward is waiting.
+
+Two things it deliberately does not do:
+
+- It never changes a price. A full card is a note on the till screen while the
+  customer stands there; the cashier decides what to charge and ticks "reward
+  given", which records it. The takings stay a record of what was taken, which
+  is the same reason offers are notices rather than rules.
+- It never counts anything but a paid visit — a `Visit` row. A booking, a
+  no-show, or someone who left without paying earns nothing.
+
+Rewards earned are `floor(visits / required)`; rewards given are rows in
+`LoyaltyRedemption`; what is waiting is the difference, never below zero — a
+reward handed over early is the shop's kindness, not the customer's debt.
+
 ## Sessions
 
 Shop devices sit on a counter, so a staff login ends after 2 hours, or 30 minutes idle.

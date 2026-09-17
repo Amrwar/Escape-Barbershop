@@ -6,6 +6,7 @@ import { useTranslation } from "@/lib/i18n";
 import { formatPhone } from "@/lib/customers";
 import { Avatar, ScreenTitle, SectionTitle, Skeleton } from "@/components/customer/kit";
 import { PushToggle } from "@/components/customer/PushToggle";
+import { LoyaltyCard, type Loyalty } from "@/components/customer/LoyaltyCard";
 
 interface Profile {
   id: string;
@@ -13,6 +14,7 @@ interface Profile {
   phone: string | null;
   visitCount: number;
   upcomingCount: number;
+  loyalty: Loyalty | null;
 }
 
 /** Who they are, what they have had, and the way out. */
@@ -93,6 +95,13 @@ export default function CustomerProfilePage() {
           </div>
         </div>
       </section>
+
+      {profile.loyalty && (
+        <section>
+          <SectionTitle>{t("app.loyaltyTitle")}</SectionTitle>
+          <LoyaltyCard loyalty={profile.loyalty} />
+        </section>
+      )}
 
       <section>
         <SectionTitle>{t("app.notifications")}</SectionTitle>

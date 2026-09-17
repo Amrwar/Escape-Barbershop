@@ -28,6 +28,9 @@ function NewVisitInner() {
   const [customerSearch, setCustomerSearch]   = useState("");
   const [customers,      setCustomers]        = useState<Customer[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  // The customer's punch card, looked up while they stand at the counter.
+  const [loyalty, setLoyalty] = useState<{ text: string | null; available: number } | null>(null);
+  const [useReward, setUseReward] = useState(false);
   const [showDropdown, setShowDropdown]        = useState(false);
   const [newCustModal, setNewCustModal]         = useState(false);
   const [newCustForm,  setNewCustForm]          = useState({ name: "", phone: "" });
@@ -185,6 +188,17 @@ function NewVisitInner() {
     setNewCustForm({ name: "", phone: "" });
   };
 
+  // Fetch the card whenever the customer changes, and never carry one
+  // customer's reward over to the next.
+  useEffect(() => {
+    setUseReward(false);
+    if (!selectedCustomer) { setLoyalty(null); return; }
+    fetch(`/api/loyalty/${selectedCustomer.id}`)
+      .then((r) => r.json())
+      .then((d) => setLoyalty(d?.settings?.enabled ? { text: d.text, available: d.standing.available } : null))
+      .catch(() => setLoyalty(null));
+  }, [selectedCustomer]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -213,7 +227,19 @@ function NewVisitInner() {
           ...(paymentMethod === "MIXED" ? amounts : {}),
         }),
       });
-      if (res.ok) { const data = await res.json(); router.push("/visits/" + data.id); }
+      if (res.ok) {
+        const data = await res.json();
+        // Recorded against the visit it was given on, and never allowed to
+        // stop a visit that is already rung up.
+        if (useReward && loyalty && loyalty.available > 0) {
+          await fetch(`/api/loyalty/${selectedCustomer.id}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ visitId: data.id }),
+          }).catch(() => undefined);
+        }
+        router.push("/visits/" + data.id);
+      }
       else { const d = await res.json(); setError(d.error ?? "Failed to save visit"); }
     } catch {
       setError("Network error — please try again");
@@ -291,6 +317,27 @@ function NewVisitInner() {
                 </>
               )}
             </div>
+
+            {/* The punch card, if the shop runs one */}
+            {selectedCustomer && loyalty?.text && (
+              <div className="sm:col-span-2 -mt-1">
+                <div
+                  className={`flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-sm ${
+                    loyalty.available > 0
+                      ? "border-amber-300 bg-amber-50 text-amber-900"
+                      : "border-gray-200 bg-gray-50 text-gray-600"
+                  }`}
+                >
+                  <span>{loyalty.text}</span>
+                  {loyalty.available > 0 && (
+                    <label className="flex shrink-0 items-center gap-2 text-xs font-medium">
+                      <input type="checkbox" checked={useReward} onChange={(e) => setUseReward(e.target.checked)} />
+                      {t("loyalty.useReward")}
+                    </label>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Barber */}
             <div>

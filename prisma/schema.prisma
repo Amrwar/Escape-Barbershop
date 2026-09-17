@@ -27,6 +27,7 @@ model User {
   bookedAppointments Appointment[]       @relation("BookedAppointments")
   writtenNotes       CustomerNote[]      @relation("WrittenNotes")
   hiddenReviews      Review[]            @relation("HiddenReviews")
+  givenRewards       LoyaltyRedemption[] @relation("GivenRewards")
   pushDevices        PushSubscription[]
   barber             Barber?             @relation(fields: [barberId], references: [id])
   customer           Customer?           @relation(fields: [customerId], references: [id])
@@ -242,6 +243,26 @@ model PushSubscription {
   @@index([userId])
 }
 
+/// A reward handed over: the shop's record that a full card was cashed in.
+///
+/// The row says a reward was given, not what it was worth — the visit's own
+/// total is the money, exactly as it is for a discount typed in by hand. Kept
+/// even when the visit is later deleted, so a card cannot be cashed in twice by
+/// unpicking the visit.
+model LoyaltyRedemption {
+  id         String   @id @default(cuid())
+  customerId String
+  visitId    String?
+  givenById  String?
+  note       String?
+  createdAt  DateTime @default(now())
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  visit      Visit?   @relation(fields: [visitId], references: [id], onDelete: SetNull)
+  givenBy    User?    @relation("GivenRewards", fields: [givenById], references: [id])
+
+  @@index([customerId])
+}
+
 /// What a customer thought of a visit: stars, and a line if they feel like it.
 ///
 /// One per appointment, and only for an appointment they actually sat through —
@@ -311,46 +332,48 @@ model CustomerNote {
 }
 
 model Customer {
-  id           String             @id @default(cuid())
+  id           String              @id @default(cuid())
   name         String
   phone        String?
   notes        String?
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @updatedAt
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
   visits       Visit[]
   appointments Appointment[]
   user         User?
   notes_       CustomerNote[]
   pushDevices  PushSubscription[]
   reviews      Review[]
+  rewards      LoyaltyRedemption[]
 }
 
 model Visit {
-  id              String             @id @default(cuid())
+  id              String              @id @default(cuid())
   customerId      String
   barberId        String?
-  visitAt         DateTime           @default(now())
-  paymentMethod   PaymentMethod      @default(CASH)
-  discount        Float              @default(0)
+  visitAt         DateTime            @default(now())
+  paymentMethod   PaymentMethod       @default(CASH)
+  discount        Float               @default(0)
   total           Float
   notes           String?
-  createdAt       DateTime           @default(now())
-  updatedAt       DateTime           @updatedAt
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
   cardAmount      Float?
   cashAmount      Float?
   /// Paid by InstaPay transfer; lands in the bank, never in the drawer.
   instapayAmount  Float?
-  tip             Float              @default(0)
+  tip             Float               @default(0)
   sessionId       String?
   sessionSequence Int?
   /// Who rang the visit up. Null on visits recorded before this was tracked.
   createdByUserId String?
-  barber          Barber?            @relation(fields: [barberId], references: [id])
-  createdBy       User?              @relation("RecordedVisits", fields: [createdByUserId], references: [id])
+  barber          Barber?             @relation(fields: [barberId], references: [id])
+  createdBy       User?               @relation("RecordedVisits", fields: [createdByUserId], references: [id])
   appointment     Appointment?
-  customer        Customer           @relation(fields: [customerId], references: [id])
-  session         CashDrawerSession? @relation(fields: [sessionId], references: [id])
+  customer        Customer            @relation(fields: [customerId], references: [id])
+  session         CashDrawerSession?  @relation(fields: [sessionId], references: [id])
   items           VisitItem[]
+  rewards         LoyaltyRedemption[]
   tipMovements    CashMovement[]
 }
 

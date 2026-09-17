@@ -43,6 +43,8 @@ worth knowing about are:
 - **`offers-api.test.ts`**, **`push-api.test.ts`**, **`reviews-api.test.ts`** —
   offers, notifications and reminders, and reviews: who may leave one, one per
   visit, and the owner's power to hide but not delete.
+- **`loyalty-api.test.ts`** — stamps counted from paid visits only, a card that
+  cannot be cashed in twice, and the proof that giving a reward moves no money.
 
 A mock cannot tell you that two people took the same slot, or that the drawer
 and the report disagree. These can.

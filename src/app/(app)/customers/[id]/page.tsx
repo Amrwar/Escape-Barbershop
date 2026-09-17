@@ -45,6 +45,7 @@ export default function CustomerDetailPage() {
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [loading, setLoading] = useState(true);
   const [visitsPage, setVisitsPage] = useState(1);
+  const [loyalty, setLoyalty] = useState<{ text: string | null; available: number } | null>(null);
   const PAGE_SIZE = 15;
 
   useEffect(() => {
@@ -52,6 +53,11 @@ export default function CustomerDetailPage() {
       .then((r) => { if (!r.ok) router.push("/customers"); return r.json(); })
       .then(setCustomer)
       .finally(() => setLoading(false));
+
+    fetch(`/api/loyalty/${id}`)
+      .then((r) => r.json())
+      .then((d) => setLoyalty(d?.settings?.enabled ? { text: d.text, available: d.standing.available } : null))
+      .catch(() => setLoyalty(null));
   }, [id, router]);
 
   if (loading) {
@@ -101,6 +107,16 @@ export default function CustomerDetailPage() {
           <p className="font-medium text-gray-900 mt-0.5">{fmtCurrency(totalSpent)}</p>
         </div>
       </div>
+
+      {loyalty?.text && (
+        <div
+          className={`mb-6 rounded-lg border px-4 py-3 text-sm ${
+            loyalty.available > 0 ? "border-amber-300 bg-amber-50 text-amber-900" : "border-gray-200 bg-gray-50 text-gray-600"
+          }`}
+        >
+          <span className="font-medium">{t("nav.loyalty")}:</span> {loyalty.text}
+        </div>
+      )}
 
       {customer.notes && (
         <div className="card p-4 mb-6">

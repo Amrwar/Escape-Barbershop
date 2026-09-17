@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { requireCustomer } from "@/lib/auth";
 import { customerProfileSchema } from "@/lib/validations";
 import { UPCOMING_STATUSES } from "@/lib/customer-api";
+import { getLoyaltySettings, standingFor } from "@/lib/loyalty-server";
 
 /** The customer's own profile, with a little of their history. */
 export async function GET() {
@@ -24,7 +25,19 @@ export async function GET() {
       }),
     ]);
     if (!customer) return NextResponse.json({ error: "Not found" }, { status: 404 });
-    return NextResponse.json({ ...customer, visitCount: visits, upcomingCount: upcoming });
+
+    // The punch card, only while the shop is running one.
+    const loyaltySettings = await getLoyaltySettings();
+    const loyalty = loyaltySettings.enabled
+      ? {
+          ...(await standingFor(customer.id, loyaltySettings)),
+          visitsRequired: loyaltySettings.visitsRequired,
+          rewardText: loyaltySettings.rewardText,
+          rewardTextAr: loyaltySettings.rewardTextAr,
+        }
+      : null;
+
+    return NextResponse.json({ ...customer, visitCount: visits, upcomingCount: upcoming, loyalty });
   } catch {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

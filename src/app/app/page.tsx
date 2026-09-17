@@ -9,6 +9,7 @@ import { AppointmentCard, type CustomerAppointment } from "@/components/customer
 import { Avatar, EmptyState, ScreenTitle, SectionTitle, Skeleton } from "@/components/customer/kit";
 import { ReviewPrompt, type Reviewable } from "@/components/customer/ReviewPrompt";
 import { RatingLine } from "@/components/customer/Stars";
+import { LoyaltyCard, type Loyalty } from "@/components/customer/LoyaltyCard";
 
 /**
  * Home answers one question — "when is my next haircut?" — and offers one
@@ -55,6 +56,7 @@ export default function CustomerHomePage() {
   const [offers, setOffers] = useState<Offer[]>([]);
   const [barbers, setBarbers] = useState<Barber[]>([]);
   const [toRate, setToRate] = useState<Reviewable | null>(null);
+  const [loyalty, setLoyalty] = useState<Loyalty | null>(null);
 
   useEffect(() => {
     fetch("/api/customer/appointments?scope=upcoming")
@@ -69,6 +71,10 @@ export default function CustomerHomePage() {
         setBarbers(Array.isArray(d?.barbers) ? d.barbers.slice(0, 6) : []);
       })
       .catch(() => setServices([]));
+    fetch("/api/customer/me")
+      .then((r) => r.json())
+      .then((d) => setLoyalty(d?.loyalty ?? null))
+      .catch(() => setLoyalty(null));
     // The last visit they have not said anything about yet — asked once, here,
     // and gone as soon as they answer or ignore it.
     fetch("/api/customer/reviews")
@@ -129,6 +135,13 @@ export default function CustomerHomePage() {
           />
         )}
       </section>
+
+      {loyalty && loyalty.available > 0 && (
+        <section>
+          <SectionTitle>{t("app.loyaltyTitle")}</SectionTitle>
+          <LoyaltyCard loyalty={loyalty} />
+        </section>
+      )}
 
       {toRate && (
         <section>
