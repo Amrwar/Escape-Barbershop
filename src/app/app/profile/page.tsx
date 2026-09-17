@@ -1,51 +1,71 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { signOut } from "next-auth/react";
 import { useTranslation } from "@/lib/i18n";
 import { formatPhone } from "@/lib/customers";
-import { Avatar, ScreenTitle, SectionTitle, Skeleton } from "@/components/customer/kit";
+import { ScreenTitle, SectionTitle, Skeleton } from "@/components/customer/kit";
 import { PushToggle } from "@/components/customer/PushToggle";
+import { PhotoPicker } from "@/components/customer/PhotoPicker";
 import { LoyaltyCard, type Loyalty } from "@/components/customer/LoyaltyCard";
 import { ReferralCard, type Referral } from "@/components/customer/ReferralCard";
+
+/**
+ * Who they are, what they have had, and the way out.
+ *
+ * Everything here is theirs to change — their picture, their name, the number
+ * they sign in with, the birthday the shop wishes them on. It saves when they
+ * ask it to rather than on every keystroke, so a half-typed number is never
+ * sent anywhere.
+ */
 
 interface Profile {
   id: string;
   name: string;
   phone: string | null;
+  photo: string | null;
+  birthday: string | null;
   visitCount: number;
   upcomingCount: number;
   loyalty: Loyalty | null;
 }
 
-/** Who they are, what they have had, and the way out. */
 export default function CustomerProfilePage() {
   const { t } = useTranslation();
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [referral, setReferral] = useState<Referral | null>(null);
+
   const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [birthday, setBirthday] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
+
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
-  const [referral, setReferral] = useState<Referral | null>(null);
 
-  useEffect(() => {
+  const load = useCallback(() => {
     fetch("/api/customer/me")
       .then((r) => r.json())
-      .then((d) => {
+      .then((d: Profile) => {
         setProfile(d);
         setName(d?.name ?? "");
+        setPhone(d?.phone ?? "");
+        setBirthday(d?.birthday ? String(d.birthday).slice(0, 10) : "");
       })
       .catch(() => setProfile(null));
+  }, []);
 
+  useEffect(() => {
+    load();
     fetch("/api/customer/referral")
       .then((r) => r.json())
       .then((d) => setReferral(d?.enabled ? d : null))
       .catch(() => setReferral(null));
-  }, []);
+  }, [load]);
 
-  const save = async (body: Record<string, string>) => {
+  const save = async (body: Record<string, string | null>) => {
     setSaving(true);
     setError("");
     setMessage("");
@@ -59,6 +79,7 @@ export default function CustomerProfilePage() {
         setMessage(t("booking.saved"));
         setCurrentPassword("");
         setNewPassword("");
+        load();
         setTimeout(() => setMessage(""), 3000);
       } else {
         setError((await res.json()).error ?? t("appointments.actionFailed"));
@@ -79,26 +100,30 @@ export default function CustomerProfilePage() {
     );
   }
 
+  const savedBirthday = profile.birthday ? String(profile.birthday).slice(0, 10) : "";
+  const detailsChanged =
+    name.trim() !== profile.name || phone.trim() !== (profile.phone ?? "") || birthday !== savedBirthday;
+
   return (
     <div className="space-y-6 pt-2">
       <ScreenTitle title={t("app.navProfile")} />
 
       <section className="c-card-raised animate-fade-up p-5">
-        <div className="flex items-center gap-4">
-          <Avatar name={profile.name} size={56} />
-          <div className="min-w-0">
-            <div className="truncate text-lg font-semibold text-white">{profile.name}</div>
-            <div className="text-sm text-white/45">{formatPhone(profile.phone)}</div>
-          </div>
+        <PhotoPicker name={profile.name} photo={profile.photo} onChange={(photo) => save({ photo: photo ?? "" })} />
+
+        <div className="mt-4 border-t border-hair pt-4">
+          <div className="truncate text-lg font-semibold text-ink">{profile.name}</div>
+          <div className="text-sm text-soft">{formatPhone(profile.phone)}</div>
         </div>
-        <div className="mt-5 grid grid-cols-2 gap-3">
-          <div className="rounded-xl bg-white/[0.04] py-3 text-center">
-            <div className="text-2xl font-bold tabular-nums text-white">{profile.visitCount}</div>
-            <div className="mt-0.5 text-[11px] text-white/40">{t("app.visitsSoFar")}</div>
+
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          <div className="border border-hair py-3 text-center">
+            <div className="c-display text-2xl tabular-nums text-ink">{profile.visitCount}</div>
+            <div className="mt-0.5 text-[10px] uppercase tracking-[0.18em] text-faint">{t("app.visitsSoFar")}</div>
           </div>
-          <div className="rounded-xl bg-white/[0.04] py-3 text-center">
-            <div className="text-2xl font-bold tabular-nums text-brass-300">{profile.upcomingCount}</div>
-            <div className="mt-0.5 text-[11px] text-white/40">{t("app.upcomingCount")}</div>
+          <div className="border border-hair py-3 text-center">
+            <div className="c-display text-2xl tabular-nums text-accent">{profile.upcomingCount}</div>
+            <div className="mt-0.5 text-[10px] uppercase tracking-[0.18em] text-faint">{t("app.upcomingCount")}</div>
           </div>
         </div>
       </section>
@@ -126,11 +151,50 @@ export default function CustomerProfilePage() {
         <SectionTitle>{t("app.yourDetails")}</SectionTitle>
         <div className="c-card space-y-3 p-5">
           <div>
-            <label className="c-label">{t("field.name")}</label>
-            <input className="c-input" value={name} onChange={(e) => setName(e.target.value)} />
+            <label className="c-label" htmlFor="profile-name">
+              {t("field.name")}
+            </label>
+            <input id="profile-name" className="c-input" value={name} onChange={(e) => setName(e.target.value)} />
           </div>
-          <button type="button" onClick={() => save({ name })} disabled={saving} className="c-btn-secondary w-full">
-            {t("action.save")}
+
+          <div>
+            <label className="c-label" htmlFor="profile-phone">
+              {t("field.phone")}
+            </label>
+            <input
+              id="profile-phone"
+              className="c-input tracking-wide"
+              type="tel"
+              inputMode="numeric"
+              placeholder="01X XXXX XXXX"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+            />
+            <p className="mt-1 text-[11px] text-faint">{t("app.phoneIsLogin")}</p>
+          </div>
+
+          <div>
+            <label className="c-label" htmlFor="profile-birthday">
+              {t("birthdays.field")}
+            </label>
+            <input
+              id="profile-birthday"
+              className="c-input"
+              type="date"
+              max={new Date().toISOString().slice(0, 10)}
+              value={birthday}
+              onChange={(e) => setBirthday(e.target.value)}
+            />
+            <p className="mt-1 text-[11px] text-faint">{t("app.birthdayHint")}</p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => save({ name: name.trim(), phone: phone.trim(), birthday })}
+            disabled={saving || !detailsChanged || name.trim().length < 2}
+            className="c-btn-secondary w-full"
+          >
+            {saving ? "…" : t("action.save")}
           </button>
         </div>
       </section>
@@ -139,8 +203,11 @@ export default function CustomerProfilePage() {
         <SectionTitle>{t("app.changePassword")}</SectionTitle>
         <div className="c-card space-y-3 p-5">
           <div>
-            <label className="c-label">{t("app.currentPassword")}</label>
+            <label className="c-label" htmlFor="profile-current">
+              {t("app.currentPassword")}
+            </label>
             <input
+              id="profile-current"
               type="password"
               className="c-input"
               value={currentPassword}
@@ -149,8 +216,11 @@ export default function CustomerProfilePage() {
             />
           </div>
           <div>
-            <label className="c-label">{t("app.newPassword")}</label>
+            <label className="c-label" htmlFor="profile-new">
+              {t("app.newPassword")}
+            </label>
             <input
+              id="profile-new"
               type="password"
               className="c-input"
               value={newPassword}
@@ -170,19 +240,19 @@ export default function CustomerProfilePage() {
       </section>
 
       {message && (
-        <div className="rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-200">{message}</div>
+        <div className="border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-300">{message}</div>
       )}
-      {error && <div className="rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-200">{error}</div>}
+      {error && <div className="border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-300">{error}</div>}
 
       <button
         type="button"
         onClick={() => signOut({ callbackUrl: "/app/login" })}
-        className="c-btn-ghost w-full text-red-300 hover:bg-red-400/10 hover:text-red-200"
+        className="c-btn-ghost w-full text-red-300 hover:text-red-200"
       >
         {t("auth.signOut")}
       </button>
 
-      <p className="pb-2 text-center text-[11px] text-white/25">Escape Barbershop</p>
+      <p className="pb-2 text-center text-[10px] uppercase tracking-[0.3em] text-faint">Escape Barbershop</p>
     </div>
   );
 }

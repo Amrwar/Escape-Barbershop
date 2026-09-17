@@ -273,6 +273,26 @@ rather than a nightly attempt. Somebody born on 29 February is greeted on the
 The shop sees the birthdays coming up on the customer groups screen, because
 most customers have no app and a phone call is what actually happens.
 
+## Brass & Ink
+
+The apps are dressed from one set of tokens at the top of `globals.css`: a
+ground, four strengths of ink, a hairline, and brass. Nothing in the customer or
+barber app names a colour of its own, which is what makes the whole thing turn
+from night to day by swapping that block — and what stops a screen built next
+month drifting away from the rest.
+
+- **Dark is the default**, because that is when people book and what the room
+  looks like. A switch in the header turns it over, and the choice is remembered
+  on that phone. The theme is settled before the first paint, so nobody sees the
+  wrong one flash past.
+- **Numbers are set in Bodoni** — times, prices, counts — which is what makes an
+  appointment read like a price on a menu. Everything else is Manrope, and
+  Arabic stays in Cairo.
+- **Square corners and hairline rules.** Three pixels of radius, one brass line
+  along the top of a lifted card, and nothing else decorative.
+- The shop's own till screens are deliberately *not* on these tokens. They are
+  worked on for eight hours a day and stay white.
+
 ## Sessions
 
 Shop devices sit on a counter, so a staff login ends after 2 hours, or 30 minutes idle.

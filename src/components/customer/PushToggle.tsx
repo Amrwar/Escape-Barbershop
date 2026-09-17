@@ -101,8 +101,8 @@ export function PushToggle() {
     <div className="c-card p-5">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <div className="font-medium text-white">{t("app.remindMe")}</div>
-          <p className="mt-1 text-sm text-white/45">
+          <div className="font-medium text-ink">{t("app.remindMe")}</div>
+          <p className="mt-1 text-sm text-soft">
             {state === "needs-install"
               ? t("app.remindIos")
               : state === "unsupported"
@@ -120,11 +120,13 @@ export function PushToggle() {
             disabled={busy}
             aria-pressed={state === "on"}
             className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${
-              state === "on" ? "bg-brass-400" : "bg-white/15"
+              state === "on" ? "bg-accent" : "bg-line"
             } disabled:opacity-50`}
           >
             <span
-              className={`absolute top-1 h-5 w-5 rounded-full bg-white transition-all ${
+              className={`absolute top-1 h-5 w-5 rounded-full transition-all ${
+                state === "on" ? "bg-accent-ink" : "bg-surface"
+              } ${
                 state === "on" ? "start-6" : "start-1"
               }`}
             />

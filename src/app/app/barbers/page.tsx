@@ -45,17 +45,17 @@ export default function BarbersPage() {
             <Link
               key={b.id}
               href={`/app/barbers/${b.id}`}
-              className="c-card flex items-center gap-4 p-4 transition-colors hover:border-white/20"
+              className="c-card flex items-center gap-4 p-4 transition-colors hover:border-hair"
             >
               <Avatar name={b.name} photo={b.photo} size={52} />
               <div className="min-w-0 flex-1">
-                <div className="font-medium text-white">{b.name}</div>
-                {b.bio && <div className="mt-0.5 truncate text-xs text-white/45">{b.bio}</div>}
+                <div className="font-medium text-ink">{b.name}</div>
+                {b.bio && <div className="mt-0.5 truncate text-xs text-soft">{b.bio}</div>}
                 <div className="mt-1">
                   <RatingLine rating={b.rating ?? { average: null, count: 0 }} />
                 </div>
               </div>
-              <span className="text-white/25">›</span>
+              <span className="text-faint">›</span>
             </Link>
           ))}
         </div>

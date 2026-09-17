@@ -258,6 +258,57 @@ describe("the profile", () => {
     expect((await testPrisma().user.findUnique({ where: { id: login.id } }))?.name).toBe("Ahmed M.");
   });
 
+  it("keeps their picture, and gives it back", async () => {
+    const picture = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQ==";
+    expect((await updateProfile(jsonRequest("/api/customer/me", { photo: picture }, "PATCH"))).status).toBe(200);
+    expect((await (await getProfile()).json()).photo).toBe(picture);
+
+    // And an empty string takes it off again.
+    await updateProfile(jsonRequest("/api/customer/me", { photo: "" }, "PATCH"));
+    expect((await (await getProfile()).json()).photo).toBeNull();
+  });
+
+  it("refuses something that is not a picture", async () => {
+    const res = await updateProfile(jsonRequest("/api/customer/me", { photo: "https://example.com/me.jpg" }, "PATCH"));
+    expect(res.status).toBe(400);
+  });
+
+  it("takes their birthday, and keeps only what it needs", async () => {
+    expect((await updateProfile(jsonRequest("/api/customer/me", { birthday: "1994-09-18" }, "PATCH"))).status).toBe(200);
+    const saved = await testPrisma().customer.findUniqueOrThrow({ where: { id: login.customerId } });
+    expect(saved.birthday?.toISOString().slice(0, 10)).toBe("1994-09-18");
+
+    // Clearing it is allowed: it was never required.
+    await updateProfile(jsonRequest("/api/customer/me", { birthday: "" }, "PATCH"));
+    expect((await testPrisma().customer.findUniqueOrThrow({ where: { id: login.customerId } })).birthday).toBeNull();
+  });
+
+  it("refuses a birthday in the future", async () => {
+    const nextYear = new Date(Date.now() + 400 * 86_400_000).toISOString().slice(0, 10);
+    expect((await updateProfile(jsonRequest("/api/customer/me", { birthday: nextYear }, "PATCH"))).status).toBe(400);
+  });
+
+  it("moves their login when they change their number", async () => {
+    const res = await updateProfile(jsonRequest("/api/customer/me", { phone: "01277776666" }, "PATCH"));
+    expect(res.status).toBe(200);
+    expect((await testPrisma().user.findUniqueOrThrow({ where: { id: login.id } })).phone).toBe("01277776666");
+    expect((await testPrisma().customer.findUniqueOrThrow({ where: { id: login.customerId } })).phone).toBe("01277776666");
+  });
+
+  it("refuses a number that is not a mobile", async () => {
+    expect((await updateProfile(jsonRequest("/api/customer/me", { phone: "12345" }, "PATCH"))).status).toBe(400);
+  });
+
+  it("refuses a number somebody else already signs in with", async () => {
+    const other = await testPrisma().customer.create({ data: { name: "Somebody Else", phone: "01288885555" } });
+    await seedCustomerLogin(other.id, "01288885555");
+
+    const res = await updateProfile(jsonRequest("/api/customer/me", { phone: "01288885555" }, "PATCH"));
+    expect(res.status).toBe(409);
+    // Their own number is untouched.
+    expect((await testPrisma().user.findUniqueOrThrow({ where: { id: login.id } })).phone).toBe("01099998888");
+  });
+
   it("will not change the password without the current one", async () => {
     const res = await updateProfile(jsonRequest("/api/customer/me", { currentPassword: "wrong", newPassword: "newsecret" }, "PATCH"));
     expect(res.status).toBe(400);

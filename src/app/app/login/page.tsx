@@ -73,7 +73,7 @@ function CustomerLoginInner() {
   };
 
   return (
-    <div className="relative flex min-h-screen flex-col justify-center overflow-hidden bg-primary-950 px-5 py-10 text-white">
+    <div className="escape-app relative flex min-h-screen flex-col justify-center overflow-hidden bg-app px-5 py-10 text-ink">
       {/* Two soft lights in an otherwise black room */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-[radial-gradient(70%_100%_at_50%_0%,rgba(207,162,67,0.18),transparent_70%)]" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-64 bg-[radial-gradient(70%_100%_at_50%_100%,rgba(255,255,255,0.05),transparent_70%)]" />
@@ -90,14 +90,14 @@ function CustomerLoginInner() {
             width={96}
             height={96}
             priority
-            className="mx-auto rounded-2xl ring-1 ring-white/15"
+            className="mx-auto rounded-[4px] ring-1 ring-hair"
           />
           <h1 className="mt-5 text-2xl font-bold uppercase tracking-[0.3em]">Escape</h1>
-          <p className="mt-1.5 text-sm text-brass-300/80">{t("app.loginSubtitle")}</p>
+          <p className="mt-1.5 text-sm text-accent">{t("app.loginSubtitle")}</p>
         </div>
 
         <div className="c-card-raised p-6">
-          <div className="mb-6 grid grid-cols-2 gap-1 rounded-xl border border-white/10 bg-white/[0.03] p-1">
+          <div className="mb-6 grid grid-cols-2 gap-1 rounded-[3px] border border-hair bg-surface p-1">
             {(["signin", "signup"] as const).map((m) => (
               <button
                 key={m}
@@ -106,8 +106,8 @@ function CustomerLoginInner() {
                   setMode(m);
                   setError("");
                 }}
-                className={`rounded-lg py-2 text-sm font-medium transition-colors ${
-                  mode === m ? "bg-white/10 text-white" : "text-white/40 hover:text-white/70"
+                className={`rounded-[2px] py-2 text-xs font-bold uppercase tracking-[0.14em] transition-colors ${
+                  mode === m ? "bg-accent-soft text-accent" : "text-soft hover:text-mid"
                 }`}
               >
                 {t(m === "signin" ? "app.signIn" : "app.createAccount")}
@@ -175,12 +175,12 @@ function CustomerLoginInner() {
             )}
 
             {ended && !error && (
-              <div className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-sm text-amber-200">
+              <div className="rounded-[3px] border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-sm text-amber-200">
                 {t("auth.endedExpired")}
               </div>
             )}
             {error && (
-              <div className="rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-200">{error}</div>
+              <div className="rounded-[3px] border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-200">{error}</div>
             )}
 
             <button type="submit" disabled={loading} className="c-btn-primary w-full">
@@ -189,7 +189,7 @@ function CustomerLoginInner() {
           </form>
         </div>
 
-        <p className="mt-6 text-center text-xs text-white/30">{t("app.loginHint")}</p>
+        <p className="mt-6 text-center text-xs text-faint">{t("app.loginHint")}</p>
       </div>
     </div>
   );
@@ -197,7 +197,7 @@ function CustomerLoginInner() {
 
 export default function CustomerLoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-primary-950" />}>
+    <Suspense fallback={<div className="min-h-screen bg-app" />}>
       <CustomerLoginInner />
     </Suspense>
   );

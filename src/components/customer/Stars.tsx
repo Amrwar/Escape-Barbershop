@@ -28,7 +28,7 @@ function StarShape({ fill, size }: { fill: Star; size: number }) {
       )}
       <path
         d={path}
-        className={fill === "empty" ? "text-white/15" : "text-brass-300"}
+        className={fill === "empty" ? "text-faint" : "text-accent"}
         fill={fill === "half" ? `url(#${id})` : "currentColor"}
         stroke={fill === "empty" ? "currentColor" : "none"}
         strokeWidth={fill === "empty" ? 1.5 : 0}
@@ -59,13 +59,13 @@ export function RatingLine({
   emptyText?: string;
 }) {
   if (rating.count === 0) {
-    return emptyText ? <span className="text-xs text-white/35">{emptyText}</span> : null;
+    return emptyText ? <span className="text-xs text-faint">{emptyText}</span> : null;
   }
 
   return (
     <div className="flex items-center gap-1.5">
       <Stars rating={rating.average} size={size} />
-      <span className="text-xs tabular-nums text-white/45">
+      <span className="text-xs tabular-nums text-soft">
         {rating.average?.toFixed(1)} ({rating.count})
       </span>
     </div>

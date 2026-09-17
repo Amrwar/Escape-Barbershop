@@ -52,20 +52,20 @@ function AppointmentsInner() {
       <ScreenTitle title={t("app.myAppointments")} />
 
       {justBooked && (
-        <div className="animate-fade-up flex items-center gap-3 rounded-2xl border border-brass-400/30 bg-brass-400/10 px-4 py-3">
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brass-400 text-primary-950">✓</span>
-          <p className="text-sm text-brass-100">{t("app.bookedConfirmation")}</p>
+        <div className="animate-fade-up flex items-center gap-3 rounded-[4px] border border-accent bg-accent-soft px-4 py-3">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-accent-ink">✓</span>
+          <p className="text-sm text-accent">{t("app.bookedConfirmation")}</p>
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-1 rounded-xl border border-white/10 bg-white/[0.03] p-1">
+      <div className="grid grid-cols-2 gap-1 rounded-[3px] border border-hair bg-surface p-1">
         {(["upcoming", "past"] as const).map((key) => (
           <button
             key={key}
             type="button"
             onClick={() => setTab(key)}
-            className={`rounded-lg py-2 text-sm font-medium transition-colors ${
-              tab === key ? "bg-white/10 text-white" : "text-white/40 hover:text-white/70"
+            className={`rounded-[3px] py-2 text-sm font-medium transition-colors ${
+              tab === key ? "bg-raised text-ink" : "text-soft hover:text-mid"
             }`}
           >
             {t(key === "upcoming" ? "app.upcoming" : "app.past")}
@@ -73,7 +73,7 @@ function AppointmentsInner() {
         ))}
       </div>
 
-      {error && <div className="rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-200">{error}</div>}
+      {error && <div className="rounded-[3px] border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-200">{error}</div>}
 
       {items === null ? (
         <div className="space-y-2">

@@ -315,7 +315,13 @@ export const customerRegisterSchema = z.object({
 });
 
 export const customerProfileSchema = z.object({
-  name: z.string().min(2).max(100).optional(),
+  name: z.string().min(2, "Please enter your name").max(100).optional(),
+  /** Their login as well as their number, so changing it moves both. */
+  phone: z.string().min(6).max(20).optional(),
+  /** "1994-09-18", or empty to forget it. Only the day and month are used. */
+  birthday: z.string().max(10).optional().or(z.literal("")),
+  /** A data URL from the phone, already resized. Empty removes the picture. */
+  photo: z.string().max(400_000).optional().or(z.literal("")),
   currentPassword: z.string().min(1).optional(),
   newPassword: z.string().min(6, "Password must be at least 6 characters").optional(),
 });

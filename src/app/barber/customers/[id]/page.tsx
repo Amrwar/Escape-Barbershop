@@ -76,7 +76,7 @@ export default function BarberCustomerPage() {
 
   return (
     <div className="space-y-6">
-      <Link href="/barber" className="inline-flex items-center gap-1 text-sm text-white/40 transition-colors hover:text-white/70">
+      <Link href="/barber" className="inline-flex items-center gap-1 text-sm text-soft transition-colors hover:text-mid">
         ‹ {t("barberApp.backToDay")}
       </Link>
 
@@ -85,27 +85,27 @@ export default function BarberCustomerPage() {
           <Avatar name={file.customer.name} size={52} />
           <div className="min-w-0">
             <div className="truncate text-lg font-semibold">{file.customer.name}</div>
-            {file.customer.phone && <div className="text-sm text-white/45">{formatPhone(file.customer.phone)}</div>}
+            {file.customer.phone && <div className="text-sm text-soft">{formatPhone(file.customer.phone)}</div>}
           </div>
         </div>
 
-        <div className="mt-5 grid grid-cols-3 gap-3 border-t border-white/10 pt-4 text-center">
+        <div className="mt-5 grid grid-cols-3 gap-3 border-t border-hair pt-4 text-center">
           <div>
             <div className="text-lg font-bold tabular-nums">{file.visitCount}</div>
-            <div className="mt-0.5 text-[11px] text-white/40">{t("barberApp.visitsWithYou")}</div>
+            <div className="mt-0.5 text-[11px] text-soft">{t("barberApp.visitsWithYou")}</div>
           </div>
           <div>
             <div className="text-lg font-bold tabular-nums">{file.lastVisit ? fmtDate(file.lastVisit) : "—"}</div>
-            <div className="mt-0.5 text-[11px] text-white/40">{t("barberApp.lastVisit")}</div>
+            <div className="mt-0.5 text-[11px] text-soft">{t("barberApp.lastVisit")}</div>
           </div>
           <div>
-            <div className="text-lg font-bold tabular-nums text-brass-300">{fmtCurrency(file.totalSpent)}</div>
-            <div className="mt-0.5 text-[11px] text-white/40">{t("barberApp.spentWithYou")}</div>
+            <div className="text-lg font-bold tabular-nums text-accent">{fmtCurrency(file.totalSpent)}</div>
+            <div className="mt-0.5 text-[11px] text-soft">{t("barberApp.spentWithYou")}</div>
           </div>
         </div>
 
         {file.usual.length > 0 && (
-          <div className="mt-4 flex flex-wrap gap-2 border-t border-white/10 pt-4">
+          <div className="mt-4 flex flex-wrap gap-2 border-t border-hair pt-4">
             {file.usual.map((u) => (
               <Pill key={u.name}>
                 {u.name} · {u.count}
@@ -121,10 +121,10 @@ export default function BarberCustomerPage() {
           <div className="c-card space-y-2 p-4">
             {file.upcoming.map((a) => (
               <div key={a.id} className="flex items-center justify-between text-sm">
-                <span className="text-white/70">
+                <span className="text-mid">
                   {fmtDate(a.startAt)} · {fmtTime(a.startAt)}
                 </span>
-                <span className="truncate text-white/50">{a.services.map((s) => s.serviceName).join(", ")}</span>
+                <span className="truncate text-soft">{a.services.map((s) => s.serviceName).join(", ")}</span>
               </div>
             ))}
           </div>
@@ -150,16 +150,16 @@ export default function BarberCustomerPage() {
           {file.notes.length > 0 ? (
             <div className="mt-4 space-y-3">
               {file.notes.map((n) => (
-                <div key={n.id} className="rounded-xl bg-white/[0.04] px-4 py-3">
-                  <p className="text-sm text-white/90">{n.text}</p>
-                  <p className="mt-1 text-[11px] text-white/35">
+                <div key={n.id} className="rounded-[3px] bg-surface px-4 py-3">
+                  <p className="text-sm text-ink">{n.text}</p>
+                  <p className="mt-1 text-[11px] text-faint">
                     {n.barber?.name ?? "—"} · {fmtDate(n.createdAt)}
                   </p>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="mt-4 text-center text-xs text-white/30">{t("barberApp.noNotes")}</p>
+            <p className="mt-4 text-center text-xs text-faint">{t("barberApp.noNotes")}</p>
           )}
         </div>
       </section>
@@ -167,18 +167,18 @@ export default function BarberCustomerPage() {
       {file.visits.length > 0 && (
         <section>
           <SectionTitle>{t("customers.visitHistory")}</SectionTitle>
-          <div className="c-card divide-y divide-white/10">
+          <div className="c-card divide-y divide-hair">
             {file.visits.map((v) => (
               <div key={v.id} className="flex items-center justify-between px-4 py-3">
                 <div className="min-w-0">
-                  <div className="text-sm text-white/80">{fmtDate(v.visitAt)}</div>
-                  <div className="truncate text-xs text-white/40">
+                  <div className="text-sm text-ink">{fmtDate(v.visitAt)}</div>
+                  <div className="truncate text-xs text-soft">
                     {v.items
                       .map((i) => `${lang === "ar" && i.service?.arabicName ? i.service.arabicName : i.service?.name ?? "—"}${i.quantity > 1 ? ` ×${i.quantity}` : ""}`)
                       .join(", ")}
                   </div>
                 </div>
-                <div className="text-sm font-medium tabular-nums text-white/80">{fmtCurrency(v.total)}</div>
+                <div className="text-sm font-medium tabular-nums text-ink">{fmtCurrency(v.total)}</div>
               </div>
             ))}
           </div>

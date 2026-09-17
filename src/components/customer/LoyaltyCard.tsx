@@ -23,10 +23,10 @@ export function LoyaltyCard({ loyalty }: { loyalty: Loyalty }) {
   const ready = loyalty.available > 0;
 
   return (
-    <div className={`c-card animate-fade-up p-5 ${ready ? "border-brass-400/40 shadow-glow" : ""}`}>
+    <div className={`c-card animate-fade-up p-5 ${ready ? "border-accent shadow-glow" : ""}`}>
       <div className="flex items-baseline justify-between gap-3">
-        <div className="text-sm font-medium text-white">{ready ? t("app.rewardReady") : t("app.loyaltyTitle")}</div>
-        <div className="text-xs tabular-nums text-white/40">
+        <div className="text-sm font-medium text-ink">{ready ? t("app.rewardReady") : t("app.loyaltyTitle")}</div>
+        <div className="text-xs tabular-nums text-soft">
           {loyalty.stamps}/{loyalty.visitsRequired}
         </div>
       </div>
@@ -37,14 +37,14 @@ export function LoyaltyCard({ loyalty }: { loyalty: Loyalty }) {
             key={i}
             className={`h-7 w-7 rounded-full border transition-colors ${
               i < loyalty.stamps
-                ? "border-brass-400/60 bg-brass-400/80"
-                : "border-white/15 bg-white/[0.03]"
+                ? "border-accent bg-accent"
+                : "border-hair bg-surface"
             }`}
           />
         ))}
       </div>
 
-      <p className="mt-4 text-sm text-white/55">
+      <p className="mt-4 text-sm text-mid">
         {ready
           ? t("app.rewardReadyHint").replace("{reward}", reward)
           : t("app.loyaltyHint").replace("{count}", String(loyalty.toNext)).replace("{reward}", reward)}

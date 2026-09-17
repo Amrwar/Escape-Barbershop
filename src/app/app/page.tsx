@@ -100,7 +100,7 @@ export default function CustomerHomePage() {
           <>
             <SectionTitle
               action={
-                <Link href="/app/appointments" className="text-[11px] font-medium text-brass-300/90 hover:text-brass-200">
+                <Link href="/app/appointments" className="text-[11px] font-medium text-accent hover:text-accent">
                   {t("app.seeAll")}
                 </Link>
               }
@@ -165,7 +165,7 @@ export default function CustomerHomePage() {
         <section>
           <SectionTitle
             action={
-              <Link href="/app/offers" className="text-[11px] font-medium text-brass-300/90 hover:text-brass-200">
+              <Link href="/app/offers" className="text-[11px] font-medium text-accent hover:text-accent">
                 {t("app.seeAll")}
               </Link>
             }
@@ -177,14 +177,14 @@ export default function CustomerHomePage() {
               <Link
                 key={o.id}
                 href="/app/offers"
-                className="c-card flex items-center justify-between gap-4 p-4 transition-colors hover:border-brass-400/40"
+                className="c-card flex items-center justify-between gap-4 p-4 transition-colors hover:border-accent"
               >
-                <span className="min-w-0 truncate font-medium text-white">{lang === "ar" && o.titleAr ? o.titleAr : o.title}</span>
+                <span className="min-w-0 truncate font-medium text-ink">{lang === "ar" && o.titleAr ? o.titleAr : o.title}</span>
                 {o.price !== null && (
                   <span className="shrink-0 text-end">
-                    <span className="font-semibold tabular-nums text-brass-300">{fmtCurrency(o.price)}</span>
+                    <span className="font-semibold tabular-nums text-accent">{fmtCurrency(o.price)}</span>
                     {o.wasPrice !== null && (
-                      <span className="ms-2 text-xs tabular-nums text-white/30 line-through">{fmtCurrency(o.wasPrice)}</span>
+                      <span className="ms-2 text-xs tabular-nums text-faint line-through">{fmtCurrency(o.wasPrice)}</span>
                     )}
                   </span>
                 )}
@@ -198,7 +198,7 @@ export default function CustomerHomePage() {
         <section>
           <SectionTitle
             action={
-              <Link href="/app/barbers" className="text-[11px] font-medium text-brass-300/90 hover:text-brass-200">
+              <Link href="/app/barbers" className="text-[11px] font-medium text-accent hover:text-accent">
                 {t("app.seeAll")}
               </Link>
             }
@@ -209,7 +209,7 @@ export default function CustomerHomePage() {
             {barbers.map((b) => (
               <Link key={b.id} href={`/app/barbers/${b.id}`} className="w-[84px] shrink-0 text-center">
                 <Avatar name={b.name} photo={b.photo} size={64} />
-                <div className="mt-2 truncate text-xs text-white/70">{b.name}</div>
+                <div className="mt-2 truncate text-xs text-mid">{b.name}</div>
                 <div className="mt-1 flex justify-center">
                   <RatingLine rating={b.rating ?? { average: null, count: 0 }} size={11} />
                 </div>
@@ -223,7 +223,7 @@ export default function CustomerHomePage() {
         <section>
           <SectionTitle
             action={
-              <Link href="/app/book" className="text-[11px] font-medium text-brass-300/90 hover:text-brass-200">
+              <Link href="/app/book" className="text-[11px] font-medium text-accent hover:text-accent">
                 {t("app.seeAll")}
               </Link>
             }
@@ -232,15 +232,15 @@ export default function CustomerHomePage() {
           </SectionTitle>
           <div className="grid grid-cols-2 gap-2">
             {services.map((s) => (
-              <Link key={s.id} href="/app/book" className="c-card p-4 transition-colors hover:border-white/20">
-                <div className="truncate text-sm font-medium text-white">
+              <Link key={s.id} href="/app/book" className="c-card p-4 transition-colors hover:border-hair">
+                <div className="truncate text-sm font-medium text-ink">
                   {lang === "ar" && s.arabicName ? s.arabicName : s.name}
                 </div>
                 <div className="mt-1 flex items-baseline justify-between">
-                  <span className="text-[11px] text-white/40">
+                  <span className="text-[11px] text-soft">
                     {s.durationMinutes} {t("appointments.minutesShort")}
                   </span>
-                  <span className="text-sm font-semibold tabular-nums text-brass-300">{fmtCurrency(s.defaultPrice)}</span>
+                  <span className="text-sm font-semibold tabular-nums text-accent">{fmtCurrency(s.defaultPrice)}</span>
                 </div>
               </Link>
             ))}
@@ -258,12 +258,12 @@ export default function CustomerHomePage() {
 
 function QuickLink({ href, icon, label, hint }: { href: string; icon: IconName; label: string; hint: string }) {
   return (
-    <Link href={href} className="c-card p-4 transition-colors hover:border-white/20">
-      <div className="mb-2 flex h-9 w-9 items-center justify-center rounded-xl bg-brass-400/15 text-brass-300">
+    <Link href={href} className="c-card p-4 transition-colors hover:border-hair">
+      <div className="mb-2 flex h-9 w-9 items-center justify-center rounded-[3px] bg-accent-soft text-accent">
         <Icon name={icon} className="h-5 w-5" />
       </div>
-      <div className="text-sm font-semibold text-white">{label}</div>
-      <div className="mt-0.5 text-[11px] text-white/40">{hint}</div>
+      <div className="text-sm font-semibold text-ink">{label}</div>
+      <div className="mt-0.5 text-[11px] text-soft">{hint}</div>
     </Link>
   );
 }

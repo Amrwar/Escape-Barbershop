@@ -364,6 +364,8 @@ model Customer {
   appointments      Appointment[]
   user              User?
   notes_            CustomerNote[]
+  /// Their own picture, as a data URL. Resized on the phone before it is sent.
+  photo             String?
   /// What they tell a friend. Made the first time they ask for it.
   referralCode      String?             @unique
   /// Day and month are what the shop uses; the year is whatever they gave.

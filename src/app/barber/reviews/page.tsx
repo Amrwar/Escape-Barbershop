@@ -45,13 +45,13 @@ export default function BarberReviewsPage() {
       <ScreenTitle title={t("barberApp.navReviews")} hint={t("barberApp.reviewsHint")} />
 
       <section className="c-card-raised animate-fade-up p-6 text-center">
-        <div className="text-5xl font-bold tabular-nums leading-none text-white">
+        <div className="text-5xl font-bold tabular-nums leading-none text-ink">
           {data.summary.average?.toFixed(1) ?? "—"}
         </div>
         <div className="mt-3 flex justify-center">
           <Stars rating={data.summary.average} size={20} />
         </div>
-        <div className="mt-2 text-xs text-white/40">
+        <div className="mt-2 text-xs text-soft">
           {t("barberApp.outOfReviews").replace("{count}", String(data.summary.count))}
         </div>
       </section>
@@ -66,12 +66,12 @@ export default function BarberReviewsPage() {
               <div key={r.id} className="c-card p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0">
-                    <div className="truncate text-sm font-medium text-white/85">{r.name}</div>
-                    <div className="text-[11px] text-white/35">{fmtDate(r.createdAt)}</div>
+                    <div className="truncate text-sm font-medium text-ink">{r.name}</div>
+                    <div className="text-[11px] text-faint">{fmtDate(r.createdAt)}</div>
                   </div>
                   <Stars rating={r.rating} size={13} />
                 </div>
-                <p className="mt-2 text-sm leading-relaxed text-white/55">{r.comment}</p>
+                <p className="mt-2 text-sm leading-relaxed text-mid">{r.comment}</p>
               </div>
             ))}
           </div>
@@ -79,7 +79,7 @@ export default function BarberReviewsPage() {
       )}
 
       {data.summary.count > withWords.length && (
-        <p className="text-center text-[11px] text-white/30">
+        <p className="text-center text-[11px] text-faint">
           {t("barberApp.starsOnly").replace("{count}", String(data.summary.count - withWords.length))}
         </p>
       )}

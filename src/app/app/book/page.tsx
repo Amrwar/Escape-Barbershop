@@ -152,27 +152,27 @@ export default function BookPage() {
   return (
     <div className="pt-2">
       {/* How far along, and what it is costing so far */}
-      <div className="sticky top-0 z-10 -mx-5 mb-5 bg-primary-950/90 px-5 pb-3 pt-2 backdrop-blur-lg">
+      <div className="sticky top-0 z-10 -mx-5 mb-5 bg-app px-5 pb-3 pt-2 backdrop-blur-lg">
         <div className="flex items-center gap-1.5">
           {STEPS.map((s, i) => (
             <div
               key={s}
               className={`h-1 flex-1 rounded-full transition-colors duration-300 ${
-                i < stepIndex ? "bg-brass-400" : i === stepIndex ? "bg-brass-400/70" : "bg-white/10"
+                i < stepIndex ? "bg-accent" : i === stepIndex ? "bg-accent" : "bg-raised"
               }`}
             />
           ))}
         </div>
         {chosen.length > 0 && (
           <div className="mt-2.5 flex items-center justify-between text-[13px]">
-            <span className="truncate text-white/60">
+            <span className="truncate text-mid">
               {chosen.map((s) => (lang === "ar" && s.arabicName ? s.arabicName : s.name)).join(" + ")}
-              <span className="text-white/35">
+              <span className="text-faint">
                 {" · "}
                 {totalMinutes} {t("appointments.minutesShort")}
               </span>
             </span>
-            <span className="ms-3 shrink-0 font-semibold tabular-nums text-brass-300">{fmtCurrency(totalPrice)}</span>
+            <span className="ms-3 shrink-0 font-semibold tabular-nums text-accent">{fmtCurrency(totalPrice)}</span>
           </div>
         )}
       </div>
@@ -192,14 +192,14 @@ export default function BookPage() {
                 >
                   <div className="min-w-0 flex-1">
                     <div className="truncate font-medium">{lang === "ar" && s.arabicName ? s.arabicName : s.name}</div>
-                    <div className="mt-1 text-xs text-white/40">
+                    <div className="mt-1 text-xs text-soft">
                       {s.durationMinutes} {t("appointments.minutesShort")}
                     </div>
                   </div>
-                  <div className="text-sm font-semibold tabular-nums text-white/90">{fmtCurrency(s.defaultPrice)}</div>
+                  <div className="text-sm font-semibold tabular-nums text-ink">{fmtCurrency(s.defaultPrice)}</div>
                   <div
                     className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
-                      on ? "border-brass-400 bg-brass-400 text-primary-950" : "border-white/20"
+                      on ? "border-accent bg-accent text-accent-ink" : "border-hair"
                     }`}
                   >
                     {on && <span className="text-xs font-bold">✓</span>}
@@ -220,12 +220,12 @@ export default function BookPage() {
               onClick={() => setBarberId(null)}
               className={`c-choice flex w-full items-center gap-4 p-4 text-start ${barberId === null ? "c-choice-on" : ""}`}
             >
-              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-brass-400/15 text-brass-300">
+              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-accent-soft text-accent">
                 <Icon name="users" className="h-5 w-5" />
               </div>
               <div className="flex-1">
                 <div className="font-medium">{t("appointments.anyBarber")}</div>
-                <div className="mt-0.5 text-xs text-white/40">{t("app.anyBarberHint")}</div>
+                <div className="mt-0.5 text-xs text-soft">{t("app.anyBarberHint")}</div>
               </div>
               {barberId === null && <Pill tone="brass">✓</Pill>}
             </button>
@@ -240,7 +240,7 @@ export default function BookPage() {
                 <Avatar name={b.name} photo={b.photo} />
                 <div className="min-w-0 flex-1">
                   <div className="font-medium">{b.name}</div>
-                  {b.bio && <div className="mt-0.5 truncate text-xs text-white/40">{b.bio}</div>}
+                  {b.bio && <div className="mt-0.5 truncate text-xs text-soft">{b.bio}</div>}
                 </div>
                 {barberId === b.id && <Pill tone="brass">✓</Pill>}
               </button>
@@ -264,7 +264,7 @@ export default function BookPage() {
                   onClick={() => setDay(d)}
                   className={`c-choice w-[68px] shrink-0 py-2.5 text-center ${on ? "c-choice-on" : ""}`}
                 >
-                  <div className={`text-[10px] uppercase tracking-wide ${on ? "text-brass-200" : "text-white/40"}`}>
+                  <div className={`text-[10px] uppercase tracking-wide ${on ? "text-accent" : "text-soft"}`}>
                     {i === 0
                       ? t("app.today")
                       : new Intl.DateTimeFormat(lang === "ar" ? "ar-EG" : "en-GB", { weekday: "short", timeZone: TZ }).format(date)}
@@ -278,7 +278,7 @@ export default function BookPage() {
           {slots === null ? (
             <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
               {[...Array(9)].map((_, i) => (
-                <Skeleton key={i} className="h-11 rounded-xl" />
+                <Skeleton key={i} className="h-11 rounded-[3px]" />
               ))}
             </div>
           ) : slots.length === 0 ? (
@@ -287,7 +287,7 @@ export default function BookPage() {
             <div className="space-y-5">
               {groupByPartOfDay(slots).map((group) => (
                 <div key={group.key}>
-                  <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/35">{t(group.key)}</div>
+                  <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-faint">{t(group.key)}</div>
                   <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
                     {group.slots.map((iso) => (
                       <button
@@ -312,9 +312,9 @@ export default function BookPage() {
           <ScreenTitle title={t("app.stepConfirm")} hint={t("app.stepConfirmHint")} />
 
           <div className="c-card-raised overflow-hidden">
-            <div className="border-b border-white/10 bg-white/[0.03] px-5 py-4">
-              <div className="text-3xl font-bold tabular-nums leading-none">{fmtTime(time)}</div>
-              <div className="mt-1.5 text-sm text-white/50">
+            <div className="border-b border-hair bg-surface px-5 py-4">
+              <div className="c-display text-3xl tabular-nums leading-none">{fmtTime(time)}</div>
+              <div className="mt-1.5 text-sm text-soft">
                 {new Intl.DateTimeFormat(lang === "ar" ? "ar-EG" : "en-GB", {
                   weekday: "long",
                   day: "numeric",
@@ -327,22 +327,22 @@ export default function BookPage() {
             <div className="space-y-3 px-5 py-4">
               {chosen.map((s) => (
                 <div key={s.id} className="flex items-baseline justify-between text-sm">
-                  <span className="text-white/70">{lang === "ar" && s.arabicName ? s.arabicName : s.name}</span>
-                  <span className="tabular-nums text-white/90">{fmtCurrency(s.defaultPrice)}</span>
+                  <span className="text-mid">{lang === "ar" && s.arabicName ? s.arabicName : s.name}</span>
+                  <span className="tabular-nums text-ink">{fmtCurrency(s.defaultPrice)}</span>
                 </div>
               ))}
-              <div className="flex items-center justify-between border-t border-white/10 pt-3">
+              <div className="flex items-center justify-between border-t border-hair pt-3">
                 <div className="flex items-center gap-2.5">
                   <Avatar name={barber?.name ?? "?"} photo={barber?.photo} size={32} />
-                  <span className="text-sm text-white/70">{barber?.name ?? t("appointments.anyBarber")}</span>
+                  <span className="text-sm text-mid">{barber?.name ?? t("appointments.anyBarber")}</span>
                 </div>
                 <Pill>
                   {totalMinutes} {t("appointments.minutesShort")}
                 </Pill>
               </div>
-              <div className="flex items-baseline justify-between border-t border-white/10 pt-3">
+              <div className="flex items-baseline justify-between border-t border-hair pt-3">
                 <span className="font-semibold">{t("field.total")}</span>
-                <span className="text-xl font-bold tabular-nums text-brass-300">{fmtCurrency(totalPrice)}</span>
+                <span className="text-xl font-bold tabular-nums text-accent">{fmtCurrency(totalPrice)}</span>
               </div>
             </div>
           </div>
@@ -352,14 +352,14 @@ export default function BookPage() {
             <input className="c-input" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={t("app.notesPlaceholder")} />
           </div>
 
-          <p className="text-center text-xs text-white/35">
+          <p className="text-center text-xs text-faint">
             {t("app.cancelPolicy").replace("{minutes}", String(catalog.booking.cancelWindowMinutes))}
           </p>
         </section>
       )}
 
       {error && (
-        <div className="mt-4 rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-200">{error}</div>
+        <div className="mt-4 rounded-[3px] border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-200">{error}</div>
       )}
 
       <ActionBar>

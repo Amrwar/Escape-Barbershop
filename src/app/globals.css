@@ -2,6 +2,47 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Brass & Ink ─────────────────────────────────────────────────────────
+   The customer and barber apps run on these tokens, never on raw colours, so
+   the whole app turns from night to day by swapping this block. Dark is the
+   shop after hours and the default. The shop's own till screens are not on
+   these tokens: they are worked on for eight hours and stay white. */
+:root {
+  --c-bg: #0b0a09;
+  --c-surface: #131110;
+  --c-raised: #191614;
+  --c-ink: #f4efe6;
+  --c-mid: #c9c1b5;
+  --c-soft: #948b80;
+  --c-faint: #655d54;
+  --c-line: #2a2520;
+  --c-line-strong: #3a332b;
+  --c-accent: #cfa243;
+  --c-accent-hover: #d9b767;
+  --c-accent-ink: #14100a;
+  --c-accent-soft: rgba(207, 162, 67, 0.13);
+  --c-glow: rgba(207, 162, 67, 0.13);
+  --c-lift: 0 1px 0 rgba(255, 255, 255, 0.04), 0 18px 40px -20px rgba(0, 0, 0, 0.9);
+}
+
+html[data-app-theme="light"] {
+  --c-bg: #f6f2ea;
+  --c-surface: #ffffff;
+  --c-raised: #ffffff;
+  --c-ink: #16130f;
+  --c-mid: #3f3930;
+  --c-soft: #6c6358;
+  --c-faint: #948a7c;
+  --c-line: #e1d8c7;
+  --c-line-strong: #d3c7b0;
+  --c-accent: #8a6a18;
+  --c-accent-hover: #6f5512;
+  --c-accent-ink: #fffbf0;
+  --c-accent-soft: rgba(138, 106, 24, 0.1);
+  --c-glow: rgba(138, 106, 24, 0.07);
+  --c-lift: 0 1px 2px rgba(22, 19, 15, 0.05), 0 16px 32px -24px rgba(22, 19, 15, 0.35);
+}
+
 @layer base {
   /* LTR: system font */
   html[dir="ltr"] body {
@@ -11,6 +52,14 @@
 
   /* RTL: Cairo for Arabic */
   html[dir="rtl"] body {
+    font-family: var(--font-cairo), system-ui, sans-serif;
+  }
+
+  /* The customer and barber apps read in Manrope, whatever the till screens do. */
+  .escape-app {
+    font-family: var(--font-manrope), system-ui, sans-serif;
+  }
+  html[dir="rtl"] .escape-app {
     font-family: var(--font-cairo), system-ui, sans-serif;
   }
 
@@ -45,47 +94,111 @@
   .card {
     @apply bg-white rounded-xl border border-gray-200 shadow-sm;
   }
-  /* ── The customer app ────────────────────────────────────────────────────
-     Dark like the shop itself. Colour is used sparingly: brass for the one
-     action that matters on a screen, everything else in white at varying
-     strength, which is what keeps it feeling expensive rather than busy. */
+  /* ── The customer app: Brass & Ink ───────────────────────────────────────
+     Square corners, hairline rules, brass on the one action that matters, and
+     a didone for anything read as a number — a time, a price, a count.
+     Everything else is ink at four strengths. Nothing here names a colour: the
+     tokens at the top of this file decide whether it is night or day. */
+  .bg-app { background-color: var(--c-bg); }
+  .bg-surface { background-color: var(--c-surface); }
+  .bg-raised { background-color: var(--c-raised); }
+  .bg-accent { background-color: var(--c-accent); }
+  .bg-accent-soft { background-color: var(--c-accent-soft); }
+  .bg-line { background-color: var(--c-line); }
+  .text-ink { color: var(--c-ink); }
+  .text-mid { color: var(--c-mid); }
+  .text-soft { color: var(--c-soft); }
+  .text-faint { color: var(--c-faint); }
+  .text-accent { color: var(--c-accent); }
+  .text-accent-ink { color: var(--c-accent-ink); }
+  .border-hair { border-color: var(--c-line); }
+  .border-hair-strong { border-color: var(--c-line-strong); }
+  .border-accent { border-color: var(--c-accent); }
+  .divide-hair > :not([hidden]) ~ :not([hidden]) { border-color: var(--c-line); }
+  .ring-hair { --tw-ring-color: var(--c-line); }
+  .ring-accent { --tw-ring-color: var(--c-accent); }
+  .placeholder-faint::placeholder { color: var(--c-faint); }
+  /* Gradients fade to brass rather than to a fixed gold. */
+  .to-accent { --tw-gradient-to: var(--c-accent) var(--tw-gradient-to-position); }
+  .shadow-glow { box-shadow: 0 0 0 1px var(--c-accent-soft), 0 12px 30px -16px var(--c-glow); }
+  .shadow-lift { box-shadow: var(--c-lift); }
+
+  /* The numbers. Bodoni is why 15:00 reads like a price on a menu. */
+  .c-display {
+    font-family: var(--font-bodoni), Georgia, serif;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    font-variant-numeric: tabular-nums;
+  }
+
   .c-card {
-    @apply rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-sm;
+    @apply border bg-surface;
+    border-color: var(--c-line);
+    border-radius: 3px;
   }
   .c-card-raised {
-    @apply c-card shadow-lift;
+    @apply c-card relative;
+    background-color: var(--c-raised);
+    box-shadow: var(--c-lift);
+  }
+  /* One brass hairline along the top of a lifted card: the whole flourish. */
+  .c-card-raised::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--c-accent), transparent);
+    opacity: 0.85;
   }
   .c-btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition-all duration-200 active:scale-[0.98] disabled:opacity-40 disabled:active:scale-100 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center gap-2 px-5 py-3 text-xs font-bold uppercase transition-all duration-200 active:scale-[0.99] disabled:opacity-40 disabled:active:scale-100 disabled:cursor-not-allowed;
+    border-radius: 2px;
+    letter-spacing: 0.16em;
   }
   .c-btn-primary {
-    @apply c-btn bg-brass-400 text-primary-950 hover:bg-brass-300 shadow-glow;
+    @apply c-btn bg-accent text-accent-ink;
   }
+  .c-btn-primary:hover:not(:disabled) { background-color: var(--c-accent-hover); }
   .c-btn-secondary {
-    @apply c-btn border border-white/15 bg-white/[0.04] text-white hover:bg-white/10;
+    @apply c-btn border bg-surface text-ink;
+    border-color: var(--c-line-strong);
   }
+  .c-btn-secondary:hover:not(:disabled) { border-color: var(--c-accent); color: var(--c-accent); }
   .c-btn-ghost {
-    @apply c-btn px-3 py-2 text-white/60 hover:text-white hover:bg-white/5;
+    @apply c-btn px-3 py-2 text-soft;
   }
+  .c-btn-ghost:hover:not(:disabled) { color: var(--c-ink); }
   .c-input {
-    @apply block w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-[15px] text-white placeholder-white/30 transition-colors focus:border-brass-400/60 focus:outline-none focus:ring-1 focus:ring-brass-400/40;
+    @apply block w-full border bg-surface px-4 py-3 text-[15px] text-ink transition-colors focus:outline-none;
+    border-color: var(--c-line);
+    border-radius: 2px;
   }
+  .c-input::placeholder { color: var(--c-faint); }
+  .c-input:focus { border-color: var(--c-accent); }
   .c-label {
-    @apply mb-1.5 block text-xs font-medium uppercase tracking-wider text-white/45;
+    @apply mb-1.5 block text-[10px] font-bold uppercase text-soft;
+    letter-spacing: 0.22em;
   }
   /* A tappable choice: service, barber, day, time. */
   .c-choice {
-    @apply rounded-xl border border-white/10 bg-white/[0.03] text-white transition-all duration-150 active:scale-[0.98] hover:border-white/20;
+    @apply border bg-surface text-ink transition-all duration-150 active:scale-[0.99];
+    border-color: var(--c-line);
+    border-radius: 3px;
   }
+  .c-choice:hover { border-color: var(--c-line-strong); }
   .c-choice-on {
-    @apply border-brass-400/70 bg-brass-400/10 text-white;
+    border-color: var(--c-accent);
+    background-color: var(--c-accent-soft);
+    color: var(--c-ink);
   }
   .c-skeleton {
-    @apply animate-pulse rounded-2xl bg-white/[0.06];
+    @apply animate-pulse bg-surface;
+    border-radius: 3px;
   }
-  /* Where a photo will go once the shop has some. */
+  /* Where a photo will go until the shop has one. */
   .c-photo-slot {
-    @apply flex items-center justify-center bg-gradient-to-br from-white/[0.07] to-transparent text-white/25;
+    @apply flex items-center justify-center text-faint;
+    background-image: linear-gradient(150deg, var(--c-raised), var(--c-bg));
   }
 
   /* Scrolls, but without painting a track across the chrome */

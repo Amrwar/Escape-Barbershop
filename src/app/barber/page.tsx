@@ -96,13 +96,13 @@ export default function BarberTodayPage() {
     <div className="space-y-6">
       <ScreenTitle title={t("barberApp.today")} hint={t("barberApp.todayHint")} />
 
-      <section className="c-card-raised grid grid-cols-3 divide-x divide-white/10 rtl:divide-x-reverse">
+      <section className="c-card-raised grid grid-cols-3 divide-x divide-hair rtl:divide-x-reverse">
         <Stat label={t("barberApp.done")} value={String(day.summary.completed)} />
         <Stat label={t("barberApp.toCome")} value={String(day.summary.open)} />
         <Stat label={t("barberApp.earnedToday")} value={fmtCurrency(day.earned.commission + day.earned.tips)} tone="brass" />
       </section>
 
-      {error && <div className="rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-200">{error}</div>}
+      {error && <div className="rounded-[3px] border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-200">{error}</div>}
 
       {live.length === 0 ? (
         <EmptyState icon="calendar" title={t("barberApp.nothingToday")} hint={t("barberApp.nothingTodayHint")} />
@@ -114,8 +114,8 @@ export default function BarberTodayPage() {
               <div className="c-card-raised animate-fade-up p-5">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <div className="text-3xl font-bold tabular-nums leading-none">{fmtTime(next.startAt)}</div>
-                    <div className="mt-1.5 text-sm text-white/50">
+                    <div className="c-display text-3xl tabular-nums leading-none">{fmtTime(next.startAt)}</div>
+                    <div className="mt-1.5 text-sm text-soft">
                       {next.services.map((s) => s.serviceName).join(" + ")}
                     </div>
                   </div>
@@ -124,17 +124,17 @@ export default function BarberTodayPage() {
 
                 <Link
                   href={`/barber/customers/${next.customer.id}`}
-                  className="mt-4 flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 transition-colors hover:border-white/20"
+                  className="mt-4 flex items-center justify-between rounded-[3px] border border-hair bg-surface px-4 py-3 transition-colors hover:border-hair"
                 >
                   <div className="min-w-0">
                     <div className="truncate font-medium">{next.customer.name}</div>
-                    <div className="text-xs text-white/40">{t("barberApp.seeHistory")}</div>
+                    <div className="text-xs text-soft">{t("barberApp.seeHistory")}</div>
                   </div>
-                  <span className="text-white/30">›</span>
+                  <span className="text-faint">›</span>
                 </Link>
 
                 {next.notes && (
-                  <p className="mt-3 rounded-xl bg-brass-400/10 px-4 py-2.5 text-sm text-brass-100">{next.notes}</p>
+                  <p className="mt-3 rounded-[3px] bg-accent-soft px-4 py-2.5 text-sm text-accent">{next.notes}</p>
                 )}
 
                 <div className="mt-4 flex gap-2">
@@ -149,7 +149,7 @@ export default function BarberTodayPage() {
                     </button>
                   )}
                   {next.status === "IN_PROGRESS" && (
-                    <div className="flex-1 rounded-xl border border-white/10 px-4 py-3 text-center text-sm text-white/50">
+                    <div className="flex-1 rounded-[3px] border border-hair px-4 py-3 text-center text-sm text-soft">
                       {t("barberApp.tillTakesPayment")}
                     </div>
                   )}
@@ -175,18 +175,18 @@ export default function BarberTodayPage() {
                   <Link
                     key={a.id}
                     href={`/barber/customers/${a.customer.id}`}
-                    className="c-card flex items-center gap-3 p-4 transition-colors hover:border-white/20"
+                    className="c-card flex items-center gap-3 p-4 transition-colors hover:border-hair"
                   >
                     <div className="w-14 shrink-0 text-center">
                       <div className="font-bold tabular-nums leading-none">{fmtTime(a.startAt)}</div>
-                      <div className="mt-1 text-[11px] text-white/35">
+                      <div className="mt-1 text-[11px] text-faint">
                         {a.durationMinutes} {t("appointments.minutesShort")}
                       </div>
                     </div>
-                    <div className="h-9 w-px bg-white/10" />
+                    <div className="h-9 w-px bg-raised" />
                     <div className="min-w-0 flex-1">
                       <div className="truncate font-medium">{a.customer.name}</div>
-                      <div className="truncate text-xs text-white/45">{a.services.map((s) => s.serviceName).join(", ")}</div>
+                      <div className="truncate text-xs text-soft">{a.services.map((s) => s.serviceName).join(", ")}</div>
                     </div>
                     <Pill tone={TONES[a.status] ?? "muted"}>{t(appointmentStatusKey(a.status))}</Pill>
                   </Link>
@@ -203,8 +203,8 @@ export default function BarberTodayPage() {
 function Stat({ label, value, tone = "plain" }: { label: string; value: string; tone?: "plain" | "brass" }) {
   return (
     <div className="px-3 py-4 text-center">
-      <div className={`text-xl font-bold tabular-nums ${tone === "brass" ? "text-brass-300" : "text-white"}`}>{value}</div>
-      <div className="mt-0.5 text-[11px] text-white/40">{label}</div>
+      <div className={`text-xl font-bold tabular-nums ${tone === "brass" ? "text-accent" : "text-ink"}`}>{value}</div>
+      <div className="mt-0.5 text-[11px] text-soft">{label}</div>
     </div>
   );
 }

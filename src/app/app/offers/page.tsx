@@ -48,26 +48,26 @@ export default function OffersPage() {
               <div key={o.id} className="c-card-raised animate-fade-up overflow-hidden">
                 <div className="flex items-start justify-between gap-4 p-5">
                   <div className="min-w-0">
-                    <div className="text-lg font-semibold text-white">{lang === "ar" && o.titleAr ? o.titleAr : o.title}</div>
-                    {o.description && <p className="mt-1 text-sm text-white/45">{o.description}</p>}
+                    <div className="text-lg font-semibold text-ink">{lang === "ar" && o.titleAr ? o.titleAr : o.title}</div>
+                    {o.description && <p className="mt-1 text-sm text-soft">{o.description}</p>}
                     {o.endsAt && (
-                      <p className="mt-2 text-[11px] text-white/35">
+                      <p className="mt-2 text-[11px] text-faint">
                         {t("app.offerUntil")} {fmtDate(o.endsAt)}
                       </p>
                     )}
                   </div>
                   {o.price !== null && (
                     <div className="shrink-0 text-end">
-                      <div className="text-2xl font-bold tabular-nums text-brass-300">{fmtCurrency(o.price)}</div>
+                      <div className="c-display text-2xl tabular-nums text-accent">{fmtCurrency(o.price)}</div>
                       {o.wasPrice !== null && (
-                        <div className="text-xs tabular-nums text-white/30 line-through">{fmtCurrency(o.wasPrice)}</div>
+                        <div className="text-xs tabular-nums text-faint line-through">{fmtCurrency(o.wasPrice)}</div>
                       )}
                     </div>
                   )}
                 </div>
-                <div className="flex items-center justify-between border-t border-white/10 px-5 py-3">
+                <div className="flex items-center justify-between border-t border-hair px-5 py-3">
                   {saving !== null ? <Pill tone="brass">{t("app.save")} {fmtCurrency(saving)}</Pill> : <span />}
-                  <Link href="/app/book" className="text-sm font-medium text-brass-300 hover:text-brass-200">
+                  <Link href="/app/book" className="text-sm font-medium text-accent hover:text-accent">
                     {t("app.bookNow")} ›
                   </Link>
                 </div>

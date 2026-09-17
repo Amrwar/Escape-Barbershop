@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useTranslation } from "@/lib/i18n";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { LanguageToggle } from "@/components/ui/LanguageToggle";
+import { ThemeToggle } from "@/components/customer/ThemeToggle";
 
 /**
  * The customer app's chrome: black, quiet, and built for a thumb.
@@ -31,20 +32,21 @@ export function CustomerShell({ children }: { children: React.ReactNode }) {
   if (pathname.startsWith("/app/login")) return <>{children}</>;
 
   return (
-    <div className="min-h-screen bg-primary-950 text-white">
+    <div className="escape-app min-h-screen bg-app text-ink">
       {/* A soft brass glow behind the header, so black does not read as flat */}
       <div className="pointer-events-none fixed inset-x-0 top-0 h-64 bg-[radial-gradient(60%_100%_at_50%_0%,rgba(207,162,67,0.13),transparent_70%)]" />
 
       <header className="relative">
         <div className="mx-auto flex max-w-2xl items-center gap-3 px-5 pt-5 pb-2">
           <Link href="/app" className="flex items-center gap-3 transition-opacity active:opacity-70">
-            <Image src="/logo.jpg" alt="Escape Barbershop" width={38} height={38} className="rounded-xl ring-1 ring-white/15" />
+            <Image src="/logo.jpg" alt="Escape Barbershop" width={38} height={38} className="rounded-[3px] ring-1 ring-hair" />
             <div className="leading-tight">
-              <div className="text-sm font-bold uppercase tracking-[0.28em] text-white">Escape</div>
-              <div className="text-[11px] tracking-wide text-brass-300/80">{t("app.tagline")}</div>
+              <div className="text-sm font-bold uppercase tracking-[0.28em] text-ink">Escape</div>
+              <div className="text-[11px] tracking-wide text-accent">{t("app.tagline")}</div>
             </div>
           </Link>
-          <div className="ms-auto">
+          <div className="ms-auto flex items-center gap-2">
+            <ThemeToggle />
             <LanguageToggle />
           </div>
         </div>
@@ -52,7 +54,7 @@ export function CustomerShell({ children }: { children: React.ReactNode }) {
 
       <main className="relative mx-auto w-full max-w-2xl px-5 pb-28 pt-2">{children}</main>
 
-      <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-white/10 bg-primary-950/85 backdrop-blur-lg pb-[env(safe-area-inset-bottom)]">
+      <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-hair bg-app backdrop-blur-lg pb-[env(safe-area-inset-bottom)]">
         <div className="mx-auto grid max-w-2xl grid-cols-4">
           {TABS.map((tab) => {
             const active = tab.href === "/app" ? pathname === "/app" : pathname.startsWith(tab.href);
@@ -61,10 +63,10 @@ export function CustomerShell({ children }: { children: React.ReactNode }) {
                 key={tab.href}
                 href={tab.href}
                 className={`group relative flex flex-col items-center gap-1 py-3 text-[11px] font-medium transition-colors ${
-                  active ? "text-brass-300" : "text-white/40 hover:text-white/70"
+                  active ? "text-accent" : "text-soft hover:text-mid"
                 }`}
               >
-                {active && <span className="absolute inset-x-6 top-0 h-px bg-brass-400/70" />}
+                {active && <span className="absolute inset-x-6 top-0 h-px bg-accent" />}
                 <Icon name={tab.icon} className="h-5 w-5" />
                 {t(tab.labelKey)}
               </Link>

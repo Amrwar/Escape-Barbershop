@@ -77,7 +77,7 @@ export default function BarberProfilePage() {
 
   return (
     <div className="space-y-6 pt-2">
-      <Link href="/app/barbers" className="inline-flex items-center gap-1 text-sm text-white/40 transition-colors hover:text-white/70">
+      <Link href="/app/barbers" className="inline-flex items-center gap-1 text-sm text-soft transition-colors hover:text-mid">
         ‹ {t("app.ourBarbers")}
       </Link>
 
@@ -105,15 +105,15 @@ export default function BarberProfilePage() {
 
       {reviews && reviews.reviews.length > 0 && (
         <section>
-          <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/40">{t("app.reviews")}</h2>
+          <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-soft">{t("app.reviews")}</h2>
           <div className="space-y-2">
             {reviews.reviews.map((r) => (
               <div key={r.id} className="c-card p-4">
                 <div className="flex items-center justify-between gap-3">
-                  <span className="truncate text-sm font-medium text-white/85">{r.name}</span>
+                  <span className="truncate text-sm font-medium text-ink">{r.name}</span>
                   <Stars rating={r.rating} size={13} />
                 </div>
-                <p className="mt-2 text-sm leading-relaxed text-white/55">{r.comment}</p>
+                <p className="mt-2 text-sm leading-relaxed text-mid">{r.comment}</p>
               </div>
             ))}
           </div>
@@ -122,13 +122,13 @@ export default function BarberProfilePage() {
 
       {theirs.length > 0 && (
         <section>
-          <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/40">{t("app.whatTheyDo")}</h2>
-          <div className="c-card divide-y divide-white/10">
+          <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-soft">{t("app.whatTheyDo")}</h2>
+          <div className="c-card divide-y divide-hair">
             {theirs.map((s) => (
               <div key={s.id} className="flex items-center justify-between px-4 py-3">
                 <div className="min-w-0">
-                  <div className="truncate text-sm text-white/90">{lang === "ar" && s.arabicName ? s.arabicName : s.name}</div>
-                  <div className="mt-0.5 text-[11px] text-white/35">
+                  <div className="truncate text-sm text-ink">{lang === "ar" && s.arabicName ? s.arabicName : s.name}</div>
+                  <div className="mt-0.5 text-[11px] text-faint">
                     {s.durationMinutes} {t("appointments.minutesShort")}
                   </div>
                 </div>

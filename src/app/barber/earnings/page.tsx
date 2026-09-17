@@ -54,17 +54,17 @@ export default function BarberEarningsPage() {
       <ScreenTitle title={t("barberApp.earnings")} hint={t("barberApp.earningsHint")} />
 
       <section className="c-card-raised animate-fade-up p-5">
-        <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/40">{t("barberApp.thisWeek")}</div>
-        <div className="mt-2 text-4xl font-bold tabular-nums text-brass-300">
+        <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-soft">{t("barberApp.thisWeek")}</div>
+        <div className="c-display mt-2 text-4xl tabular-nums text-accent">
           {fmtCurrency(data.week.commission + data.week.tips)}
         </div>
-        <div className="mt-4 grid grid-cols-3 gap-3 border-t border-white/10 pt-4 text-center">
+        <div className="mt-4 grid grid-cols-3 gap-3 border-t border-hair pt-4 text-center">
           <Figure label={t("barberApp.commission")} value={fmtCurrency(data.week.commission)} />
           <Figure label={t("barberApp.tips")} value={fmtCurrency(data.week.tips)} />
           <Figure label={t("common.visits")} value={String(data.week.visitCount)} />
         </div>
         {data.commissionRule && (
-          <p className="mt-4 text-center text-[11px] text-white/35">
+          <p className="mt-4 text-center text-[11px] text-faint">
             {data.commissionRule.type === "PERCENT"
               ? t("barberApp.rulePercent").replace("{value}", String(data.commissionRule.value))
               : t("barberApp.rulePerVisit").replace("{value}", String(data.commissionRule.value))}
@@ -78,19 +78,19 @@ export default function BarberEarningsPage() {
           <div className="c-card space-y-3 p-5">
             {data.days.map((d) => (
               <div key={d.date} className="flex items-center gap-3">
-                <div className="w-16 shrink-0 text-xs text-white/45">
+                <div className="w-16 shrink-0 text-xs text-soft">
                   {new Intl.DateTimeFormat(lang === "ar" ? "ar-EG" : "en-GB", {
                     weekday: "short",
                     timeZone: "Africa/Cairo",
                   }).format(new Date(`${d.date}T12:00:00`))}
                 </div>
-                <div className="h-2 flex-1 overflow-hidden rounded-full bg-white/[0.06]">
+                <div className="h-2 flex-1 overflow-hidden rounded-full bg-surface">
                   <div
-                    className="h-full rounded-full bg-gradient-to-r from-brass-500 to-brass-300 transition-all duration-500"
+                    className="h-full rounded-full bg-gradient-to-r to-accent to-accent transition-all duration-500"
                     style={{ width: `${Math.max(6, (d.takings / busiest) * 100)}%` }}
                   />
                 </div>
-                <div className="w-20 shrink-0 text-end text-xs tabular-nums text-white/70">{fmtCurrency(d.takings)}</div>
+                <div className="w-20 shrink-0 text-end text-xs tabular-nums text-mid">{fmtCurrency(d.takings)}</div>
               </div>
             ))}
           </div>
@@ -99,14 +99,14 @@ export default function BarberEarningsPage() {
 
       <section>
         <SectionTitle>{t("barberApp.thisMonth")}</SectionTitle>
-        <div className="c-card divide-y divide-white/10">
+        <div className="c-card divide-y divide-hair">
           <Row label={t("barberApp.commission")} value={fmtCurrency(data.month.commission)} strong />
           <Row label={t("barberApp.tips")} value={fmtCurrency(data.month.tips)} />
           <Row label={t("barberApp.workDone")} value={fmtCurrency(data.month.visitTotal)} />
           <Row label={t("common.visits")} value={String(data.month.visitCount)} />
           {(data.month.noShows ?? 0) > 0 && <Row label={t("appointments.statusNoShow")} value={String(data.month.noShows)} tone="bad" />}
         </div>
-        <p className="mt-3 text-center text-[11px] text-white/30">{t("barberApp.payrollNote")}</p>
+        <p className="mt-3 text-center text-[11px] text-faint">{t("barberApp.payrollNote")}</p>
       </section>
     </div>
   );
@@ -115,8 +115,8 @@ export default function BarberEarningsPage() {
 function Figure({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <div className="text-sm font-semibold tabular-nums text-white">{value}</div>
-      <div className="mt-0.5 text-[11px] text-white/40">{label}</div>
+      <div className="text-sm font-semibold tabular-nums text-ink">{value}</div>
+      <div className="mt-0.5 text-[11px] text-soft">{label}</div>
     </div>
   );
 }
@@ -124,9 +124,9 @@ function Figure({ label, value }: { label: string; value: string }) {
 function Row({ label, value, strong, tone }: { label: string; value: string; strong?: boolean; tone?: "bad" }) {
   return (
     <div className="flex items-center justify-between px-5 py-3.5">
-      <span className="text-sm text-white/60">{label}</span>
+      <span className="text-sm text-mid">{label}</span>
       <span
-        className={`tabular-nums ${strong ? "text-base font-semibold text-brass-300" : tone === "bad" ? "text-sm text-red-300" : "text-sm text-white/90"}`}
+        className={`tabular-nums ${strong ? "text-base font-semibold text-accent" : tone === "bad" ? "text-sm text-red-300" : "text-sm text-ink"}`}
       >
         {value}
       </span>

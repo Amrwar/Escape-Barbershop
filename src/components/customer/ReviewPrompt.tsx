@@ -60,18 +60,18 @@ export function ReviewPrompt({ item, onSaved }: { item: Reviewable; onSaved: (ra
       <div className="flex items-center gap-3">
         <Avatar name={item.barber?.name ?? "?"} photo={item.barber?.photo} size={40} />
         <div className="min-w-0 flex-1">
-          <div className="truncate text-sm font-medium text-white">{heading}</div>
-          <div className="truncate text-xs text-white/40">
+          <div className="truncate text-sm font-medium text-ink">{heading}</div>
+          <div className="truncate text-xs text-soft">
             {fmtDate(item.startAt)} · {item.services.join(" + ")}
           </div>
         </div>
       </div>
 
       {!editing && item.review ? (
-        <div className="mt-4 flex items-center justify-between gap-3 border-t border-white/10 pt-4">
+        <div className="mt-4 flex items-center justify-between gap-3 border-t border-hair pt-4">
           <div className="min-w-0">
             <Stars rating={rating} size={18} />
-            {comment && <p className="mt-2 text-sm text-white/55">{comment}</p>}
+            {comment && <p className="mt-2 text-sm text-mid">{comment}</p>}
             <p className="mt-1 text-xs text-emerald-300/70">{t("app.rateThanks")}</p>
           </div>
           {item.canReview && (
@@ -81,7 +81,7 @@ export function ReviewPrompt({ item, onSaved }: { item: Reviewable; onSaved: (ra
           )}
         </div>
       ) : (
-        <div className="mt-4 border-t border-white/10 pt-4">
+        <div className="mt-4 border-t border-hair pt-4">
           <div className="flex justify-center">
             <StarPicker value={rating} onChange={setRating} disabled={saving} />
           </div>
