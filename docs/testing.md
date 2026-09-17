@@ -63,6 +63,17 @@ the first run and reused afterwards. Every table is emptied between tests, and
 the connection string is built in `tests/db.ts` — the shop's real database is
 never reachable from a test.
 
+## The walk through the preview (`tests/manual`)
+
+`npm run test:preview` walks the customer app end to end against the demo shop
+on your own machine: the profile and its full loyalty card, the price list, free
+times on a real day, a booking that it then cancels, a review, the referral code
+and the notification key. It prints what it found rather than only passing.
+
+It is kept out of the normal suite on purpose. The preview is not always up, and
+a green suite must mean the code is sound rather than that somebody happened to
+have Docker running.
+
 ## Writing another one
 
 - A new rule starts as a function in `src/lib` with a unit test, before any screen.

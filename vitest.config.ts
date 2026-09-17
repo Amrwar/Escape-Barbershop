@@ -17,6 +17,9 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['src/**/*.test.ts', 'tests/**/*.test.ts'],
+    // tests/manual runs by hand against the preview shop, which is not always
+    // up — it must never decide whether the suite is green.
+    exclude: ['**/node_modules/**', 'tests/manual/**'],
     // One database, one shop: integration tests share a schema, so they must not
     // run over each other.
     fileParallelism: false,
