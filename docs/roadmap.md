@@ -83,6 +83,13 @@ apps and prepare the listings.
 - [x] The shop's till screens deliberately untouched — worked on for eight hours a day,
       and still white
 
+## Phase 7 — the counter (in progress)
+
+- [x] Sell products on a visit: the money on the takings, the stock off the shelf
+- [ ] A waiting list when the day is full, offered to the first in line when
+      somebody cancels
+- [ ] Deposits by InstaPay for the long, expensive services
+
 ## Phase 6 — the chair, filled (done)
 
 Three things aimed at the customers the shop already has, rather than at finding

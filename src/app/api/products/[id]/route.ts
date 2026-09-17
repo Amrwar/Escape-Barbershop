@@ -6,13 +6,15 @@ import { recordAudit } from "@/lib/audit";
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     await requireOwner();
-    const { name, unit, costPrice, isActive } = await req.json();
+    const { name, unit, costPrice, salePrice, isActive } = await req.json();
     const product = await prisma.product.update({
       where: { id: params.id },
       data: {
         ...(name !== undefined && { name: String(name).trim() }),
         ...(unit !== undefined && { unit: String(unit).trim() }),
         ...(costPrice !== undefined && { costPrice: parseFloat(costPrice) || 0 }),
+        // Zero means "not for sale", which is most of the shelf.
+        ...(salePrice !== undefined && { salePrice: parseFloat(salePrice) || 0 }),
         ...(isActive !== undefined && { isActive: Boolean(isActive) }),
       },
     });

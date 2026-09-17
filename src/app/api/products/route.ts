@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     await requireOwner();
-    const { name, unit, costPrice } = await req.json();
+    const { name, unit, costPrice, salePrice } = await req.json();
     if (!name || !String(name).trim())
       return NextResponse.json({ error: "Name is required" }, { status: 400 });
 
@@ -53,6 +53,7 @@ export async function POST(req: NextRequest) {
         name: String(name).trim(),
         unit: String(unit ?? "pcs").trim() || "pcs",
         costPrice: Number.isFinite(parseFloat(costPrice)) ? parseFloat(costPrice) : 0,
+        salePrice: Number.isFinite(parseFloat(salePrice)) ? parseFloat(salePrice) : 0,
       },
     });
     return NextResponse.json(product, { status: 201 });

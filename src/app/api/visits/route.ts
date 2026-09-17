@@ -4,6 +4,9 @@ import { requireAuth } from "@/lib/auth";
 import { visitSchema } from "@/lib/validations";
 import { paymentMethodName, resolvePaymentAmounts, tipPaidInCash } from "@/lib/payments";
 import { recordAudit } from "@/lib/audit";
+import { getBalances } from "@/lib/stock";
+import { round2 } from "@/lib/finance";
+import { priceLines, problemsWith, productsTotal, type PricedLine } from "@/lib/retail";
 
 /** A refusal the cashier should read, rather than a bare "invalid data". */
 class VisitError extends Error {
@@ -54,12 +57,40 @@ export async function POST(req: NextRequest) {
     const data = visitSchema.parse(body);
 
     // Compute total from items
-    const subtotal = data.items.reduce(
+    const servicesSubtotal = data.items.reduce(
       (sum, item) => sum + item.priceAtTime * item.quantity,
       0
     );
-    const discountAmount = (subtotal * (data.discount ?? 0)) / 100;
-    const total = subtotal - discountAmount;
+
+    // Anything sold over the counter. Checked before a penny is taken: the till
+    // must not sell what the shelf does not hold, or a stock figure becomes a
+    // number nobody believes.
+    const productLines = data.products ?? [];
+    let pricedProducts: PricedLine[] = [];
+
+    if (productLines.length > 0) {
+      const products = await prisma.product.findMany({
+        where: { id: { in: productLines.map((line) => line.productId) } },
+        select: { id: true, name: true, isActive: true, salePrice: true, costPrice: true },
+      });
+      const balances = await getBalances(products.map((p) => p.id));
+      const onTheShelf = Object.fromEntries(
+        products.map((p) => [p.id, balances.get(p.id)?.branch ?? 0])
+      );
+
+      const problems = problemsWith(productLines, products, onTheShelf);
+      if (problems.length > 0) {
+        return NextResponse.json({ error: "product_problem", problems }, { status: 409 });
+      }
+
+      pricedProducts = priceLines(productLines, products);
+    }
+
+    // The discount is a percentage of the services; a product is sold at the
+    // price the cashier typed, so taking a further percentage off it would
+    // double-count the kindness.
+    const discountAmount = (servicesSubtotal * (data.discount ?? 0)) / 100;
+    const total = round2(servicesSubtotal - discountAmount + productsTotal(productLines));
 
     const tip = data.tip ?? 0;
 
@@ -121,13 +152,41 @@ export async function POST(req: NextRequest) {
               priceAtTime: item.priceAtTime,
             })),
           },
+          products: {
+            create: pricedProducts.map((line) => ({
+              productId: line.productId,
+              name: line.name,
+              quantity: line.quantity,
+              unitPrice: line.unitPrice,
+              unitCost: line.unitCost,
+              total: line.total,
+            })),
+          },
         },
         include: {
           customer: true,
           barber: true,
           items: { include: { service: true } },
+          products: true,
         },
       });
+
+      // Stock leaves the branch shelf with the customer, in the same
+      // transaction as the money — the two can never disagree.
+      if (pricedProducts.length > 0) {
+        await tx.stockMovement.createMany({
+          data: pricedProducts.map((line) => ({
+            productId: line.productId,
+            date: newVisit.visitAt,
+            location: "BRANCH" as const,
+            type: "SALE" as const,
+            quantity: -line.quantity,
+            unitCost: line.unitCost,
+            refId: newVisit.id,
+            notes: `Sold on visit ${newVisit.id}`,
+          })),
+        });
+      }
 
       // A tip paid by card or InstaPay: the barber is paid it in cash from the drawer
       if (!tipPaidInCash({ paymentMethod: data.paymentMethod, cashAmount: amounts.cashAmount }) && tip > 0 && sessionId) {

@@ -47,6 +47,17 @@ export const visitSchema = z.object({
   discount: z.number().min(0).max(100).optional().default(0),
   notes: z.string().max(500).nullable().optional().or(z.literal("")),
   items: z.array(visitItemSchema).min(1, "At least one service is required"),
+  /** Anything sold over the counter on the same visit. */
+  products: z
+    .array(
+      z.object({
+        productId: z.string().min(1),
+        quantity: z.number().positive(),
+        unitPrice: z.number().min(0),
+      })
+    )
+    .optional()
+    .default([]),
   cashAmount: z.number().min(0).optional(),
   cardAmount: z.number().min(0).optional(),
   instapayAmount: z.number().min(0).optional(),

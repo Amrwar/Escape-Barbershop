@@ -148,6 +148,7 @@ export async function DELETE(
         barber: { select: { name: true } },
         customer: { select: { name: true } },
         items: { include: { service: { select: { name: true } } } },
+        products: true,
       },
     });
 
@@ -168,6 +169,13 @@ export async function DELETE(
           ],
         },
       });
+    }
+
+    // Anything sold on it goes back on the shelf. The movements are removed
+    // rather than reversed with a second entry: the visit is being taken off the
+    // books entirely, and the activity log below is what remembers it happened.
+    if (visit && visit.products.length > 0) {
+      await prisma.stockMovement.deleteMany({ where: { refId: params.id, type: "SALE" } });
     }
 
     await prisma.visit.delete({ where: { id: params.id } });
@@ -191,6 +199,11 @@ export async function DELETE(
             service: i.service?.name,
             quantity: i.quantity,
             price: i.priceAtTime,
+          })),
+          products: visit.products.map((p) => ({
+            product: p.name,
+            quantity: p.quantity,
+            price: p.unitPrice,
           })),
         },
       });

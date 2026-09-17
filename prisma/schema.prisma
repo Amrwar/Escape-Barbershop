@@ -407,6 +407,7 @@ model Visit {
   customer        Customer            @relation(fields: [customerId], references: [id])
   session         CashDrawerSession?  @relation(fields: [sessionId], references: [id])
   items           VisitItem[]
+  products        VisitProduct[]
   rewards         LoyaltyRedemption[]
   tipMovements    CashMovement[]
 }
@@ -439,6 +440,31 @@ model CashMovement {
   createdBy       User              @relation("CreatedMovements", fields: [createdByUserId], references: [id])
   session         CashDrawerSession @relation(fields: [sessionId], references: [id])
   visit           Visit?            @relation(fields: [visitId], references: [id])
+}
+
+/// A product sold over the counter as part of a visit.
+///
+/// Deliberately its own table rather than another kind of VisitItem: a service
+/// line feeds a barber's commission and an appointment's length, and a bottle of
+/// beard oil feeds neither. The money lands on the visit total either way, which
+/// is what the drawer and the reports read.
+model VisitProduct {
+  id        String   @id @default(cuid())
+  visitId   String
+  productId String
+  /// Copied in at the time of sale, so a later price change never rewrites it.
+  name      String
+  quantity  Float    @default(1)
+  unitPrice Float
+  /// What it cost the shop, copied in for the margin on the report.
+  unitCost  Float    @default(0)
+  total     Float
+  createdAt DateTime @default(now())
+  visit     Visit    @relation(fields: [visitId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id])
+
+  @@index([visitId])
+  @@index([productId])
 }
 
 model VisitItem {
@@ -496,6 +522,9 @@ model Product {
   name          String              @unique
   unit          String              @default("pcs")
   costPrice     Float               @default(0)
+  /// What a customer pays for one. Zero means it is not for sale — most stock is
+  /// used on the floor rather than sold over the counter.
+  salePrice     Float               @default(0)
   isActive      Boolean             @default(true)
   createdAt     DateTime            @default(now())
   updatedAt     DateTime            @updatedAt
@@ -504,6 +533,7 @@ model Product {
   transferItems StockTransferItem[]
   countItems    StockCountItem[]
   movements     StockMovement[]
+  visitLines    VisitProduct[]
 }
 
 model Supplier {
@@ -705,6 +735,8 @@ enum StockMoveType {
   TRANSFER_IN
   TRANSFER_OUT
   USAGE
+  /// Sold to a customer on a visit, rather than used on the floor.
+  SALE
   ADJUSTMENT
   RETURN
 }

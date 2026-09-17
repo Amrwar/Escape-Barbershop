@@ -14,6 +14,7 @@ interface StockRow {
   name: string;
   unit: string;
   costPrice: number;
+  salePrice: number;
   isActive: boolean;
   main: number;
   branch: number;
@@ -38,7 +39,7 @@ export default function WarehousePage() {
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<StockRow | null>(null);
-  const [form, setForm] = useState({ name: "", unit: "pcs", costPrice: "0" });
+  const [form, setForm] = useState({ name: "", unit: "pcs", costPrice: "0", salePrice: "0" });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -57,14 +58,14 @@ export default function WarehousePage() {
 
   const openNew = () => {
     setEditing(null);
-    setForm({ name: "", unit: "pcs", costPrice: "0" });
+    setForm({ name: "", unit: "pcs", costPrice: "0", salePrice: "0" });
     setError("");
     setModalOpen(true);
   };
 
   const openEdit = (row: StockRow) => {
     setEditing(row);
-    setForm({ name: row.name, unit: row.unit, costPrice: String(row.costPrice) });
+    setForm({ name: row.name, unit: row.unit, costPrice: String(row.costPrice), salePrice: String(row.salePrice ?? 0) });
     setError("");
     setModalOpen(true);
   };
@@ -84,6 +85,7 @@ export default function WarehousePage() {
             name: form.name.trim(),
             unit: form.unit.trim() || "pcs",
             costPrice: parseFloat(form.costPrice) || 0,
+            salePrice: parseFloat(form.salePrice) || 0,
           }),
         }
       );
@@ -131,6 +133,7 @@ export default function WarehousePage() {
                     [t("warehouse.branch")]: r.branch,
                     [t("warehouse.onHand")]: r.total,
                     [t("warehouse.costPrice")]: r.costPrice,
+                    [t("warehouse.salePrice")]: r.salePrice || "—",
                     [t("warehouse.stockValue")]: r.value,
                     [t("field.status")]: r.isActive ? t("common.active") : t("common.inactive"),
                   })),
@@ -216,6 +219,7 @@ export default function WarehousePage() {
                   <th className="text-end px-4 py-3 font-medium text-gray-600">{t("warehouse.branch")}</th>
                   <th className="text-end px-4 py-3 font-medium text-gray-600">{t("warehouse.onHand")}</th>
                   <th className="text-end px-4 py-3 font-medium text-gray-600">{t("warehouse.costPrice")}</th>
+                  <th className="text-end px-4 py-3 font-medium text-gray-600">{t("warehouse.salePrice")}</th>
                   <th className="text-end px-4 py-3 font-medium text-gray-600">{t("warehouse.stockValue")}</th>
                   <th className="px-4 py-3" />
                 </tr>
@@ -241,6 +245,9 @@ export default function WarehousePage() {
                       {fmtNumber(r.total)}
                     </td>
                     <td className="px-4 py-3 text-end text-gray-600">{fmtCurrency(r.costPrice)}</td>
+                    <td className="px-4 py-3 text-end text-gray-900">
+                      {r.salePrice > 0 ? fmtCurrency(r.salePrice) : <span className="text-gray-300">—</span>}
+                    </td>
                     <td className="px-4 py-3 text-end font-medium text-gray-900">{fmtCurrency(r.value)}</td>
                     <td className="px-4 py-3 text-end whitespace-nowrap">
                       <button onClick={() => openEdit(r)} className="text-xs text-primary-600 hover:underline">
@@ -293,6 +300,18 @@ export default function WarehousePage() {
                 value={form.costPrice}
                 onChange={(e) => setForm((p) => ({ ...p, costPrice: e.target.value }))}
               />
+            </div>
+            <div>
+              <label className="label">{t("warehouse.salePrice")}</label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                className="input"
+                value={form.salePrice}
+                onChange={(e) => setForm((p) => ({ ...p, salePrice: e.target.value }))}
+              />
+              <p className="mt-1 text-xs text-gray-500">{t("warehouse.salePriceHint")}</p>
             </div>
           </div>
           {error && <div className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</div>}

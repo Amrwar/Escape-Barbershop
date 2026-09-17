@@ -348,6 +348,39 @@ Twenty-five a night at most, longest overdue first, so a shop turning it on for
 the first time does not message three hundred people at once. Off until the
 owner asks for it, on the booking settings screen.
 
+## Selling a product
+
+The shop has always bought stock and used it on the floor. What it could not do
+was **sell** a bottle of beard oil and have that show up anywhere — so wax and
+shampoo sold over the counter were money leaving the shop untracked.
+
+A visit now carries product lines beside its service lines, kept in their own
+table on purpose: a service line feeds a barber's commission and the length of
+an appointment, and a bottle of oil feeds neither. Both land on the visit total,
+which is what the drawer, the day journal and every report already read, so a
+product sale needs no new money path and cannot disagree with one.
+
+The rules around it:
+
+- A product is for sale only when it is active **and** somebody has priced it.
+  Zero means "used on the floor", which is most of the shelf.
+- The till cannot sell what the branch does not hold — two lines of the same
+  thing are added together before the shelf is checked. A shop that can sell
+  stock it does not have ends up with a figure nobody believes, and then nobody
+  counts.
+- The money and the stock move in the same transaction. Undoing the visit puts
+  the bottle back, and the activity log remembers what was on it.
+- The percentage discount comes off the services only. A product is sold at the
+  price the cashier typed, so taking a further percentage off it would
+  double-count the kindness.
+- Name and cost are copied onto the line at the moment of sale, so a later price
+  change never rewrites what happened — the same reason a service line copies
+  its price in.
+
+The period report breaks the counter out of the takings: what products brought
+in, what that stock cost, and how many left the shelf. A bottle and a haircut
+are two different businesses with two different margins.
+
 ## Sessions
 
 Shop devices sit on a counter, so a staff login ends after 2 hours, or 30 minutes idle.

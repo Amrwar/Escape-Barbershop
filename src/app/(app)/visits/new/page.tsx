@@ -42,6 +42,9 @@ function NewVisitInner() {
   const [discount,       setDiscount]       = useState(0);
   const [notes,          setNotes]          = useState("");
   const [cart,           setCart]           = useState<CartItem[]>([]);
+  // Anything sold over the counter on this visit, with what is on the shelf.
+  const [sellable, setSellable] = useState<{ id: string; name: string; salePrice: number; branch: number }[]>([]);
+  const [productCart, setProductCart] = useState<{ productId: string; name: string; quantity: number; unitPrice: number }[]>([]);
   const [submitting,     setSubmitting]     = useState(false);
   const [error,          setError]          = useState("");
   const [amounts,        setAmounts]        = useState<PaymentAmounts>(NO_PAYMENT_AMOUNTS);
@@ -158,7 +161,41 @@ function NewVisitInner() {
 
   const subtotal = cart.reduce((s, i) => s + i.priceAtTime * i.quantity, 0);
   const discountAmount = (subtotal * discount) / 100;
-  const total = subtotal - discountAmount;
+  // A product is sold at the price typed, so the discount never comes off it.
+  const productsTotal = productCart.reduce((s, p) => s + p.unitPrice * p.quantity, 0);
+  const total = subtotal - discountAmount + productsTotal;
+
+  const addProduct = (id: string) => {
+    const product = sellable.find((p) => p.id === id);
+    if (!product) return;
+    setProductCart((prev) =>
+      prev.some((p) => p.productId === id)
+        ? prev.map((p) => (p.productId === id ? { ...p, quantity: p.quantity + 1 } : p))
+        : [...prev, { productId: id, name: product.name, quantity: 1, unitPrice: product.salePrice }]
+    );
+  };
+
+  const updateProduct = (productId: string, field: "quantity" | "unitPrice", value: number) =>
+    setProductCart((prev) => prev.map((p) => (p.productId === productId ? { ...p, [field]: value } : p)));
+
+  useEffect(() => {
+    fetch("/api/stock/balances")
+      .then((r) => r.json())
+      .then((d) => {
+        const rows = Array.isArray(d) ? d : d.rows ?? [];
+        setSellable(
+          rows
+            .filter((r: { salePrice?: number; branch?: number }) => (r.salePrice ?? 0) > 0)
+            .map((r: { id: string; name: string; salePrice: number; branch: number }) => ({
+              id: r.id,
+              name: r.name,
+              salePrice: r.salePrice,
+              branch: r.branch ?? 0,
+            }))
+        );
+      })
+      .catch(() => setSellable([]));
+  }, []);
 
   const [walkInLoading, setWalkInLoading] = useState(false);
 
@@ -229,6 +266,7 @@ function NewVisitInner() {
           notes,
           tip,
           items: cart.map((i) => ({ serviceId: i.serviceId, quantity: i.quantity, priceAtTime: i.priceAtTime })),
+          products: productCart.map((p) => ({ productId: p.productId, quantity: p.quantity, unitPrice: p.unitPrice })),
           ...(appointmentId ? { appointmentId } : {}),
           ...(paymentMethod === "MIXED" ? amounts : {}),
         }),
@@ -460,6 +498,79 @@ function NewVisitInner() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          )}
+          {sellable.length > 0 && (
+            <div className="mt-5">
+              <div className="mb-2 flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-gray-900">{t("till.products")}</h3>
+                <select
+                  className="input w-56 py-1.5 text-sm"
+                  value=""
+                  onChange={(e) => addProduct(e.target.value)}
+                >
+                  <option value="">{t("till.addProduct")}</option>
+                  {sellable.map((p) => (
+                    <option key={p.id} value={p.id} disabled={p.branch <= 0}>
+                      {p.name} — {fmtCurrency(p.salePrice)} ({t("till.productStock").replace("{count}", String(p.branch))})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {productCart.length > 0 && (
+                <div className="overflow-hidden rounded-lg border border-gray-200">
+                  <table className="w-full text-sm">
+                    <tbody className="divide-y divide-gray-100">
+                      {productCart.map((line) => {
+                        const shelf = sellable.find((p) => p.id === line.productId)?.branch ?? 0;
+                        const short = line.quantity > shelf;
+                        return (
+                          <tr key={line.productId}>
+                            <td className="px-3 py-2 text-gray-900">
+                              {line.name}
+                              {short && (
+                                <span className="ms-2 text-xs text-red-600">
+                                  {t("till.productShort").replace("{count}", String(shelf))}
+                                </span>
+                              )}
+                            </td>
+                            <td className="px-3 py-2 text-center">
+                              <input
+                                type="number"
+                                min="1"
+                                className="input w-14 py-1 text-center"
+                                value={line.quantity}
+                                onChange={(e) => updateProduct(line.productId, "quantity", parseInt(e.target.value) || 1)}
+                              />
+                            </td>
+                            <td className="px-3 py-2 text-end">
+                              <input
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                className="input w-20 py-1 text-end"
+                                value={line.unitPrice}
+                                onChange={(e) => updateProduct(line.productId, "unitPrice", parseFloat(e.target.value) || 0)}
+                              />
+                            </td>
+                            <td className="px-3 py-2 text-end font-medium">{fmtCurrency(line.unitPrice * line.quantity)}</td>
+                            <td className="px-3 py-2 text-end">
+                              <button
+                                type="button"
+                                onClick={() => setProductCart((prev) => prev.filter((p) => p.productId !== line.productId))}
+                                className="text-xs text-red-400 hover:text-red-600"
+                              >
+                                ✕
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           )}
         </div>

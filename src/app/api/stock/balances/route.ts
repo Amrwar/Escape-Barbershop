@@ -20,10 +20,13 @@ export async function GET(req: NextRequest) {
       const main = b?.main ?? 0;
       const branch = b?.branch ?? 0;
       return {
+        // Both spellings: the warehouse screen reads productId, the till reads id.
+        id: p.id,
         productId: p.id,
         name: p.name,
         unit: p.unit,
         costPrice: p.costPrice,
+        salePrice: p.salePrice,
         isActive: p.isActive,
         main,
         branch,

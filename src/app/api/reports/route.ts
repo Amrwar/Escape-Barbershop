@@ -34,6 +34,7 @@ export async function GET(req: NextRequest) {
           customer: true,
           barber: true,
           items: { include: { service: true } },
+          products: true,
         },
       }),
       prisma.penalty.findMany({
@@ -218,6 +219,16 @@ export async function GET(req: NextRequest) {
       summary: {
         visitCount,
         totalRevenue,
+        // What was sold over the counter, and what the shop made on it. Part of
+        // the takings above, broken out because a bottle and a haircut are two
+        // different businesses with two different margins.
+        productRevenue: round2(
+          visits.reduce((sum, v) => sum + v.products.reduce((s, p) => s + p.total, 0), 0)
+        ),
+        productCost: round2(
+          visits.reduce((sum, v) => sum + v.products.reduce((s, p) => s + p.unitCost * p.quantity, 0), 0)
+        ),
+        productsSold: visits.reduce((sum, v) => sum + v.products.reduce((s, p) => s + p.quantity, 0), 0),
         cashTotal: cashTotal - tipsTotal,
         cardTotal,
         instapayTotal,
