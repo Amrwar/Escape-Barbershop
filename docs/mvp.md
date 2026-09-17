@@ -39,7 +39,7 @@ Not because they do not matter — because they are not needed for that Saturday
 
 | Left out | Why, and when |
 | --- | --- |
-| SMS and WhatsApp reminders | Needs a paid provider and a sender identity. Phase 3, and the single best thing for no-shows |
+| SMS and WhatsApp reminders | Done another way: reminders go to the phone as notifications, free, since phase 3. A paid provider would only reach customers who never install the app |
 | Loyalty, offers, reviews | Retention work. Worth doing once people are booking |
 | Barber logins and their own screens | The shop runs the diary at first; barbers get screens in phase 3 |
 | Deposits and paying online | Needs a payment gateway and a refund policy. Later, if ever |

@@ -108,6 +108,14 @@ till.
    - `DATABASE_URL` — use [Neon](https://neon.tech) or [Supabase](https://supabase.com) for hosted Postgres
    - `NEXTAUTH_SECRET` — generate with `openssl rand -base64 32`
    - `NEXTAUTH_URL` — your production URL (e.g. `https://mybarbershop.vercel.app`)
+   - `CRON_SECRET` — any long random string. The nightly reminder run refuses
+     anyone who does not send it; Vercel sends it automatically for scheduled
+     calls. Without it the run still works, but the URL is open to anyone.
+   - `PUSH_CONTACT` (optional) — `mailto:` address the push services can reach
+     you at. Defaults to a placeholder.
+   - `PUSH_PUBLIC_KEY` / `PUSH_PRIVATE_KEY` (optional) — the notification key
+     pair. Left unset, the app makes one on first use and keeps it in the
+     database, which is what you want unless you are moving an existing one.
 4. Deploy
 
 After deployment, run the seed against your production DB:
