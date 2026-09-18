@@ -47,7 +47,7 @@ export function CustomerShell({ children }: { children: React.ReactNode }) {
           </Link>
           <div className="ms-auto flex items-center gap-2">
             <ThemeToggle />
-            <LanguageToggle />
+            <LanguageToggle tone="app" />
           </div>
         </div>
       </header>

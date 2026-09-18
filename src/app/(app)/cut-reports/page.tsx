@@ -19,6 +19,13 @@ import type { TranslationKey } from "../../../../messages/en";
 
 type Kind = "NOTE" | "COMPLAINT" | "EQUIPMENT" | "INCIDENT";
 
+/** Either side of the same thing: a booked cut, or one that walked in. */
+interface Cut {
+  id: string;
+  customer: { id: string; name: string } | null;
+  barber: { name: string } | null;
+}
+
 interface Report {
   id: string;
   kind: Kind;
@@ -26,12 +33,8 @@ interface Report {
   authorName: string;
   seenAt: string | null;
   createdAt: string;
-  appointment: {
-    id: string;
-    startAt: string;
-    customer: { id: string; name: string } | null;
-    barber: { name: string } | null;
-  };
+  appointment: (Cut & { startAt: string }) | null;
+  visit: (Cut & { visitAt: string }) | null;
 }
 
 const TONE: Record<Kind, "gray" | "yellow" | "blue" | "red"> = {
@@ -75,7 +78,10 @@ export default function CutReportsPage() {
   const unread = (reports ?? []).filter((r) => !r.seenAt);
   const read = (reports ?? []).filter((r) => r.seenAt);
 
-  const card = (report: Report, faded: boolean) => (
+  const card = (report: Report, faded: boolean) => {
+    const cut = report.appointment ?? report.visit;
+
+    return (
     <div
       key={report.id}
       className={`rounded-xl border p-4 ${faded ? "border-gray-200 bg-gray-50" : "border-gray-200 bg-white"}`}
@@ -84,12 +90,17 @@ export default function CutReportsPage() {
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant={TONE[report.kind]}>{t(LABEL[report.kind])}</Badge>
-            {report.appointment.customer && (
+            {cut?.customer && (
               <Link
-                href={`/customers/${report.appointment.customer.id}`}
+                href={`/customers/${cut.customer.id}`}
                 className="text-sm font-semibold text-gray-900 hover:underline"
               >
-                {report.appointment.customer.name}
+                {cut.customer.name}
+              </Link>
+            )}
+            {report.visit && (
+              <Link href={`/visits/${report.visit.id}`} className="text-xs text-gray-500 hover:underline">
+                {t("cutReport.openVisit")}
               </Link>
             )}
           </div>
@@ -100,7 +111,7 @@ export default function CutReportsPage() {
 
           <p className="mt-2 text-xs text-gray-400">
             {report.authorName}
-            {report.appointment.barber ? ` · ${report.appointment.barber.name}` : ""} · {fmtDateTime(report.createdAt)}
+            {cut?.barber ? ` · ${cut.barber.name}` : ""} · {fmtDateTime(report.createdAt)}
           </p>
         </div>
 
@@ -116,7 +127,8 @@ export default function CutReportsPage() {
         )}
       </div>
     </div>
-  );
+    );
+  };
 
   return (
     <div>

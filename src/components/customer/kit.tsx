@@ -84,9 +84,9 @@ export function Pill({
   const tones = {
     muted: "bg-surface text-mid ring-hair",
     brass: "bg-accent-soft text-accent ring-accent",
-    good: "bg-emerald-400/10 text-emerald-300 ring-emerald-400/20",
-    warn: "bg-amber-400/10 text-amber-300 ring-amber-400/20",
-    bad: "bg-red-400/10 text-red-300 ring-red-400/20",
+    good: "bg-good-soft text-good ring-good",
+    warn: "bg-warn-soft text-warn ring-warn",
+    bad: "bg-bad-soft text-bad ring-bad",
   } as const;
   return (
     <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-medium ring-1 ${tones[tone]}`}>

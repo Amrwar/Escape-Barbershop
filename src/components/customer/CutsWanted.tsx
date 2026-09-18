@@ -110,7 +110,7 @@ export function CutsWanted() {
           onChange={(e) => add(e.target.files?.[0])}
         />
 
-        {error && <p className="mt-2 text-center text-xs text-red-300">{error}</p>}
+        {error && <p className="mt-2 text-center text-xs text-bad">{error}</p>}
 
         {photos === null ? (
           <div className="mt-4 grid grid-cols-3 gap-2">

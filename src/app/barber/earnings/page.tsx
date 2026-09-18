@@ -126,7 +126,7 @@ function Row({ label, value, strong, tone }: { label: string; value: string; str
     <div className="flex items-center justify-between px-5 py-3.5">
       <span className="text-sm text-mid">{label}</span>
       <span
-        className={`tabular-nums ${strong ? "text-base font-semibold text-accent" : tone === "bad" ? "text-sm text-red-300" : "text-sm text-ink"}`}
+        className={`tabular-nums ${strong ? "text-base font-semibold text-accent" : tone === "bad" ? "text-sm text-bad" : "text-sm text-ink"}`}
       >
         {value}
       </span>

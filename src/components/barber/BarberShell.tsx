@@ -41,7 +41,7 @@ export function BarberShell({ children }: { children: React.ReactNode }) {
         </div>
         <div className="ms-auto flex items-center gap-2">
           <ThemeToggle />
-          <LanguageToggle />
+          <LanguageToggle tone="app" />
           <button
             type="button"
             onClick={() => signOut({ callbackUrl: "/login" })}

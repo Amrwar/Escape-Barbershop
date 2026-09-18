@@ -10,7 +10,7 @@ Two suites for two different jobs, and a third thing that is not a suite at all.
 | `npm run test:db:stop` | Removes the test database container | Docker | — |
 | `npm run test:preview` | A walk through the customer app on the demo shop | the preview running | ~2 seconds |
 
-**813 tests today: 326 on the rules, 487 on the API.** Both suites must be green before
+**836 tests today: 326 on the rules, 510 on the API.** Both suites must be green before
 anything is pushed; the preview walk is run by hand when the demo shop is up.
 
 Every one of them also runs on every push, in GitHub Actions: types, lint and the rules in
@@ -34,7 +34,7 @@ twice a year. Arithmetic is cheap to test and expensive to get wrong.
 ## The API (`tests/*.test.ts`)
 
 The route handlers, against a real Postgres in a container, with the session
-mocked to whichever role the test is about. Twenty-nine files, of which the ones
+mocked to whichever role the test is about. Thirty-two files, of which the ones
 worth knowing about are:
 
 - **`booking-api.test.ts`** — booking, clashes, opening hours, buffers, time off,
@@ -80,9 +80,13 @@ worth knowing about are:
 - **`wall-api.test.ts`**, **`portfolio-api.test.ts`** — what the screen on the
   wall may say about a customer, and whose photos are whose.
 - **`cut-reports-api.test.ts`** — who may write one (a barber about their own
-  chair only) and who may read the shop's (the owner alone).
+  chair only) and who may read the shop's (the owner alone), on a booked cut and
+  on a walk-in alike, with exactly one of the two named.
 - **`cuts-wanted-api.test.ts`** — the photos are the customer's in both
   directions, and they reach the barber's day screen.
+- **`barber-login-api.test.ts`** — a login has one way in, a PIN is six digits
+  and stored hashed, and the phone that was typed signs the barber in however
+  they wrote it.
 - **`segments-api.test.ts`** — the groups, and the guardrails on writing to one:
   who may send, once every twelve hours, and only to people who asked for
   notifications.

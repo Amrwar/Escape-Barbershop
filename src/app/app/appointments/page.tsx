@@ -74,7 +74,7 @@ function AppointmentsInner() {
         ))}
       </div>
 
-      {error && <div className="rounded-[3px] border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-200">{error}</div>}
+      {error && <div className="rounded-[3px] border border-bad bg-bad-soft px-4 py-3 text-sm text-bad">{error}</div>}
 
       {items === null ? (
         <div className="space-y-2">
@@ -112,7 +112,7 @@ function AppointmentsInner() {
                       type="button"
                       onClick={() => cancel(a)}
                       disabled={busyId === a.id}
-                      className="c-btn-ghost flex-1 text-red-300 hover:bg-red-400/10 hover:text-red-200"
+                      className="c-btn-ghost flex-1 text-bad hover:bg-bad-soft"
                     >
                       {busyId === a.id ? "…" : t("action.cancel")}
                     </button>

@@ -5,13 +5,37 @@ import { requireOwner, requireShopPerson } from "@/lib/auth";
 /**
  * Reports on a cut: what happened, written by whoever was there.
  *
- * Anyone on the staff may file one — the barber who did the cut, or whoever was
- * at the till when it went wrong. Reading the whole shop's reports is the
- * owner's, because a complaint about one barber is not another barber's
- * business; a barber can still see the ones they wrote themselves.
+ * A cut reaches the shop two ways — booked, which is an appointment, or walked
+ * in, which is a visit — and by far the most of them walk in. A report hangs off
+ * whichever one it was, so the barber's day screen and the till can both file
+ * one about the same kind of thing.
+ *
+ * Anyone on the staff may write one. Reading the whole shop's is the owner's,
+ * because a complaint about one barber is not another barber's business; a
+ * barber can still read back the ones they wrote themselves.
  */
 
 const KINDS = ["NOTE", "COMPLAINT", "EQUIPMENT", "INCIDENT"] as const;
+
+/** Enough to identify the cut on the owner's screen, from either side. */
+const CUT = {
+  appointment: {
+    select: {
+      id: true,
+      startAt: true,
+      customer: { select: { id: true, name: true } },
+      barber: { select: { name: true } },
+    },
+  },
+  visit: {
+    select: {
+      id: true,
+      visitAt: true,
+      customer: { select: { id: true, name: true } },
+      barber: { select: { name: true } },
+    },
+  },
+};
 
 export async function GET(req: NextRequest) {
   try {
@@ -38,14 +62,7 @@ export async function GET(req: NextRequest) {
         authorName: true,
         seenAt: true,
         createdAt: true,
-        appointment: {
-          select: {
-            id: true,
-            startAt: true,
-            customer: { select: { id: true, name: true } },
-            barber: { select: { name: true } },
-          },
-        },
+        ...CUT,
       },
     });
 
@@ -60,26 +77,32 @@ export async function POST(req: NextRequest) {
     const session = await requireShopPerson();
     const body = await req.json();
 
-    const appointmentId = String(body?.appointmentId ?? "");
+    const appointmentId = typeof body?.appointmentId === "string" ? body.appointmentId : null;
+    const visitId = typeof body?.visitId === "string" ? body.visitId : null;
     const text = String(body?.body ?? "").trim();
     const kind = KINDS.includes(body?.kind) ? body.kind : "NOTE";
 
     if (!text) return NextResponse.json({ error: "Write what happened" }, { status: 400 });
+    if (!appointmentId === !visitId) {
+      // Neither, or both — either way we do not know what this is about.
+      return NextResponse.json({ error: "Which cut?" }, { status: 400 });
+    }
 
-    const appointment = await prisma.appointment.findUnique({
-      where: { id: appointmentId },
-      select: { id: true, barberId: true },
-    });
-    if (!appointment) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    // Whose cut it was, asked the same way of both kinds.
+    const cut = appointmentId
+      ? await prisma.appointment.findUnique({ where: { id: appointmentId }, select: { id: true, barberId: true } })
+      : await prisma.visit.findUnique({ where: { id: visitId! }, select: { id: true, barberId: true } });
+    if (!cut) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-    // A barber may only report on their own cuts; the shop may report on any.
-    if (session.user.role === "BARBER" && appointment.barberId !== session.user.barberId) {
+    // A barber may only report on their own chair; the shop may report on any.
+    if (session.user.role === "BARBER" && cut.barberId !== session.user.barberId) {
       return NextResponse.json({ error: "That was not your cut" }, { status: 403 });
     }
 
     const report = await prisma.cutReport.create({
       data: {
-        appointmentId: appointment.id,
+        appointmentId,
+        visitId,
         authorId: session.user.id,
         authorName: session.user.name ?? "—",
         kind,

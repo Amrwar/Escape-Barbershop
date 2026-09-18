@@ -123,7 +123,7 @@ export default function BarberTodayPage() {
         <Stat label={t("barberApp.earnedToday")} value={fmtCurrency(day.earned.commission + day.earned.tips)} tone="brass" />
       </section>
 
-      {error && <div className="rounded-[3px] border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-200">{error}</div>}
+      {error && <div className="rounded-[3px] border border-bad bg-bad-soft px-4 py-3 text-sm text-bad">{error}</div>}
 
       {live.length === 0 ? (
         <EmptyState icon="calendar" title={t("barberApp.nothingToday")} hint={t("barberApp.nothingTodayHint")} />
@@ -194,7 +194,7 @@ export default function BarberTodayPage() {
                     <button
                       onClick={() => mark(next, "NO_SHOW")}
                       disabled={busyId === next.id}
-                      className="c-btn-ghost text-red-300 hover:bg-red-400/10"
+                      className="c-btn-ghost text-bad hover:bg-bad-soft"
                     >
                       {t("appointments.noShow")}
                     </button>

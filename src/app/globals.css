@@ -23,6 +23,19 @@
   --c-accent-soft: rgba(207, 162, 67, 0.13);
   --c-glow: rgba(207, 162, 67, 0.13);
   --c-lift: 0 1px 0 rgba(255, 255, 255, 0.04), 0 18px 40px -20px rgba(0, 0, 0, 0.9);
+
+  /* Saying yes, careful, and no. On this ground they are lifted off black, so
+     they run light; the light theme below darkens them to hold contrast on
+     cream. Nothing in the app names a red or a green directly. */
+  --c-good: #6ee7b7;
+  --c-good-soft: rgba(52, 211, 153, 0.12);
+  --c-good-line: rgba(52, 211, 153, 0.28);
+  --c-warn: #fcd34d;
+  --c-warn-soft: rgba(251, 191, 36, 0.12);
+  --c-warn-line: rgba(251, 191, 36, 0.28);
+  --c-bad: #fca5a5;
+  --c-bad-soft: rgba(248, 113, 113, 0.12);
+  --c-bad-line: rgba(248, 113, 113, 0.3);
 }
 
 html[data-app-theme="light"] {
@@ -41,6 +54,17 @@ html[data-app-theme="light"] {
   --c-accent-soft: rgba(138, 106, 24, 0.1);
   --c-glow: rgba(138, 106, 24, 0.07);
   --c-lift: 0 1px 2px rgba(22, 19, 15, 0.05), 0 16px 32px -24px rgba(22, 19, 15, 0.35);
+
+  /* The same three meanings, darkened to read on cream rather than on black. */
+  --c-good: #047857;
+  --c-good-soft: rgba(4, 120, 87, 0.09);
+  --c-good-line: rgba(4, 120, 87, 0.22);
+  --c-warn: #92620a;
+  --c-warn-soft: rgba(146, 98, 10, 0.09);
+  --c-warn-line: rgba(146, 98, 10, 0.22);
+  --c-bad: #b91c1c;
+  --c-bad-soft: rgba(185, 28, 28, 0.08);
+  --c-bad-line: rgba(185, 28, 28, 0.22);
 }
 
 @layer base {
@@ -112,6 +136,22 @@ html[data-app-theme="light"] {
   .text-faint { color: var(--c-faint); }
   .text-accent { color: var(--c-accent); }
   .text-accent-ink { color: var(--c-accent-ink); }
+  /* Yes, careful, no — the three things a screen ever has to say in colour.
+     Each swaps with the theme like everything else here. */
+  .text-good { color: var(--c-good); }
+  .text-warn { color: var(--c-warn); }
+  .text-bad { color: var(--c-bad); }
+  .bg-good-soft { background-color: var(--c-good-soft); }
+  .bg-warn-soft { background-color: var(--c-warn-soft); }
+  .bg-bad-soft { background-color: var(--c-bad-soft); }
+  .border-good { border-color: var(--c-good-line); }
+  .border-warn { border-color: var(--c-warn-line); }
+  .border-bad { border-color: var(--c-bad-line); }
+  .ring-good { --tw-ring-color: var(--c-good-line); }
+  .ring-warn { --tw-ring-color: var(--c-warn-line); }
+  .ring-bad { --tw-ring-color: var(--c-bad-line); }
+  .hover\:bg-bad-soft:hover { background-color: var(--c-bad-soft); }
+  .hover\:text-bad:hover { color: var(--c-bad); }
   .border-hair { border-color: var(--c-line); }
   .border-hair-strong { border-color: var(--c-line-strong); }
   .border-accent { border-color: var(--c-accent); }

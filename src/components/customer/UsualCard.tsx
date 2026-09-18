@@ -92,7 +92,7 @@ export function UsualCard({ usual }: { usual: Usual }) {
         ))}
       </div>
 
-      {error && <p className="mt-3 text-center text-xs text-red-300">{error}</p>}
+      {error && <p className="mt-3 text-center text-xs text-bad">{error}</p>}
     </div>
   );
 }

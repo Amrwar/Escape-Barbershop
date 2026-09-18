@@ -106,7 +106,7 @@ export default function BarberPortfolioPage() {
         onChange={(e) => add(e.target.files?.[0])}
       />
 
-      {error && <p className="text-center text-xs text-red-300">{error}</p>}
+      {error && <p className="text-center text-xs text-bad">{error}</p>}
 
       {photos === null ? (
         <div className="grid grid-cols-2 gap-3">

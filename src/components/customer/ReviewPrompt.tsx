@@ -72,7 +72,7 @@ export function ReviewPrompt({ item, onSaved }: { item: Reviewable; onSaved: (ra
           <div className="min-w-0">
             <Stars rating={rating} size={18} />
             {comment && <p className="mt-2 text-sm text-mid">{comment}</p>}
-            <p className="mt-1 text-xs text-emerald-300/70">{t("app.rateThanks")}</p>
+            <p className="mt-1 text-xs text-good">{t("app.rateThanks")}</p>
           </div>
           {item.canReview && (
             <button type="button" onClick={() => setEditing(true)} className="c-btn-ghost shrink-0 text-xs">
@@ -101,7 +101,7 @@ export function ReviewPrompt({ item, onSaved }: { item: Reviewable; onSaved: (ra
             </div>
           )}
 
-          {error && <p className="mt-3 text-center text-xs text-red-300">{error}</p>}
+          {error && <p className="mt-3 text-center text-xs text-bad">{error}</p>}
         </div>
       )}
     </div>

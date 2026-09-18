@@ -79,7 +79,7 @@ function CustomerLoginInner() {
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-64 bg-[radial-gradient(70%_100%_at_50%_100%,rgba(255,255,255,0.05),transparent_70%)]" />
 
       <div className="fixed end-5 top-5 z-10">
-        <LanguageToggle />
+        <LanguageToggle tone="app" />
       </div>
 
       <div className="relative mx-auto w-full max-w-sm">
@@ -175,12 +175,12 @@ function CustomerLoginInner() {
             )}
 
             {ended && !error && (
-              <div className="rounded-[3px] border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-sm text-amber-200">
+              <div className="rounded-[3px] border border-warn bg-warn-soft px-4 py-3 text-sm text-warn">
                 {t("auth.endedExpired")}
               </div>
             )}
             {error && (
-              <div className="rounded-[3px] border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-200">{error}</div>
+              <div className="rounded-[3px] border border-bad bg-bad-soft px-4 py-3 text-sm text-bad">{error}</div>
             )}
 
             <button type="submit" disabled={loading} className="c-btn-primary w-full">

@@ -112,7 +112,7 @@ export default function BarberTimeOffPage() {
           <button type="button" onClick={askFor} disabled={saving || !date} className="c-btn-primary w-full">
             {saving ? "…" : t("timeOff.ask")}
           </button>
-          {error && <p className="text-center text-xs text-red-300">{error}</p>}
+          {error && <p className="text-center text-xs text-bad">{error}</p>}
         </div>
       </section>
 

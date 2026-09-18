@@ -71,6 +71,21 @@ async function cut(barberId: string = shop.barbers.abdullah) {
 const file = (appointmentId: string, body: string, kind = "NOTE") =>
   fileReport(jsonRequest("/api/reports/cuts", { appointmentId, kind, body }));
 
+/** A walk-in, rung up at the till — which is how nearly every cut arrives. */
+async function walkIn(barberId: string = shop.barbers.abdullah) {
+  return testPrisma().visit.create({
+    data: {
+      customerId: shop.customer.id,
+      barberId,
+      total: 150,
+      items: { create: [{ serviceId: shop.services.haircut, priceAtTime: 150, quantity: 1 }] },
+    },
+  });
+}
+
+const fileOnVisit = (visitId: string, body: string, kind = "NOTE") =>
+  fileReport(jsonRequest("/api/reports/cuts", { visitId, kind, body }));
+
 describe("filing a report", () => {
   it("records what happened, who wrote it and which cut", async () => {
     const appointment = await cut();
@@ -123,6 +138,65 @@ describe("filing a report", () => {
     session = null;
     const appointment = await cut();
     expect((await file(appointment.id, "Anything")).status).toBe(401);
+  });
+});
+
+/**
+ * Nearly every cut this shop does walks in and is rung up as a visit, never
+ * booked. A report that only works on appointments would never be written.
+ */
+describe("reporting on a walk-in", () => {
+  it("hangs off the visit instead of an appointment", async () => {
+    const visit = await walkIn();
+    expect((await fileOnVisit(visit.id, "Ran forty minutes over")).status).toBe(201);
+
+    const [report] = await testPrisma().cutReport.findMany();
+    expect(report.visitId).toBe(visit.id);
+    expect(report.appointmentId).toBeNull();
+  });
+
+  it("holds a barber to their own chair here too", async () => {
+    const someoneElses = await walkIn(shop.barbers.khaled);
+    expect((await fileOnVisit(someoneElses.id, "Not my work")).status).toBe(403);
+    expect(await testPrisma().cutReport.count()).toBe(0);
+  });
+
+  it("lets the cashier report the visit they rang up", async () => {
+    session = staffSession(shop.cashier.id, "CASHIER");
+    const visit = await walkIn(shop.barbers.khaled);
+    expect((await fileOnVisit(visit.id, "Customer disputed the price", "COMPLAINT")).status).toBe(201);
+  });
+
+  it("will not report on a visit that does not exist", async () => {
+    expect((await fileOnVisit("no-such-visit", "Anything")).status).toBe(404);
+  });
+
+  it("wants exactly one cut named, not none and not both", async () => {
+    const appointment = await cut();
+    const visit = await walkIn();
+
+    expect((await fileReport(jsonRequest("/api/reports/cuts", { body: "Which one?" }))).status).toBe(400);
+    expect(
+      (await fileReport(jsonRequest("/api/reports/cuts", { appointmentId: appointment.id, visitId: visit.id, body: "Both?" })))
+        .status
+    ).toBe(400);
+    expect(await testPrisma().cutReport.count()).toBe(0);
+  });
+
+  it("reaches the owner's screen beside the booked ones", async () => {
+    const visit = await walkIn();
+    const appointment = await cut();
+    await fileOnVisit(visit.id, "Clippers gave out", "EQUIPMENT");
+    await file(appointment.id, "Ran long");
+
+    session = staffSession(shop.owner.id);
+    const reports = await (await listReports(getRequest("/api/reports/cuts"))).json();
+
+    expect(reports).toHaveLength(2);
+    const walked = reports.find((r: { visit: unknown }) => r.visit);
+    expect(walked.visit.customer.name).toBe("Ahmed Mohamed");
+    expect(walked.visit.barber.name).toBe("Abdullah");
+    expect(walked.appointment).toBeNull();
   });
 });
 

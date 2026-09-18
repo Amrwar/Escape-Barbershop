@@ -66,7 +66,7 @@ export function WaitlistOffer({ entry, onTaken }: { entry: WaitlistEntry; onTake
       </button>
 
       <p className="mt-2 text-center text-[11px] text-faint">{t("app.waitlistHurry")}</p>
-      {error && <p className="mt-2 text-center text-xs text-red-300">{error}</p>}
+      {error && <p className="mt-2 text-center text-xs text-bad">{error}</p>}
     </div>
   );
 }
@@ -129,7 +129,7 @@ export function JoinWaitlist({
       >
         {state === "joining" ? "…" : t("app.waitlistJoin")}
       </button>
-      {error && <p className="mt-2 text-xs text-red-300">{error}</p>}
+      {error && <p className="mt-2 text-xs text-bad">{error}</p>}
     </div>
   );
 }

@@ -33,10 +33,17 @@ That is deliberate: a rule that lives in a screen gets copied and then diverges.
 
 | Role | Signs in with | Sees |
 | --- | --- | --- |
-| `OWNER` | email | everything |
-| `CASHIER` | email | the till, the diary, expenses, the queue |
-| `BARBER` | email | their own day, their own customers, their own earnings |
+| `OWNER` | email + password | everything |
+| `CASHIER` | email + password | the till, the diary, expenses, the queue |
+| `BARBER` | phone + PIN | their own day, their own customers, their own earnings |
 | `CUSTOMER` | phone number | their own bookings and profile, nothing else |
+
+A login has exactly one way in — an email or a phone, never both — and the shape
+of the secret follows from it: eight characters or more for a password, six
+digits or more for a PIN. Barbers sign in with the phone in their hand because
+twenty-six barbers do not have work email addresses, and a login nobody can
+perform is a feature nobody has. Six digits rather than four is deliberate: it
+is the whole secret and it is typed in front of other people.
 
 Three doors, enforced in `middleware.ts`: shop paths need a staff role, `/app` needs a
 customer, `/barber` needs a barber. The API enforces the same thing independently
@@ -290,8 +297,20 @@ month drifting away from the rest.
   Arabic stays in Cairo.
 - **Square corners and hairline rules.** Three pixels of radius, one brass line
   along the top of a lifted card, and nothing else decorative.
+- **Yes, careful and no are tokens too** — `--c-good`, `--c-warn`, `--c-bad`,
+  each with a soft fill and a line. They are the only colours in the app that
+  mean something rather than decorate, and they swap with the theme like
+  everything else. Nothing names a red or a green directly.
 - The shop's own till screens are deliberately *not* on these tokens. They are
-  worked on for eight hours a day and stay white.
+  worked on for eight hours a day and stay white. The two components that appear
+  on both sides — the language toggle and the cut report — take the skin as a
+  prop rather than assuming one.
+
+> Twenty-two status colours were written as raw Tailwind (`text-red-300`,
+> `bg-emerald-400/10`) and pitched for the dark ground. In the light theme they
+> landed on cream at **1.1:1 to 1.7:1** — an error banner nobody could read, and
+> a white language pill on a white card. They are tokens now, and every one
+> clears 4.5:1 on both grounds in both themes.
 
 ## The usual
 
@@ -513,8 +532,14 @@ can add one on somebody's behalf.
 
 **After the cut.** Whoever was standing there can report what happened — the
 clippers gave out, the customer was unhappy with the fade, it ran forty minutes
-over. Four kinds, a line or two, one tap from the finished cut on the barber's
-own day screen.
+over. Four kinds, a line or two, one tap.
+
+A cut reaches the shop two ways and the report hangs off whichever it was: a
+booked cut is an appointment, reported from the barber's own day screen; a
+walk-in is a visit, reported from the till. That second case is the one that
+matters — the shop books almost nothing and rings up over a thousand visits a
+month, so a report that only understood appointments would never have been
+written.
 
 This is not a review. A review is the customer's opinion, afterwards and in
 public; this is the shop's own record of its own day, and only the owner reads

@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
 import { Modal } from "@/components/ui/Modal";
+import { CutReport } from "@/components/barber/CutReport";
 import { useTranslation } from "@/lib/i18n";
 import { PAYMENT_BADGE, paymentMethodKey, type VisitPaymentMethod } from "@/lib/payments";
 import { printReceipt, buildWhatsAppText, downloadReceiptPdf, type ReceiptVisit, type ReceiptShopSettings } from "@/lib/receipt";
@@ -307,6 +308,11 @@ export default function VisitDetailPage() {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Anything worth telling the owner about this cut. */}
+      <div className="card mb-4 p-4">
+        <CutReport visitId={visit.id} tone="shop" />
       </div>
 
       {/* Delete confirmation modal */}

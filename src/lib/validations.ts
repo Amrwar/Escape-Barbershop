@@ -195,18 +195,45 @@ export const profileSchema = z.object({
   email: z.string().email("Invalid email address").optional(),
 });
 
+/**
+ * A staff login.
+ *
+ * The office signs in with an email and a password. A barber signs in with the
+ * phone in their hand and a PIN, because twenty-six barbers do not have work
+ * email addresses and a login nobody can perform is a feature nobody has. Both
+ * shapes end up in the same row — `authorize()` already takes either — so the
+ * only rule here is that a login has exactly one way in.
+ *
+ * The PIN is six digits, not four: it is the whole secret, it is typed in front
+ * of other people, and six digits is the difference between a thousand guesses
+ * and a million.
+ */
 export const userCreateSchema = z
   .object({
     name: z.string().min(1, "Name is required").max(100),
-    email: z.string().email("Invalid email address"),
-    password: z.string().min(8, "Password must be at least 8 characters"),
+    email: z.string().email("Invalid email address").optional(),
+    phone: z.string().optional(),
+    password: z.string().min(1, "A password or PIN is required"),
     role: z.enum(["OWNER", "CASHIER", "BARBER"]),
     /** Which barber this login belongs to. Required for a barber's login. */
     barberId: z.string().optional(),
   })
+  .refine((u) => !!u.email !== !!u.phone, {
+    message: "Give either an email address or a phone number, not both",
+    path: ["email"],
+  })
   .refine((u) => u.role !== "BARBER" || !!u.barberId, {
     message: "Choose which barber this login is for",
     path: ["barberId"],
+  })
+  // An email login carries a password; a phone login carries a PIN.
+  .refine((u) => !u.email || u.password.length >= 8, {
+    message: "Password must be at least 8 characters",
+    path: ["password"],
+  })
+  .refine((u) => !u.phone || /^\d{6,}$/.test(u.password), {
+    message: "The PIN must be at least six digits",
+    path: ["password"],
   });
 
 /** A phone asking to be notified, as the browser hands it over. */
@@ -238,7 +265,14 @@ export const customerNoteSchema = z.object({
 export const userUpdateSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   email: z.string().email("Invalid email address").optional(),
-  password: z.string().min(8, "Password must be at least 8 characters").optional(),
+  // Six or more digits, or eight or more of anything else: the same two shapes
+  // a login is created with, since a barber's reset is a new PIN.
+  password: z
+    .string()
+    .refine((p) => /^\d{6,}$/.test(p) || p.length >= 8, {
+      message: "Use at least 8 characters, or a PIN of at least 6 digits",
+    })
+    .optional(),
   role: z.enum(["OWNER", "CASHIER"]).optional(),
 });
 

@@ -83,10 +83,19 @@ apps and prepare the listings.
 - [x] The shop's till screens deliberately untouched — worked on for eight hours a day,
       and still white
 
+## Phase 11 — reaching the people who work here (in progress)
+
+- [x] A barber signs in with the phone in their hand and a PIN, so the day
+      screen, earnings, portfolio, time off and cut reports reach all 26
+- [ ] Every walk-in becomes a diary entry, so reminders, review requests,
+      rebooking nudges, loyalty and the no-show policy run on real traffic
+
 ## Phase 10 — the conversation around the chair (done)
 
 - [x] Photos of the cut a customer wants, on the barber's day screen and their file
 - [x] A report on a cut from whoever was standing there, read by the owner alone
+      — from the barber's day screen on a booked cut, and from the till on a
+      walk-in, which is nearly all of them
 
 ## Phase 9 — the awkward customer (done)
 

@@ -18,7 +18,9 @@ interface Me {
 interface StaffUser {
   id: string;
   name: string;
-  email: string;
+  /** The office signs in with an email, a barber with the phone in their hand. */
+  email: string | null;
+  phone: string | null;
   role: "OWNER" | "CASHIER" | "BARBER";
   /** Set on a barber's login: which barber it belongs to. */
   barber?: { id: string; name: string } | null;
@@ -44,12 +46,14 @@ export default function AccountPage() {
   const [addForm, setAddForm] = useState<{
     name: string;
     email: string;
+    phone: string;
     password: string;
     role: "OWNER" | "CASHIER" | "BARBER";
     barberId: string;
   }>({
     name: "",
     email: "",
+    phone: "",
     password: "",
     role: "CASHIER",
     barberId: "",
@@ -110,26 +114,45 @@ export default function AccountPage() {
     }
   };
 
+  /** A barber signs in with a phone and a PIN; the office with email and password. */
+  const byPhone = addForm.role === "BARBER";
+
   const addUser = async (e: React.FormEvent) => {
     e.preventDefault();
     setAddError("");
-    if (addForm.password.length < 8) return setAddError(t("account.passwordTooShort"));
-    if (addForm.role === "BARBER" && !addForm.barberId) return setAddError(t("account.pickBarber"));
+
+    if (byPhone) {
+      if (!addForm.phone.trim()) return setAddError(t("account.phoneRequired"));
+      if (!/^\d{6,}$/.test(addForm.password)) return setAddError(t("account.pinTooShort"));
+      if (!addForm.barberId) return setAddError(t("account.pickBarber"));
+    } else if (addForm.password.length < 8) {
+      return setAddError(t("account.passwordTooShort"));
+    }
 
     setSaving(true);
     try {
+      const { name, password, role, barberId, email, phone } = addForm;
       const res = await fetch("/api/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(addForm.role === "BARBER" ? addForm : { ...addForm, barberId: undefined }),
+        body: JSON.stringify(
+          byPhone
+            ? { name, password, role, barberId, phone: phone.trim() }
+            : { name, password, role, email: email.trim() }
+        ),
       });
       if (res.ok) {
         setAddOpen(false);
-        setAddForm({ name: "", email: "", password: "", role: "CASHIER", barberId: "" });
+        setAddForm({ name: "", email: "", phone: "", password: "", role: "CASHIER", barberId: "" });
         loadUsers();
       } else {
         const d = await res.json().catch(() => ({}));
-        setAddError(d.error === "email_exists" ? t("account.emailExists") : t("account.saveFailed"));
+        const said: Record<string, string> = {
+          email_exists: t("account.emailExists"),
+          phone_exists: t("account.phoneExists"),
+          invalid_phone: t("app.badPhone"),
+        };
+        setAddError(said[d.error] ?? t("account.saveFailed"));
       }
     } finally {
       setSaving(false);
@@ -140,7 +163,12 @@ export default function AccountPage() {
     e.preventDefault();
     if (!resetUser) return;
     setResetError("");
-    if (resetPw.length < 8) return setResetError(t("account.passwordTooShort"));
+
+    // A phone login is reset to a new PIN, an email login to a new password.
+    const onPhone = !resetUser.email;
+    if (onPhone ? !/^\d{6,}$/.test(resetPw) : resetPw.length < 8) {
+      return setResetError(onPhone ? t("account.pinTooShort") : t("account.passwordTooShort"));
+    }
 
     setSaving(true);
     try {
@@ -161,7 +189,7 @@ export default function AccountPage() {
   };
 
   const removeUser = async (u: StaffUser) => {
-    if (!confirm(`${t("action.delete")} ${u.email}?`)) return;
+    if (!confirm(`${t("action.delete")} ${u.email ?? u.phone ?? u.name}?`)) return;
     const res = await fetch(`/api/users/${u.id}`, { method: "DELETE" });
     if (!res.ok) {
       const d = await res.json().catch(() => ({}));
@@ -284,7 +312,9 @@ export default function AccountPage() {
                       <span className="ms-2 text-xs text-gray-400">({t("account.you")})</span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-gray-600">{u.email}</td>
+                  <td className="px-4 py-3 text-gray-600" dir={u.email ? undefined : "ltr"}>
+                    {u.email ?? u.phone ?? "—"}
+                  </td>
                   <td className="px-4 py-3">
                     <Badge variant={u.role === "OWNER" ? "ink" : u.role === "BARBER" ? "blue" : "gray"}>
                       {u.role === "OWNER"
@@ -329,27 +359,7 @@ export default function AccountPage() {
               required
             />
           </div>
-          <div>
-            <label className="label">{t("auth.email")}</label>
-            <input
-              type="email"
-              className="input"
-              value={addForm.email}
-              onChange={(e) => setAddForm((p) => ({ ...p, email: e.target.value }))}
-              required
-            />
-          </div>
-          <div>
-            <label className="label">{t("auth.password")}</label>
-            <input
-              type="password"
-              autoComplete="new-password"
-              className="input"
-              value={addForm.password}
-              onChange={(e) => setAddForm((p) => ({ ...p, password: e.target.value }))}
-              required
-            />
-          </div>
+          {/* The role comes first, because it decides what the rest asks for. */}
           <div>
             <label className="label">{t("account.role")}</label>
             <select
@@ -363,6 +373,63 @@ export default function AccountPage() {
             </select>
             <p className="text-xs text-gray-500 mt-1">{t("account.roleHint")}</p>
           </div>
+
+          {byPhone ? (
+            <>
+              <div>
+                <label className="label">{t("field.phone")}</label>
+                <input
+                  type="tel"
+                  inputMode="tel"
+                  dir="ltr"
+                  className="input"
+                  placeholder="01xxxxxxxxx"
+                  value={addForm.phone}
+                  onChange={(e) => setAddForm((p) => ({ ...p, phone: e.target.value }))}
+                  required
+                />
+              </div>
+              <div>
+                <label className="label">{t("account.pin")}</label>
+                <input
+                  type="password"
+                  inputMode="numeric"
+                  autoComplete="new-password"
+                  dir="ltr"
+                  className="input tracking-widest"
+                  placeholder="••••••"
+                  value={addForm.password}
+                  onChange={(e) => setAddForm((p) => ({ ...p, password: e.target.value.replace(/\D/g, "") }))}
+                  required
+                />
+                <p className="text-xs text-gray-500 mt-1">{t("account.pinHint")}</p>
+              </div>
+            </>
+          ) : (
+            <>
+              <div>
+                <label className="label">{t("auth.email")}</label>
+                <input
+                  type="email"
+                  className="input"
+                  value={addForm.email}
+                  onChange={(e) => setAddForm((p) => ({ ...p, email: e.target.value }))}
+                  required
+                />
+              </div>
+              <div>
+                <label className="label">{t("auth.password")}</label>
+                <input
+                  type="password"
+                  autoComplete="new-password"
+                  className="input"
+                  value={addForm.password}
+                  onChange={(e) => setAddForm((p) => ({ ...p, password: e.target.value }))}
+                  required
+                />
+              </div>
+            </>
+          )}
 
           {/* A barber's login only sees their own day, customers and earnings. */}
           {addForm.role === "BARBER" && (

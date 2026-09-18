@@ -81,15 +81,20 @@ export default function LoginPage() {
 
             <div>
               <label className="label" htmlFor="email">
-                {t("auth.email")}
+                {t("auth.emailOrPhone")}
               </label>
+              {/*
+                Text, not email: the office signs in with an address and a
+                barber with their phone number, and an email input refuses to
+                submit the second one at all.
+              */}
               <input
                 id="email"
-                type="email"
-                autoComplete="email"
+                type="text"
+                autoComplete="username"
                 required
                 className="input"
-                placeholder={t("auth.emailPlaceholder")}
+                placeholder={t("auth.emailOrPhonePlaceholder")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />

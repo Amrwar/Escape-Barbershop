@@ -363,7 +363,7 @@ export default function BookPage() {
       )}
 
       {error && (
-        <div className="mt-4 rounded-[3px] border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-200">{error}</div>
+        <div className="mt-4 rounded-[3px] border border-bad bg-bad-soft px-4 py-3 text-sm text-bad">{error}</div>
       )}
 
       <ActionBar>
