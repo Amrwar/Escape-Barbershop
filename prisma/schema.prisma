@@ -468,20 +468,25 @@ model LoyaltyRedemption {
 /// off the app. A hidden review counts for nothing and is shown to nobody, but is
 /// not deleted, so the shop can put it back.
 model Review {
-  id            String      @id @default(cuid())
-  appointmentId String      @unique
+  id            String       @id @default(cuid())
+  /// The cut being reviewed. Booked cuts are appointments, walk-ins are visits,
+  /// and this shop does far more of the second. Exactly one is set, and each is
+  /// unique, so a cut can carry one review and no more.
+  appointmentId String?      @unique
+  visitId       String?      @unique
   customerId    String
   barberId      String?
   rating        Int
   comment       String?
   hiddenAt      DateTime?
   hiddenById    String?
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
-  customer      Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  barber        Barber?     @relation(fields: [barberId], references: [id])
-  hiddenBy      User?       @relation("HiddenReviews", fields: [hiddenById], references: [id])
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  visit         Visit?       @relation(fields: [visitId], references: [id], onDelete: Cascade)
+  customer      Customer     @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  barber        Barber?      @relation(fields: [barberId], references: [id])
+  hiddenBy      User?        @relation("HiddenReviews", fields: [hiddenById], references: [id])
 
   @@index([barberId, hiddenAt])
   @@index([customerId])
@@ -590,6 +595,12 @@ model Visit {
   rewards         LoyaltyRedemption[]
   tipMovements    CashMovement[]
   reports         CutReport[]
+  /// What they thought of it. A walk-in is reviewed through the visit, since
+  /// there is no booking behind it to hang the review on.
+  review          Review?
+  /// Set when the app has asked this customer what they thought, so it asks
+  /// once and never again.
+  reviewAskedAt   DateTime?
 }
 
 model CashDrawerSession {

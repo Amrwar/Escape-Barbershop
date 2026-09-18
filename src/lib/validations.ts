@@ -386,8 +386,10 @@ export const customerBookingSchema = z.object({
 });
 
 /** Stars, and a line if they feel like writing one. */
+/** A review names the cut it is about: a booking, or a walk-in's visit. */
 export const reviewSchema = z.object({
-  appointmentId: z.string().min(1),
+  appointmentId: z.string().min(1).optional(),
+  visitId: z.string().min(1).optional(),
   rating: z.number().int().min(1).max(5),
   comment: z.string().max(500).optional().or(z.literal("")),
 });

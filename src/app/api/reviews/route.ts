@@ -26,6 +26,7 @@ export async function GET(req: NextRequest) {
         barber: { select: { id: true, name: true } },
         customer: { select: { id: true, name: true } },
         appointment: { select: { id: true, startAt: true } },
+        visit: { select: { id: true, visitAt: true } },
       },
     });
 

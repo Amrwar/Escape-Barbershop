@@ -24,7 +24,9 @@ interface Review {
   hiddenAt: string | null;
   barber: { id: string; name: string } | null;
   customer: { id: string; name: string } | null;
+  /** The cut it is about: a booking, or a walk-in's visit. */
   appointment: { id: string; startAt: string } | null;
+  visit: { id: string; visitAt: string } | null;
 }
 
 /** Five stars as text, which reads well in a dense table. */

@@ -14,7 +14,9 @@ import { StarPicker, Stars } from "./Stars";
  */
 
 export interface Reviewable {
-  appointmentId: string;
+  /** The cut this is about: a booking, or a walk-in's visit. One of the two. */
+  appointmentId: string | null;
+  visitId: string | null;
   startAt: string;
   barber: { id: string; name: string; photo: string | null } | null;
   services: string[];
@@ -38,7 +40,9 @@ export function ReviewPrompt({ item, onSaved }: { item: Reviewable; onSaved: (ra
       const res = await fetch("/api/customer/reviews", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ appointmentId: item.appointmentId, rating, comment }),
+        body: JSON.stringify(
+          item.appointmentId ? { appointmentId: item.appointmentId, rating, comment } : { visitId: item.visitId, rating, comment }
+        ),
       });
       if (!res.ok) {
         setError(t("app.rateFailed"));

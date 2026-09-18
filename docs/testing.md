@@ -10,7 +10,7 @@ Two suites for two different jobs, and a third thing that is not a suite at all.
 | `npm run test:db:stop` | Removes the test database container | Docker | — |
 | `npm run test:preview` | A walk through the customer app on the demo shop | the preview running | ~2 seconds |
 
-**836 tests today: 326 on the rules, 510 on the API.** Both suites must be green before
+**855 tests today: 326 on the rules, 529 on the API.** Both suites must be green before
 anything is pushed; the preview walk is run by hand when the demo shop is up.
 
 Every one of them also runs on every push, in GitHub Actions: types, lint and the rules in
@@ -34,7 +34,7 @@ twice a year. Arithmetic is cheap to test and expensive to get wrong.
 ## The API (`tests/*.test.ts`)
 
 The route handlers, against a real Postgres in a container, with the session
-mocked to whichever role the test is about. Thirty-two files, of which the ones
+mocked to whichever role the test is about. Thirty-three files, of which the ones
 worth knowing about are:
 
 - **`booking-api.test.ts`** — booking, clashes, opening hours, buffers, time off,
@@ -84,6 +84,8 @@ worth knowing about are:
   on a walk-in alike, with exactly one of the two named.
 - **`cuts-wanted-api.test.ts`** — the photos are the customer's in both
   directions, and they reach the barber's day screen.
+- **`walk-in-reviews-api.test.ts`** — a cut rated whichever way it arrived,
+  once and only once, and never offered twice when a booking was rung up.
 - **`barber-login-api.test.ts`** — a login has one way in, a PIN is six digits
   and stored hashed, and the phone that was typed signs the barber in however
   they wrote it.

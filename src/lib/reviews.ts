@@ -24,6 +24,19 @@ export interface ReviewableAppointment {
   endAt: Date | string;
 }
 
+/**
+ * A walk-in, read as a reviewable cut.
+ *
+ * A visit has no status and no end time: it is written at the till *because*
+ * the cut happened, which is the same fact "COMPLETED" carries on a booking,
+ * and it is written when the customer is paying, which is near enough the end.
+ * Adapting here rather than branching inside the rules keeps one definition of
+ * what may be reviewed and for how long.
+ */
+export function visitAsCut(visit: { visitAt: Date | string }): ReviewableAppointment {
+  return { status: "COMPLETED", endAt: visit.visitAt };
+}
+
 export interface RatingLike {
   rating: number;
 }

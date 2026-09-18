@@ -174,11 +174,20 @@ provider, sender name or contract.
 Stars, and a line if they feel like writing one. The rules are deliberately
 narrow, because a rating nobody believes is worse than no rating at all:
 
-- Only a finished appointment can carry a review — including one they left
-  without paying, since they still sat in the chair. Cancelled and missed
-  appointments are silent.
-- One per appointment. Writing it again is a change of mind, not a second
-  opinion: the row is updated.
+- Only a finished cut can carry a review — including one they left without
+  paying, since they still sat in the chair. Cancelled and missed appointments
+  are silent.
+- **A cut is reviewed whichever way it arrived.** A booked cut is reviewed
+  through its appointment; a walk-in through its visit, which is how nearly
+  every cut here arrives. `visitAsCut()` reads a visit as a reviewable thing —
+  it was written at the till *because* the cut happened, which is the same fact
+  `COMPLETED` carries, and it was written while the customer was paying, which
+  is near enough the end — so there stays one definition of what may be reviewed
+  and for how long. When a booking *is* rung up both records exist for one
+  haircut, so the visit side skips any visit with an appointment behind it;
+  otherwise the app would ask the same person to rate the same cut twice.
+- One per cut, enforced by a unique key on each side. Writing it again is a
+  change of mind, not a second opinion: the row is updated.
 - The window closes after a month. Nobody is asked in March what they thought of
   a haircut in January.
 - The evening run asks yesterday's customers once, on the phone. Ignoring the

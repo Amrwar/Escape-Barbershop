@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getBookingSettings } from "@/lib/booking-server";
 import { DEFAULT_REMIND_HOURS_AHEAD, dueForReminder, reminderMessage, reviewRequestMessage } from "@/lib/reminders";
-import { ASK_WITHIN_HOURS, shouldAskForReview } from "@/lib/reviews";
+import { ASK_WITHIN_HOURS, shouldAskForReview, visitAsCut } from "@/lib/reviews";
 import { birthdayMessage, shouldGreet } from "@/lib/birthdays";
 import { dueTonight, nudgeMessage } from "@/lib/rebooking";
 import { getBirthdaySettings } from "@/lib/loyalty-server";
@@ -96,6 +96,25 @@ export async function GET(req: NextRequest) {
       },
     });
 
+    // The walk-ins too, which is nearly all of them here: a cut rung up at the
+    // till with no booking behind it is still a cut somebody has an opinion of.
+    const walkedIn = await prisma.visit.findMany({
+      where: {
+        visitAt: { gte: new Date(Date.now() - ASK_WITHIN_HOURS * 3_600_000), lte: new Date() },
+        reviewAskedAt: null,
+        review: { is: null },
+        appointment: { is: null },
+      },
+      select: {
+        id: true,
+        visitAt: true,
+        customerId: true,
+        reviewAskedAt: true,
+        barber: { select: { name: true } },
+        items: { select: { service: { select: { name: true } } } },
+      },
+    });
+
     let asked = 0;
     for (const appointment of finished.filter((a) => shouldAskForReview(a))) {
       sent += await sendPush(
@@ -110,6 +129,21 @@ export async function GET(req: NextRequest) {
 
       // Stamped either way, for the same reason reminders are: one ask, ever.
       await prisma.appointment.update({ where: { id: appointment.id }, data: { reviewAskedAt: new Date() } });
+      asked += 1;
+    }
+
+    for (const visit of walkedIn.filter((v) => shouldAskForReview({ ...visitAsCut(v), reviewAskedAt: v.reviewAskedAt }))) {
+      sent += await sendPush(
+        { customerId: visit.customerId },
+        reviewRequestMessage({
+          id: visit.id,
+          startAt: visit.visitAt,
+          barberName: visit.barber?.name ?? null,
+          services: visit.items.map((i) => i.service?.name).filter((n): n is string => !!n),
+        })
+      );
+
+      await prisma.visit.update({ where: { id: visit.id }, data: { reviewAskedAt: new Date() } });
       asked += 1;
     }
 

@@ -87,8 +87,17 @@ apps and prepare the listings.
 
 - [x] A barber signs in with the phone in their hand and a PIN, so the day
       screen, earnings, portfolio, time off and cut reports reach all 26
-- [ ] Every walk-in becomes a diary entry, so reminders, review requests,
-      rebooking nudges, loyalty and the no-show policy run on real traffic
+- [x] A walk-in can be reviewed, so the shop's actual traffic can rate its cuts
+
+> This started as "every walk-in becomes a diary entry", on the assumption that
+> zero appointments was starving six features. Checking first showed it starves
+> exactly one: loyalty and the rebooking nudge already read visits, reminders
+> are about cuts still to come, and a walk-in cannot miss an appointment it
+> never made. Only reviews were blocked. Writing 6,588 retroactive appointments
+> to unlock one feature would have wrecked the diary counts, the barber's day
+> screen and the appointments list — so the review learned about visits instead.
+> What actually starves loyalty and the nudges is one customer login and no push
+> subscriptions, which is a different problem.
 
 ## Phase 10 — the conversation around the chair (done)
 
