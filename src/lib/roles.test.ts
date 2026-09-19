@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isCustomerLoginPath, isCustomerPath, isStaffRole } from './roles';
+import { isPublicCustomerPath, isCustomerPath, isStaffRole } from './roles';
 
 describe('isStaffRole', () => {
   it('lets staff in and keeps customers out', () => {
@@ -22,10 +22,29 @@ describe('isCustomerPath', () => {
   });
 });
 
-describe('isCustomerLoginPath', () => {
-  it('is only the customer sign-in page', () => {
-    expect(isCustomerLoginPath('/app/login')).toBe(true);
-    expect(isCustomerLoginPath('/app/loginate')).toBe(false);
-    expect(isCustomerLoginPath('/app/book')).toBe(false);
+describe('isPublicCustomerPath', () => {
+  it('lets anybody sign in', () => {
+    expect(isPublicCustomerPath('/app/login')).toBe(true);
+  });
+
+  it('lets anybody read what the shop charges and who is in', () => {
+    // The questions people ask before deciding to come, so an account cannot
+    // be the price of asking them.
+    expect(isPublicCustomerPath('/app/prices')).toBe(true);
+    expect(isPublicCustomerPath('/app/roster')).toBe(true);
+  });
+
+  it('keeps everything about a customer behind the login', () => {
+    expect(isPublicCustomerPath('/app')).toBe(false);
+    expect(isPublicCustomerPath('/app/book')).toBe(false);
+    expect(isPublicCustomerPath('/app/profile')).toBe(false);
+    expect(isPublicCustomerPath('/app/history')).toBe(false);
+    expect(isPublicCustomerPath('/app/appointments')).toBe(false);
+  });
+
+  it('matches whole segments, so a lookalike path is not let through', () => {
+    expect(isPublicCustomerPath('/app/loginate')).toBe(false);
+    expect(isPublicCustomerPath('/app/prices-secret')).toBe(false);
+    expect(isPublicCustomerPath('/app/rosterful')).toBe(false);
   });
 });

@@ -27,6 +27,9 @@ interface Barber {
   bio: string | null;
   photo: string | null;
   serviceIds: string[];
+  /** A few of their own cuts, so a barber is chosen by the work. */
+  work?: string[];
+  rating?: { average: number | null; count: number };
 }
 
 interface Catalog {
@@ -240,8 +243,28 @@ export default function BookPage() {
               >
                 <Avatar name={b.name} photo={b.photo} />
                 <div className="min-w-0 flex-1">
-                  <div className="font-medium">{b.name}</div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{b.name}</span>
+                    {b.rating?.average != null && (
+                      <span className="text-xs text-accent">★ {b.rating.average.toFixed(1)}</span>
+                    )}
+                  </div>
                   {b.bio && <div className="mt-0.5 truncate text-xs text-soft">{b.bio}</div>}
+
+                  {/* Their own work, which is what a customer actually chooses on. */}
+                  {(b.work?.length ?? 0) > 0 && (
+                    <div className="mt-2 flex gap-1.5">
+                      {b.work!.map((image, i) => (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          key={i}
+                          src={image}
+                          alt=""
+                          className="h-12 w-12 shrink-0 border border-hair object-cover"
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
                 {barberId === b.id && <Pill tone="brass">✓</Pill>}
               </button>

@@ -19,7 +19,18 @@ export function isBarberPath(pathname: string): boolean {
   return pathname === "/barber" || pathname.startsWith("/barber/");
 }
 
-/** The customer app's own sign-in page, which is open to everyone. */
-export function isCustomerLoginPath(pathname: string): boolean {
-  return pathname === "/app/login" || pathname.startsWith("/app/login/");
+/**
+ * The parts of the customer app open to everyone.
+ *
+ * Sign-in, obviously. Beyond that, the two things a shop puts on its own door:
+ * what it charges and who is in. Making somebody create an account to read a
+ * price list is the wrong way round — it is the question they ask *before*
+ * deciding to come, and both screens read endpoints that are already public.
+ *
+ * Nothing here touches a customer's own record.
+ */
+const PUBLIC_CUSTOMER_PATHS = ["/app/login", "/app/prices", "/app/roster"];
+
+export function isPublicCustomerPath(pathname: string): boolean {
+  return PUBLIC_CUSTOMER_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }

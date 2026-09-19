@@ -198,6 +198,23 @@ correction level, because thermal paper smudges and a code that will not scan is
 worse than no code. If it cannot be drawn at all the receipt prints without it:
 the till must never be blocked by a decoration.
 
+## What the shop puts on its door
+
+Two screens open to anybody, signed in or not: **the price list** and **who's
+in**. Both answer questions people ask *before* deciding to come, so an account
+cannot be the price of asking them — and both read endpoints that were already
+public. `isPublicCustomerPath` names the exception, and a test holds the line
+that everything about a customer stays behind the login.
+
+Every price the shop charges was already in the app, but only inside step one of
+a four-step booking wizard or cut down to four on the home screen. "What does a
+beard trim cost" should not require starting a booking.
+
+The roster answers "is my barber in on Thursday", which customers have always
+had to ring the shop to ask. A week ahead, and it never says *why* anybody is
+off — a barber's reason is theirs, and only approved time off takes them off the
+list, exactly as asking blocks nothing in the diary.
+
 ## Reviews
 
 Stars, and a line if they feel like writing one. The rules are deliberately

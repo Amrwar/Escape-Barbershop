@@ -23,7 +23,9 @@ export function DepositNotice({
   const [copied, setCopied] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/settings/deposits")
+    // Not /api/settings/deposits: that one is staff-only, so this always came
+    // back 401 and the customer was told to send money nowhere.
+    fetch("/api/customer/deposit-address")
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => setInstapay(d?.instapay ?? null))
       .catch(() => setInstapay(null));

@@ -24,8 +24,20 @@ export function ReferralCard({ referral }: { referral: Referral }) {
   if (!referral.code) return null;
 
   const reward = (lang === "ar" && referral.rewardTextAr) || referral.rewardText;
-  const share = async () => {
+
+  /**
+   * A link, not a bare code. The friend had to read six characters off a
+   * message and retype them into a form they also had to find; now the link
+   * opens sign-up with the code already in it.
+   */
+  const invite = () => {
+    const link = `${window.location.origin}/app/login?join=1&ref=${encodeURIComponent(referral.code!)}`;
     const text = t("app.referralShare").replace("{code}", referral.code!).replace("{reward}", reward);
+    return { link, text: `${text}\n${link}` };
+  };
+
+  const share = async () => {
+    const { text } = invite();
     try {
       if (navigator.share) {
         await navigator.share({ text });
@@ -39,6 +51,13 @@ export function ReferralCard({ referral }: { referral: Referral }) {
     }
   };
 
+  // WhatsApp explicitly, because that is how this shop's customers send things
+  // and because the OS share sheet does not exist on a desktop browser.
+  const whatsapp = () => {
+    const { text } = invite();
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener");
+  };
+
   return (
     <div className="c-card animate-fade-up p-5">
       <div className="text-sm font-medium text-ink">{t("app.referralTitle")}</div>
@@ -48,9 +67,14 @@ export function ReferralCard({ referral }: { referral: Referral }) {
         <div className="text-2xl font-bold tracking-[0.3em] text-accent">{referral.code}</div>
       </div>
 
-      <button type="button" onClick={share} className="c-btn-secondary mt-3 w-full">
-        {copied ? t("app.referralCopied") : t("app.referralShareButton")}
-      </button>
+      <div className="mt-3 flex gap-2">
+        <button type="button" onClick={whatsapp} className="c-btn-primary flex-1">
+          {t("app.referralWhatsApp")}
+        </button>
+        <button type="button" onClick={share} className="c-btn-secondary flex-1">
+          {copied ? t("app.referralCopied") : t("app.referralShareButton")}
+        </button>
+      </div>
 
       {referral.standing.invited > 0 && (
         <p className="mt-3 text-center text-xs text-soft">

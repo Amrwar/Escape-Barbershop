@@ -286,6 +286,8 @@ export default function CustomerHomePage() {
       <section className="grid grid-cols-2 gap-2">
         <QuickLink href="/app/book" icon="plus" label={t("app.bookAppointment")} hint={t("app.bookAppointmentHint")} />
         <QuickLink href="/app/appointments" icon="calendar" label={t("app.myAppointments")} hint={t("app.historyHint")} />
+        <QuickLink href="/app/prices" icon="receipt" label={t("prices.title")} hint={t("prices.hint")} />
+        <QuickLink href="/app/roster" icon="users" label={t("roster.title")} hint={t("roster.hint")} />
       </section>
     </div>
   );

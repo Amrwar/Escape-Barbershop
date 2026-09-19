@@ -31,7 +31,17 @@ export async function GET() {
       prisma.barber.findMany({
         where: { isActive: true, bookableOnline: true, ...CUSTOMER_FACING_BARBER },
         orderBy: { name: "asc" },
-        select: { id: true, name: true, bio: true, photo: true, services: { select: { serviceId: true } } },
+        select: {
+          id: true,
+          name: true,
+          bio: true,
+          photo: true,
+          services: { select: { serviceId: true } },
+          // A few of their own cuts, because a customer picks a barber by the
+          // work long before they pick one by the name. Three, not the twelve
+          // on their profile: this rides along with the whole price list.
+          photos: { orderBy: [{ position: "asc" }, { createdAt: "desc" }], take: 3, select: { id: true, image: true } },
+        },
       }),
       prisma.offer.findMany({
         where: { isActive: true },
@@ -56,6 +66,7 @@ export async function GET() {
         photo: b.photo,
         // An empty list means this barber does everything.
         serviceIds: b.services.map((s) => s.serviceId),
+        work: b.photos.map((p) => p.image),
         // Null average when nobody has reviewed them: unknown, not bad.
         rating: ratings[b.id] ?? { average: null, count: 0 },
       })),

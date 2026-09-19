@@ -39,6 +39,14 @@ function CustomerLoginInner() {
       setFromReceipt(true);
       setMode("signup");
     }
+
+    // A friend's invitation carries the code, so nobody retypes six characters
+    // off a message. Still shown in the field, and still theirs to clear.
+    const ref = params.get("ref");
+    if (ref) {
+      setReferralCode(ref.trim().toUpperCase().slice(0, 12));
+      setMode("signup");
+    }
   }, []);
 
   const submit = async (e: React.FormEvent) => {

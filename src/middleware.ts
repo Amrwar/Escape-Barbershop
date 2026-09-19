@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { isPastMaxSession } from "@/lib/session-policy";
-import { isBarberPath, isCustomerLoginPath, isCustomerPath, isStaffRole } from "@/lib/roles";
+import { isBarberPath, isPublicCustomerPath, isCustomerPath, isStaffRole } from "@/lib/roles";
 
 /**
  * Two doors into the same building: the shop pages are for staff, the customer
@@ -21,7 +21,7 @@ export default async function middleware(req: NextRequest) {
   };
 
   if (isCustomerPath(pathname)) {
-    if (isCustomerLoginPath(pathname)) return NextResponse.next();
+    if (isPublicCustomerPath(pathname)) return NextResponse.next();
     if (!signedIn || token?.role !== "CUSTOMER") return sendTo("/app/login");
     return NextResponse.next();
   }
