@@ -2,6 +2,7 @@ import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { resetDatabase, startTestDatabase, testPrisma } from "./db";
 import { customerSession, getRequest, seedCustomerLogin, seedShop, type Shop } from "./fixtures";
 import { GET as myVisits } from "@/app/api/customer/visits/route";
+import { GET as oneVisit } from "@/app/api/customer/visits/[id]/route";
 
 /**
  * A customer's own haircuts.
@@ -163,5 +164,66 @@ describe("years of them", () => {
   it("does not ask for another page when everything fits on one", async () => {
     await visit();
     expect((await read()).nextBefore).toBeNull();
+  });
+});
+
+/**
+ * One haircut as a receipt they can keep.
+ *
+ * The shop could always print or send one from the till; the customer could
+ * never get it back. The same line holds here as on the list: their haircut,
+ * not the shop's books — and only ever their own.
+ */
+describe("a receipt for one haircut", () => {
+  it("gives back the cut, the barber, the total and the shop's name", async () => {
+    const v = await visit({ total: 220 });
+    await testPrisma().setting.create({ data: { key: "shop_name", value: "Escape Barbershop" } });
+
+    const res = await oneVisit(getRequest(`/api/customer/visits/${v.id}`), { params: { id: v.id } });
+    const receipt = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(receipt.total).toBe(220);
+    expect(receipt.barber.name).toBe("Abdullah");
+    expect(receipt.services[0].name).toBe("Hair cut");
+    expect(receipt.shop.name).toBe("Escape Barbershop");
+  });
+
+  it("carries a receipt number even when the till never numbered it", async () => {
+    const v = await visit();
+    const receipt = await (await oneVisit(getRequest(`/api/customer/visits/${v.id}`), { params: { id: v.id } })).json();
+    expect(receipt.receiptNo).toBe(v.id.slice(-8).toUpperCase());
+  });
+
+  it("keeps the shop's books out of it, here too", async () => {
+    const v = await visit({ tip: 40, discount: 15 });
+    const body = JSON.stringify(
+      await (await oneVisit(getRequest(`/api/customer/visits/${v.id}`), { params: { id: v.id } })).json()
+    );
+
+    for (const word of ["tip", "discount", "cashAmount", "cardAmount", "instapay", "paymentMethod"]) {
+      expect(body.toLowerCase()).not.toContain(word.toLowerCase());
+    }
+  });
+
+  it("answers 'not found' for somebody else's, rather than 'forbidden'", async () => {
+    const other = await testPrisma().customer.create({ data: { name: "Mahmoud", phone: "01088887777" } });
+    const theirs = await visit({ customerId: other.id });
+
+    // Telling them it exists but is not theirs would confirm it exists.
+    const res = await oneVisit(getRequest(`/api/customer/visits/${theirs.id}`), { params: { id: theirs.id } });
+    expect(res.status).toBe(404);
+  });
+
+  it("answers the same way for one that never existed", async () => {
+    const res = await oneVisit(getRequest("/api/customer/visits/no-such-visit"), { params: { id: "no-such-visit" } });
+    expect(res.status).toBe(404);
+  });
+
+  it("turns away anyone not signed in", async () => {
+    const v = await visit();
+    session = null;
+    const res = await oneVisit(getRequest(`/api/customer/visits/${v.id}`), { params: { id: v.id } });
+    expect(res.status).toBe(401);
   });
 });

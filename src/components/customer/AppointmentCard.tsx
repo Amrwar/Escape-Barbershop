@@ -12,6 +12,9 @@ export interface CustomerAppointment {
   durationMinutes: number;
   totalPrice: number;
   barber: { id: string; name: string; photo: string | null } | null;
+  /** What the customer asked for when booking. Sent by the API since the
+   *  beginning and never once shown back to them until now. */
+  notes?: string | null;
   depositAmount?: number;
   depositStatus?: string | null;
   depositRef?: string | null;
@@ -110,6 +113,9 @@ export function AppointmentCard({
           </div>
         </div>
       </div>
+      {appointment.notes && (
+        <p className="mt-3 rounded-[3px] bg-accent-soft px-4 py-2.5 text-sm text-accent">{appointment.notes}</p>
+      )}
       {actions && <div className="mt-3 flex gap-2 border-t border-hair pt-3">{actions}</div>}
     </div>
   );

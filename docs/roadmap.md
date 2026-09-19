@@ -90,6 +90,7 @@ apps and prepare the listings.
 - [x] A walk-in can be reviewed, so the shop's actual traffic can rate its cuts
 - [x] A QR on every receipt, so the app reaches the people already in the chair
 - [x] A customer's own haircuts, years of them, a page at a time
+- [x] A receipt for any of them, theirs to keep and to send
 - [x] The price list and the roster, open to anybody without an account
 - [x] A barber's own work shown while choosing one, not only on their profile
 - [x] An invitation that carries the code in the link, and goes by WhatsApp

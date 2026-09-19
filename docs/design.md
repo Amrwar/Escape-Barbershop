@@ -215,6 +215,21 @@ had to ring the shop to ask. A week ahead, and it never says *why* anybody is
 off — a barber's reason is theirs, and only approved time off takes them off the
 list, exactly as asking blocks nothing in the diary.
 
+## A receipt they can keep
+
+The shop could always print a receipt, send it on WhatsApp or save it as a PDF —
+from the till. The customer could never get one back afterwards. Their own copy
+now sits behind every line of their history.
+
+It holds the same line as the list it came from: their haircut, not the shop's
+books. No tip, no discount the owner chose to give, no split between cash and
+card. A subtotal appears only when it differs from the total, so nobody goes
+hunting for a discount that was never theirs to see. Tests hold that boundary on
+both routes.
+
+Somebody else's receipt answers "not found" rather than "forbidden", because
+"forbidden" confirms it exists.
+
 ## Reviews
 
 Stars, and a line if they feel like writing one. The rules are deliberately

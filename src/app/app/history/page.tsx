@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { useTranslation } from "@/lib/i18n";
 import { Avatar, EmptyState, ScreenTitle, Skeleton } from "@/components/customer/kit";
 import { Stars } from "@/components/customer/Stars";
@@ -69,7 +70,7 @@ export default function HistoryPage() {
         <>
           <div className="space-y-2">
             {visits.map((visit) => (
-              <article key={visit.id} className="c-card p-4">
+              <Link key={visit.id} href={`/app/history/${visit.id}`} className="c-card block p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="c-display text-lg leading-none">{fmtDate(visit.visitAt)}</div>
@@ -98,7 +99,7 @@ export default function HistoryPage() {
                     )}
                   </div>
                 </div>
-              </article>
+              </Link>
             ))}
           </div>
 
