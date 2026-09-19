@@ -89,6 +89,9 @@ apps and prepare the listings.
       screen, earnings, portfolio, time off and cut reports reach all 26
 - [x] A walk-in can be reviewed, so the shop's actual traffic can rate its cuts
 - [x] A QR on every receipt, so the app reaches the people already in the chair
+- [x] "The usual" reads walk-ins too, so a regular who never books still has one
+- [x] "Is it worth walking down now" — the live queue when the shop runs one,
+      and what usually happens at this hour when it does not
 
 > This started as "every walk-in becomes a diary entry", on the assumption that
 > zero appointments was starving six features. Checking first showed it starves

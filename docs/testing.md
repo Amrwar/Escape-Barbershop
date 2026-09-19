@@ -10,7 +10,7 @@ Two suites for two different jobs, and a third thing that is not a suite at all.
 | `npm run test:db:stop` | Removes the test database container | Docker | — |
 | `npm run test:preview` | A walk through the customer app on the demo shop | the preview running | ~2 seconds |
 
-**860 tests today: 331 on the rules, 529 on the API.** Both suites must be green before
+**885 tests today: 343 on the rules, 542 on the API.** Both suites must be green before
 anything is pushed; the preview walk is run by hand when the demo shop is up.
 
 Every one of them also runs on every push, in GitHub Actions: types, lint and the rules in
@@ -86,6 +86,9 @@ worth knowing about are:
   directions, and they reach the barber's day screen.
 - **`walk-in-reviews-api.test.ts`** — a cut rated whichever way it arrived,
   once and only once, and never offered twice when a booking was rung up.
+- **`walk-in-usual-api.test.ts`** — a habit read from walk-ins as well as
+  bookings, counted once when a booking was rung up, and a live queue never
+  invented out of an empty one.
 - **`barber-login-api.test.ts`** — a login has one way in, a PIN is six digits
   and stored hashed, and the phone that was typed signs the barber in however
   they wrote it.

@@ -345,6 +345,29 @@ month drifting away from the rest.
 > a white language pill on a white card. They are tokens now, and every one
 > clears 4.5:1 on both grounds in both themes.
 
+## Is it worth walking down now?
+
+Two answers, and which one a customer gets depends on how the shop is working
+that day.
+
+The **live** queue is the better answer, and it is given whenever anybody is
+checked in or in a chair. But a shop that rings walk-ins straight through the
+till has an empty queue all day — this one does — and a live wait read off
+that would say "no wait" at one in the afternoon, which is a lie told
+confidently. So the queue counts as an answer only when it is being used at
+all, and otherwise the card falls back.
+
+The fallback is what actually happened at this hour, on this weekday, over the
+past four months, and it is labelled as the forecast it is. Measured against
+the shop's own average hour rather than any fixed number of cuts, so a
+one-chair shop and a six-chair shop both read correctly: "half as busy as
+usual" means something to anybody, "eleven cuts an hour" means nothing.
+
+It says nothing at all below three weeks of history. An empty card is a better
+answer than a shrug dressed as data, and the card hides itself.
+
+The shop's own shape, read from the last 120 days: open roughly 07:00–18:00,
+peaking 12:00–15:00 at about 1.7× its average hour, quiet at both edges.
 ## The usual
 
 A regular books the same barber, the same cut, at the same sort of hour, and
@@ -352,10 +375,16 @@ makes the same four taps every time. Their own history already says all of it,
 so the app offers it back: the cut, the barber, and the three free times nearest
 the hour they normally come.
 
-It is read from appointments rather than visits, because an appointment knows
-what was asked for and who was asked for. Only ones they sat through count — a
-cancelled booking says nothing about a habit — and it takes two before the app
-will call anything usual, so it never guesses from a single visit.
+It is read from both halves of their history: a booked cut is an appointment and
+knows what was asked for, a walk-in is a visit and knows what was paid for.
+Appointments alone was the tidier rule and the wrong one — this shop's regulars
+have walked in for years without booking once, so it read every last one of them
+as having no habit at all. A visit with a booking behind it is counted once, or
+a rung-up booking would weigh double.
+
+Only cuts they sat through count — a cancelled booking says nothing about a
+habit, and a visit only exists because it happened — and it takes two before the
+app will call anything usual, so it never guesses from a single visit.
 
 Two things it will not do. It will not offer a barber who has left or been taken
 out of the app, or a service the shop has stopped doing: the cut survives, the

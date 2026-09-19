@@ -11,6 +11,7 @@ import { ReviewPrompt, type Reviewable } from "@/components/customer/ReviewPromp
 import { RatingLine } from "@/components/customer/Stars";
 import { LoyaltyCard, type Loyalty } from "@/components/customer/LoyaltyCard";
 import { UsualCard, type Usual } from "@/components/customer/UsualCard";
+import { BusyCard } from "@/components/customer/BusyCard";
 import { WaitlistOffer, type WaitlistEntry } from "@/components/customer/WaitlistCard";
 
 /**
@@ -164,6 +165,11 @@ export default function CustomerHomePage() {
           <UsualCard usual={usual} />
         </section>
       )}
+
+      {/* Sits under "the usual" on purpose: first what they came for, then
+          whether now is the moment to act on it. The card hides itself when it
+          has nothing honest to say. */}
+      <BusyCard />
 
       {loyalty && loyalty.available > 0 && (
         <section>

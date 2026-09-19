@@ -6,10 +6,14 @@
  * of nothing. This reads it out of their own history so the app can offer it
  * back in one.
  *
- * Read from appointments rather than visits, because an appointment knows which
- * services were asked for and who was asked for; a visit knows what was paid.
- * Only appointments they actually sat through count — a cancelled booking says
- * nothing about what somebody usually has.
+ * Read from both halves of their history. A booked cut is an appointment and
+ * knows what was asked for; a walk-in is a visit and knows what was paid for.
+ * Preferring appointments alone was the tidier rule and the wrong one here —
+ * this shop's regulars have walked in for years without booking once, so it
+ * read every one of them as having no habit at all.
+ *
+ * Only cuts they actually sat through count. A cancelled booking says nothing
+ * about what somebody usually has; a visit only exists because it happened.
  */
 
 export interface PastAppointment {

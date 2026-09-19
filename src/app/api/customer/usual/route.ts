@@ -19,25 +19,52 @@ export async function GET() {
     const session = await requireCustomer();
     const settings = await getBookingSettings();
 
-    const history = await prisma.appointment.findMany({
-      where: { customerId: session.user.customerId },
-      orderBy: { startAt: "desc" },
-      take: 20,
-      select: {
-        startAt: true,
-        status: true,
-        barberId: true,
-        services: { select: { serviceId: true } },
-      },
-    });
+    // Both halves of their history. A booked cut is an appointment, a walk-in is
+    // a visit, and a habit is a habit however they arrived — this shop's regulars
+    // have walked in for years without booking once.
+    const [booked, walkedIn] = await Promise.all([
+      prisma.appointment.findMany({
+        where: { customerId: session.user.customerId },
+        orderBy: { startAt: "desc" },
+        take: 20,
+        select: {
+          startAt: true,
+          status: true,
+          barberId: true,
+          services: { select: { serviceId: true } },
+        },
+      }),
+      // Skipping any visit with a booking behind it, or one cut would count twice
+      // and weight the habit towards whatever happened to be booked.
+      prisma.visit.findMany({
+        where: { customerId: session.user.customerId, appointment: { is: null } },
+        orderBy: { visitAt: "desc" },
+        take: 20,
+        select: {
+          visitAt: true,
+          barberId: true,
+          items: { select: { serviceId: true } },
+        },
+      }),
+    ]);
 
     const usual = usualFor(
-      history.map((a) => ({
-        startAt: a.startAt,
-        status: a.status,
-        barberId: a.barberId,
-        serviceIds: a.services.map((s) => s.serviceId),
-      })),
+      [
+        ...booked.map((a) => ({
+          startAt: a.startAt,
+          status: a.status,
+          barberId: a.barberId,
+          serviceIds: a.services.map((s) => s.serviceId),
+        })),
+        // A visit exists because the cut happened and was paid for, which is
+        // what COMPLETED means on the other side.
+        ...walkedIn.map((v) => ({
+          startAt: v.visitAt,
+          status: "COMPLETED",
+          barberId: v.barberId,
+          serviceIds: v.items.map((i) => i.serviceId).filter((id): id is string => !!id),
+        })),
+      ],
       settings.timezone
     );
     if (!usual) return NextResponse.json({ usual: null });
