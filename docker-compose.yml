@@ -2,7 +2,7 @@
 #
 #   docker compose up --build
 #
-# then open http://localhost:3000. The database schema is pushed and the demo
+# then open http://localhost:3100. The database schema is pushed and the demo
 # data is seeded on first boot; the accounts to sign in with are printed in the
 # app container's log.
 
@@ -35,7 +35,7 @@ services:
       DATABASE_URL: postgresql://escape:escape@db:5432/escape?schema=public
       # local-only secret; set your own for anything reachable from outside
       NEXTAUTH_SECRET: docker-compose-development-secret-change-me
-      NEXTAUTH_URL: http://localhost:3000
+      NEXTAUTH_URL: http://localhost:3100
       # the two seeds, both idempotent and both refusing to overwrite real data
       SEED_ON_START: "1"
       SEED_DEMO: "1"
@@ -43,7 +43,8 @@ services:
       SEED_OWNER_PASSWORD: demo-owner-1234
       SEED_CASHIER_PASSWORD: demo-cashier-1234
     ports:
-      - "3000:3000"
+      # Host 3100, container 3000: another project on this machine owns 3000.
+      - "3100:3000"
 
 volumes:
   db-data:

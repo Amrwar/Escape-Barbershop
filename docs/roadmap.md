@@ -183,6 +183,6 @@ new ones.
 
 ## How to try it
 
-`docker compose up --build`, then <http://localhost:3000>. Sign in with the accounts printed
+`docker compose up --build`, then <http://localhost:3100>. Sign in with the accounts printed
 in the log; the customer app is at `/app`, and you can create a customer account from there
 with any Egyptian mobile number.

@@ -35,7 +35,9 @@ which waits on the shop's own developer accounts. The roadmap says what those co
 
 ## For whoever works on this next
 
-- `npm run dev` — the app on <http://localhost:3000>
+- `npm run dev` — the app on <http://localhost:3100> (3100, not 3000: another project
+  on this machine owns 3000, and two apps fighting over a port is a confusing
+  half-hour every time)
 - `npm test` — the rules (booking, payments, loyalty, reviews, sessions), no database, seconds
 - `npm run test:all` — those plus the API against a real Postgres (needs Docker)
 - `npm run test:preview` — a walk through the customer app against the demo shop

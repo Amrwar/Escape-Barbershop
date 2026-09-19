@@ -110,7 +110,7 @@ describe("what the customer app sees", () => {
     await patch(shop.barbers.abdullah, { photo: PICTURE, bio: "Fades and beards" });
 
     session = null;
-    const { barbers } = await (await catalog(getRequest("/api/customer/catalog"))).json();
+    const { barbers } = await (await catalog()).json();
     const abdullah = barbers.find((b: { id: string }) => b.id === shop.barbers.abdullah);
 
     expect(abdullah.photo).toBe(PICTURE);
@@ -119,7 +119,7 @@ describe("what the customer app sees", () => {
 
   it("shows initials rather than a broken picture for anyone without one", async () => {
     session = null;
-    const { barbers } = await (await catalog(getRequest("/api/customer/catalog"))).json();
+    const { barbers } = await (await catalog()).json();
     expect(barbers.every((b: { photo: string | null }) => b.photo === null)).toBe(true);
   });
 
