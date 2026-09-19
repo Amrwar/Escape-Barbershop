@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { useTranslation } from "@/lib/i18n";
 import { formatPhone } from "@/lib/customers";
@@ -128,6 +129,15 @@ export default function CustomerProfilePage() {
           </div>
         </div>
       </section>
+
+      {/* Years of haircuts the shop has on file and the customer has never seen. */}
+      <Link href="/app/history" className="c-card flex items-center justify-between gap-3 p-4">
+        <span className="min-w-0">
+          <span className="block text-sm font-medium text-ink">{t("history.title")}</span>
+          <span className="block text-xs text-soft">{t("history.hint")}</span>
+        </span>
+        <span className="shrink-0 text-faint">›</span>
+      </Link>
 
       <CutsWanted />
 
