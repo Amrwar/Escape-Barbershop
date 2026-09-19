@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Modal } from "@/components/ui/Modal";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useTranslation } from "@/lib/i18n";
+import { BarberPhotoPicker } from "@/components/ui/BarberPhotoPicker";
 
 interface SalarySettings {
   baseSalary: number;
@@ -21,12 +22,13 @@ interface Barber {
   isActive: boolean;
   bookableOnline: boolean;
   bio: string | null;
+  photo: string | null;
   createdAt: string;
   salarySettings: SalarySettings | null;
   _count: { visits: number };
 }
 
-const defaultForm = { name: "", phone: "", isActive: true, bookableOnline: true, bio: "" };
+const defaultForm = { name: "", phone: "", isActive: true, bookableOnline: true, bio: "", photo: null as string | null };
 const defaultSalary = {
   baseSalary: "0",
   commissionType: "PERCENT" as "PERCENT" | "FIXED_PER_VISIT",
@@ -113,6 +115,7 @@ export default function BarbersPage() {
       isActive: b.isActive,
       bookableOnline: b.bookableOnline ?? true,
       bio: b.bio ?? "",
+      photo: b.photo ?? null,
     });
     setErrors({});
     setModalOpen(true);
@@ -208,7 +211,21 @@ export default function BarbersPage() {
               {barbers.map((b) => (
                 <tr key={b.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3">
-                    <div className="font-medium text-gray-900">{b.name}</div>
+                    <div className="flex items-center gap-3">
+                      {/* Visible here so it is obvious at a glance who the app
+                          still shows as a grey circle. */}
+                      <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full border border-gray-200 bg-gray-50">
+                        {b.photo ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={b.photo} alt="" className="h-full w-full object-cover" />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-xs font-semibold text-gray-400">
+                            {b.name.trim()[0]?.toUpperCase() ?? "?"}
+                          </div>
+                        )}
+                      </div>
+                      <div className="font-medium text-gray-900">{b.name}</div>
+                    </div>
                     {b.salarySettings && (
                       <div className="text-xs text-gray-400">
                         {t("field.baseSalary").replace(" ($)", "")}: {fmtCurrency(b.salarySettings.baseSalary)} |{" "}
@@ -289,6 +306,11 @@ export default function BarbersPage() {
               onChange={(e) => setForm({ ...form, phone: e.target.value })}
               placeholder="+1 234 567 8900" />
           </div>
+          <BarberPhotoPicker
+            name={form.name}
+            photo={form.photo}
+            onChange={(photo) => setForm({ ...form, photo })}
+          />
           <div>
             <label className="label">{t("barbers.bio")}</label>
             <input

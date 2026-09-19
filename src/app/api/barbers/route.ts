@@ -33,6 +33,12 @@ export async function POST(req: NextRequest) {
         name: data.name,
         phone: data.phone || null,
         isActive: data.isActive ?? true,
+        // These three were accepted by the schema, sent by the form, and then
+        // dropped here — so a barber added with a bio arrived without one, and
+        // "takes bookings in the app" always defaulted on however it was set.
+        bookableOnline: data.bookableOnline ?? true,
+        bio: data.bio || null,
+        photo: data.photo || null,
         salarySettings: {
           create: {
             baseSalary: 0,

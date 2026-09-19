@@ -50,6 +50,8 @@ export async function PATCH(
         ...(data.isActive !== undefined && { isActive: data.isActive }),
         ...(data.bookableOnline !== undefined && { bookableOnline: data.bookableOnline }),
         ...(data.bio !== undefined && { bio: data.bio || null }),
+        // An empty string is "take it down", which is different from not saying.
+        ...(data.photo !== undefined && { photo: data.photo || null }),
       },
       include: { salarySettings: true },
     });

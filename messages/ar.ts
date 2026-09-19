@@ -767,6 +767,13 @@ const ar: Record<TranslationKey, string> = {
   "barbers.bio": "نبذة قصيرة",
   "barbers.bioPlaceholder": "تدريج ولحية، خبرة ٨ سنوات",
   "barbers.bioHint": "تظهر في ملفه داخل تطبيق العملاء",
+  "barbers.photo": "الصورة",
+  "barbers.photoAdd": "إضافة صورة",
+  "barbers.photoReplace": "تغيير الصورة",
+  "barbers.photoRemove": "إزالة الصورة",
+  "barbers.photoHint": "تظهر في تطبيق العملاء. تُقصّ وتُصغَّر قبل الحفظ.",
+  "barbers.photoNotImage": "هذا الملف ليس صورة",
+  "barbers.photoFailed": "تعذّرت قراءة الصورة",
   "barbers.bookableOnline": "يستقبل حجوزات من تطبيق العملاء",
   "barbers.notInApp": "غير ظاهر في التطبيق",
 

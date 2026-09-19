@@ -33,6 +33,17 @@ export const barberSchema = z.object({
   /** Off for anyone who works here but takes no bookings — a manager, the owner. */
   bookableOnline: z.boolean().optional().default(true),
   bio: z.string().max(300).optional().or(z.literal("")),
+  /**
+   * Their face, as a data URL the browser shrank before sending. Same shape and
+   * same ceiling as every other picture here, so one oversized photo cannot
+   * bloat the catalogue every customer loads.
+   */
+  photo: z
+    .string()
+    .max(400_000, "That picture is too big — try another")
+    .refine((v) => v === "" || v.startsWith("data:image/"), { message: "That does not look like a picture" })
+    .optional()
+    .nullable(),
 });
 
 export const visitItemSchema = z.object({

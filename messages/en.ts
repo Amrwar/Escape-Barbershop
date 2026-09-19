@@ -765,6 +765,13 @@ const en = {
   "barbers.bio": "Short line about them",
   "barbers.bioPlaceholder": "Fades and beard work, 8 years",
   "barbers.bioHint": "Shown on their profile in the customer app",
+  "barbers.photo": "Photo",
+  "barbers.photoAdd": "Add a photo",
+  "barbers.photoReplace": "Change photo",
+  "barbers.photoRemove": "Remove photo",
+  "barbers.photoHint": "Shown in the customer app. Squared and shrunk before it is saved.",
+  "barbers.photoNotImage": "That file is not a picture",
+  "barbers.photoFailed": "That picture could not be read",
   "barbers.bookableOnline": "Takes bookings in the customer app",
   "barbers.notInApp": "Not in the app",
 

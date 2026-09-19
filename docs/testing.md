@@ -10,7 +10,7 @@ Two suites for two different jobs, and a third thing that is not a suite at all.
 | `npm run test:db:stop` | Removes the test database container | Docker | — |
 | `npm run test:preview` | A walk through the customer app on the demo shop | the preview running | ~2 seconds |
 
-**925 tests today: 351 on the rules, 574 on the API.** Both suites must be green before
+**936 tests today: 351 on the rules, 585 on the API.** Both suites must be green before
 anything is pushed; the preview walk is run by hand when the demo shop is up.
 
 Every one of them also runs on every push, in GitHub Actions: types, lint and the rules in
@@ -95,6 +95,9 @@ worth knowing about are:
 - **`customer-roster-api.test.ts`** — who is in for the week, why nobody is
   told the reason, and the deposit address going only to somebody actually
   asked for one.
+- **`barber-profile-api.test.ts`** — a barber's face: saved, cleared, refused
+  when it is not a picture or is too big to ride along with the catalogue, and
+  the bio a new barber used to arrive without.
 - **`barber-login-api.test.ts`** — a login has one way in, a PIN is six digits
   and stored hashed, and the phone that was typed signs the barber in however
   they wrote it.
