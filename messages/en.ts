@@ -532,6 +532,7 @@ const en = {
   "app.loginSubtitle": "Book your next appointment",
   "app.loginHint": "Your phone number is your login",
   "app.signIn": "Sign in",
+  "app.visitorHint": "Sign in to book, or to see your own haircuts",
   "app.createAccount": "Create account",
   "join.welcome": "Your haircuts are already here",
   "join.hint": "Sign up with the number the shop has for you and your visits, your barber and your rewards come with you.",

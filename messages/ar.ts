@@ -534,6 +534,7 @@ const ar: Record<TranslationKey, string> = {
   "app.loginSubtitle": "احجز موعدك القادم",
   "app.loginHint": "رقم هاتفك هو اسم الدخول",
   "app.signIn": "تسجيل الدخول",
+  "app.visitorHint": "سجّل الدخول للحجز، أو لرؤية قصّاتك",
   "app.createAccount": "إنشاء حساب",
   "join.welcome": "قصّاتك موجودة هنا بالفعل",
   "join.hint": "سجّل بنفس الرقم المسجّل لدى المحل وتنتقل معك زياراتك وحلاقك ومكافآتك.",
