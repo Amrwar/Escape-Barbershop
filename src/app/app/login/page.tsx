@@ -26,8 +26,19 @@ function CustomerLoginInner() {
   const [ended, setEnded] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // Arrived by scanning the QR on their receipt. Nothing about them travels in
+  // that link — it only opens the right half of this form and says why they are
+  // here. Signing up with the number the shop already has is what attaches
+  // their history, and that is theirs to type.
+  const [fromReceipt, setFromReceipt] = useState(false);
+
   useEffect(() => {
-    setEnded(new URLSearchParams(window.location.search).has("ended"));
+    const params = new URLSearchParams(window.location.search);
+    setEnded(params.has("ended"));
+    if (params.has("join")) {
+      setFromReceipt(true);
+      setMode("signup");
+    }
   }, []);
 
   const submit = async (e: React.FormEvent) => {
@@ -97,6 +108,13 @@ function CustomerLoginInner() {
         </div>
 
         <div className="c-card-raised p-6">
+          {fromReceipt && (
+            <div className="mb-5 rounded-[3px] border border-accent bg-accent-soft px-4 py-3">
+              <p className="text-sm font-semibold text-accent">{t("join.welcome")}</p>
+              <p className="mt-1 text-xs text-mid">{t("join.hint")}</p>
+            </div>
+          )}
+
           <div className="mb-6 grid grid-cols-2 gap-1 rounded-[3px] border border-hair bg-surface p-1">
             {(["signin", "signup"] as const).map((m) => (
               <button

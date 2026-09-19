@@ -534,6 +534,8 @@ const ar: Record<TranslationKey, string> = {
   "app.loginHint": "رقم هاتفك هو اسم الدخول",
   "app.signIn": "تسجيل الدخول",
   "app.createAccount": "إنشاء حساب",
+  "join.welcome": "قصّاتك موجودة هنا بالفعل",
+  "join.hint": "سجّل بنفس الرقم المسجّل لدى المحل وتنتقل معك زياراتك وحلاقك ومكافآتك.",
   "app.wrongLogin": "رقم الهاتف أو كلمة المرور غير صحيحة",
   "app.badPhone": "من فضلك أدخل رقم موبايل مصري صحيح",
   "app.signupFailed": "تعذّر إنشاء الحساب",

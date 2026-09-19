@@ -88,6 +88,7 @@ apps and prepare the listings.
 - [x] A barber signs in with the phone in their hand and a PIN, so the day
       screen, earnings, portfolio, time off and cut reports reach all 26
 - [x] A walk-in can be reviewed, so the shop's actual traffic can rate its cuts
+- [x] A QR on every receipt, so the app reaches the people already in the chair
 
 > This started as "every walk-in becomes a diary entry", on the assumption that
 > zero appointments was starving six features. Checking first showed it starves

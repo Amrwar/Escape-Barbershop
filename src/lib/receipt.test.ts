@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { buildWhatsAppText, ReceiptShopSettings, ReceiptVisit } from './receipt';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { buildWhatsAppText, joinQrDataUrl, ReceiptShopSettings, ReceiptVisit } from './receipt';
 
 function baseShop(overrides: Partial<ReceiptShopSettings> = {}): ReceiptShopSettings {
   return {
@@ -87,5 +87,71 @@ describe('buildWhatsAppText', () => {
     const withFooter = buildWhatsAppText(baseVisit(), baseShop({ receiptFooter: 'Thank you for visiting!' }));
     expect(withoutFooter).not.toContain('Thank you for visiting!');
     expect(withFooter).toContain('Thank you for visiting!');
+  });
+});
+
+/**
+ * The square on the receipt.
+ *
+ * A receipt is left on a counter, in a pocket, in a bin — and this one already
+ * prints the customer's phone number. So the one property that matters is that
+ * the code identifies nobody: it is the address of the app and nothing else.
+ * Anything in it naming a customer, a visit or a token would be an account
+ * handed to whoever picked the paper up.
+ */
+describe('the join code on a receipt', () => {
+  const ORIGIN = 'https://shop.example.com';
+
+  beforeEach(() => {
+    vi.stubGlobal('window', { location: { origin: ORIGIN } });
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  /** What the QR actually encodes, read back out of the call that drew it. */
+  async function decodeTarget(): Promise<string> {
+    const QRCode = (await import('qrcode')).default;
+    const spy = vi.spyOn(QRCode, 'toDataURL');
+    await joinQrDataUrl();
+    const target = String(spy.mock.calls[0]?.[0] ?? '');
+    spy.mockRestore();
+    return target;
+  }
+
+  it("points at this shop's own app, wherever it is served", async () => {
+    expect(await decodeTarget()).toBe(`${ORIGIN}/app/login?join=1`);
+  });
+
+  it('never sends a preview receipt to production, or the other way round', async () => {
+    vi.stubGlobal('window', { location: { origin: 'http://localhost:3100' } });
+    expect(await decodeTarget()).toBe('http://localhost:3100/app/login?join=1');
+  });
+
+  it('carries no customer, no visit and no token — only the address', async () => {
+    const target = await decodeTarget();
+    const params = new URL(target).searchParams;
+
+    // The only thing it may say is "open the sign-up half".
+    expect(Array.from(params.keys())).toEqual(['join']);
+    expect(params.get('join')).toBe('1');
+    for (const word of ['token', 'customer', 'visit', 'phone', 'claim', 'key', 'id=']) {
+      expect(target.toLowerCase()).not.toContain(word);
+    }
+  });
+
+  it('produces a printable PNG', async () => {
+    const url = await joinQrDataUrl();
+    expect(url?.startsWith('data:image/png;base64,')).toBe(true);
+  });
+
+  it('gives back nothing rather than throwing when it cannot be drawn', async () => {
+    const QRCode = (await import('qrcode')).default;
+    const spy = vi.spyOn(QRCode, 'toDataURL').mockRejectedValue(new Error('no canvas'));
+
+    // A receipt without the square is still a receipt, and the till must print.
+    await expect(joinQrDataUrl()).resolves.toBeNull();
+    spy.mockRestore();
   });
 });

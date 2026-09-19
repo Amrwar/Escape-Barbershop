@@ -169,6 +169,30 @@ provider, sender name or contract.
 - Sending never blocks a booking, and never fails one: it is fire-and-forget, and a
   subscription the push service reports as gone is deleted rather than retried nightly.
 
+## The square on the receipt
+
+Seven thousand customers, one app login. Not because the app is unwanted —
+because nobody knows it exists, and a URL read off a wall gets typed by nobody.
+So every receipt now prints a QR beside the total.
+
+**It identifies nobody.** The code is the address of the app and `join=1`,
+which opens the sign-up half of the form and says why they are there. No token,
+no customer id, no visit. This matters more than it looks: a receipt is left on
+a counter, in a pocket, in a bin, and this one already prints the customer's
+phone number. A code that named them would be an account handed to whoever
+picked the paper up.
+
+What removes the friction instead is something already built — signing up with
+the number the shop has attaches the login to the existing customer record, so
+their visits, their barber and their rewards come with them. That number is
+theirs to type, and typing it is the proof.
+
+The square is built from `window.location.origin`, so a receipt printed from
+the preview never sends anybody to production. It is drawn at the highest error
+correction level, because thermal paper smudges and a code that will not scan is
+worse than no code. If it cannot be drawn at all the receipt prints without it:
+the till must never be blocked by a decoration.
+
 ## Reviews
 
 Stars, and a line if they feel like writing one. The rules are deliberately

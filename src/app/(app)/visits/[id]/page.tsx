@@ -113,7 +113,7 @@ export default function VisitDetailPage() {
     }
   };
 
-  const handlePrint = (mode: "full" | "per-service") => {
+  const handlePrint = async (mode: "full" | "per-service") => {
     if (!visit || !shopSettings) return;
     const receiptVisit: ReceiptVisit = {
       id: visit.id,
@@ -130,8 +130,9 @@ export default function VisitDetailPage() {
       sessionSequence: visit.sessionSequence,
       items: visit.items,
     };
-    printReceipt(receiptVisit, shopSettings, mode, lang);
     setPrintModal(false);
+    // The QR is drawn before the window opens, so the print dialog never races it.
+    await printReceipt(receiptVisit, shopSettings, mode, lang);
   };
 
   if (loading) {

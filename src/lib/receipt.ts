@@ -52,12 +52,38 @@ function customerDisplayName(name: string, lang?: string): string {
   return name === "Walk-in" && lang === "ar" ? "زائر بلا حجز" : name;
 }
 
+/**
+ * The square on the bottom of the receipt.
+ *
+ * It carries the address of the app and nothing else — no token, no name, no
+ * id. A receipt is left on a counter, in a pocket, in a bin, and this one
+ * already prints the customer's phone number, so anything in the code that
+ * identified them would be an account handed to whoever picked it up. They sign
+ * up with the number the shop already has, which is what attaches their history,
+ * and that is theirs to type.
+ */
+function joinBlock(qr: string | null, lang?: string): string {
+  if (!qr) return "";
+  const ar = lang === "ar";
+  const line = ar ? "احجز من موبايلك" : "Book from your phone";
+  const under = ar ? "صوّر الكود" : "Scan to set up";
+
+  return `
+    ${SEP}
+    <div style="text-align:center;margin:8px 0 4px;">
+      <div style="font-size:14px;font-weight:bold;color:#000;margin-bottom:6px;">${line}</div>
+      <img src="${qr}" alt="" style="width:150px;height:150px;display:block;margin:0 auto;background:transparent;" />
+      <div style="font-size:12px;color:#000;margin-top:4px;">${under}</div>
+    </div>`;
+}
+
 function buildReceiptBlock(
   visit: ReceiptVisit,
   shop: ReceiptShopSettings,
   items: ReceiptItem[],
   showTotals: boolean,
-  lang?: string
+  lang?: string,
+  qr?: string | null
 ): string {
   const receiptNo = visit.sessionSequence != null
     ? String(visit.sessionSequence)
@@ -162,6 +188,7 @@ function buildReceiptBlock(
       </table>
       ${totalsHtml}
       ${notesHtml}
+      ${showTotals ? joinBlock(qr ?? null, lang) : ""}
       ${footerHtml}
     </div>`;
 }
@@ -323,6 +350,23 @@ export async function downloadReceiptPdf(
   doc.text(`Payment: ${payStr}`, margin, y);
   y += lh;
 
+  // The same square as the printed receipt, and for the same reason.
+  const qr = await joinQrDataUrl();
+  if (qr) {
+    sep();
+    const side = 110;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(14);
+    doc.text(lang === "ar" ? "احجز من موبايلك" : "Book from your phone", pageW / 2, y, { align: "center" });
+    y += lh;
+    doc.addImage(qr, "PNG", (pageW - side) / 2, y, side, side);
+    y += side + 6;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(12);
+    doc.text(lang === "ar" ? "صوّر الكود" : "Scan to set up", pageW / 2, y, { align: "center" });
+    y += lh;
+  }
+
   if (shop.receiptFooter) {
     sep();
     doc.setFont("helvetica", "bolditalic");
@@ -337,16 +381,41 @@ export async function downloadReceiptPdf(
   doc.save(`receipt-${receiptNo}.pdf`);
 }
 
-export function printReceipt(
+/**
+ * The app's address, as a QR the till can print.
+ *
+ * Built from wherever the app is actually served, so a receipt printed from the
+ * preview never sends anybody to production and the other way round. `join=1`
+ * only opens the sign-up half of the form.
+ */
+export async function joinQrDataUrl(): Promise<string | null> {
+  try {
+    const QRCode = (await import("qrcode")).default;
+    return await QRCode.toDataURL(`${window.location.origin}/app/login?join=1`, {
+      margin: 1,
+      width: 300,
+      // Print is lossy and thermal paper smudges; the highest correction level
+      // reads through a bad print where the default would not.
+      errorCorrectionLevel: "H",
+      color: { dark: "#000000", light: "#ffffff" },
+    });
+  } catch {
+    // A receipt without the square is still a receipt.
+    return null;
+  }
+}
+
+export async function printReceipt(
   visit: ReceiptVisit,
   shop: ReceiptShopSettings,
   mode: "full" | "per-service",
   lang?: string
-): void {
+): Promise<void> {
   let bodyContent: string;
+  const qr = await joinQrDataUrl();
 
   if (mode === "full") {
-    bodyContent = buildReceiptBlock(visit, shop, visit.items, true, lang);
+    bodyContent = buildReceiptBlock(visit, shop, visit.items, true, lang, qr);
   } else {
     bodyContent = visit.items
       .map((item, idx) => {

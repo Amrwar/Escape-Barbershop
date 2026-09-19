@@ -10,7 +10,7 @@ Two suites for two different jobs, and a third thing that is not a suite at all.
 | `npm run test:db:stop` | Removes the test database container | Docker | — |
 | `npm run test:preview` | A walk through the customer app on the demo shop | the preview running | ~2 seconds |
 
-**855 tests today: 326 on the rules, 529 on the API.** Both suites must be green before
+**860 tests today: 331 on the rules, 529 on the API.** Both suites must be green before
 anything is pushed; the preview walk is run by hand when the demo shop is up.
 
 Every one of them also runs on every push, in GitHub Actions: types, lint and the rules in

@@ -532,6 +532,8 @@ const en = {
   "app.loginHint": "Your phone number is your login",
   "app.signIn": "Sign in",
   "app.createAccount": "Create account",
+  "join.welcome": "Your haircuts are already here",
+  "join.hint": "Sign up with the number the shop has for you and your visits, your barber and your rewards come with you.",
   "app.wrongLogin": "Wrong phone number or password",
   "app.badPhone": "Please enter a valid Egyptian mobile number",
   "app.signupFailed": "Could not create the account",
