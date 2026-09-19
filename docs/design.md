@@ -103,13 +103,18 @@ Decisions worth keeping:
 
 ## Time
 
-The shop thinks in local time — "Saturday, 11:00 to 23:00" — and Egypt changes its clocks
+The shop thinks in local time — "Saturday, 09:00 to midnight" — and Egypt changes its clocks
 twice a year. So opening hours are stored as minutes from midnight with a weekday, and
 turned into real moments through the shop's timezone (`Africa/Cairo`, a setting).
 `shopTime()` resolves the offset twice so it stays right on the changeover day; the tests
 pin both a summer and a winter date.
 
 Everything stored in the database is a UTC instant. Only the boundaries convert.
+
+The shop opens at nine and closes at midnight — minute 540 to minute 1440, a
+closing time that belongs to the next date. The slot maths handles it and the
+tests pin it, including on the night the clocks go back: a shop open "until 12"
+does not start a haircut at five to midnight.
 
 ## Free times
 

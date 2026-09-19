@@ -150,3 +150,55 @@ describe('isBlocking', () => {
     expect(isBlocking('NO_SHOW')).toBe(false);
   });
 });
+
+/**
+ * The shop's real day: nine in the morning until midnight.
+ *
+ * Midnight is the awkward one — it is minute 1440, a time that belongs to the
+ * next date. The window has to close exactly on it: a shop open "until 12" does
+ * not do a haircut at five to midnight that finishes at half past.
+ */
+describe('a day that closes at midnight', () => {
+  const day = '2026-09-19';
+
+  it('offers the last slot that still finishes by closing, and not one after', () => {
+    const slots = availableSlots({
+      window: window(day, 9 * 60, 24 * 60),
+      durationMinutes: 30,
+      slotMinutes: 30,
+    });
+
+    expect(asClock(slots)[0]).toBe('09:00');
+    expect(asClock(slots).at(-1)).toBe('23:30');
+    expect(asClock(slots)).not.toContain('00:00');
+  });
+
+  it('leaves no room for a cut that would run past midnight', () => {
+    const slots = availableSlots({
+      window: window(day, 9 * 60, 24 * 60),
+      durationMinutes: 45,
+      slotMinutes: 30,
+    });
+    expect(asClock(slots).at(-1)).toBe('23:00');
+  });
+
+  it('covers the whole fifteen hours, evening included', () => {
+    const clocks = asClock(
+      availableSlots({ window: window(day, 9 * 60, 24 * 60), durationMinutes: 30, slotMinutes: 60 })
+    );
+    // The hours this shop actually trades in, which the old 11:00–23:00 cut off.
+    expect(clocks).toContain('09:00');
+    expect(clocks).toContain('19:00');
+    expect(clocks).toContain('23:00');
+    expect(clocks).toHaveLength(15);
+  });
+
+  it('still closes on time the night the clocks change', () => {
+    // Egypt puts them back at the end of October.
+    const clocks = asClock(
+      availableSlots({ window: window('2026-10-31', 9 * 60, 24 * 60), durationMinutes: 30, slotMinutes: 60 })
+    );
+    expect(clocks[0]).toBe('09:00');
+    expect(clocks.at(-1)).toBe('23:00');
+  });
+});
