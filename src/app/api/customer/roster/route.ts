@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getBookingSettings, getShopHours } from "@/lib/booking-server";
-import { shopDateISO, shopWeekday } from "@/lib/booking";
+import { shopDateISO, shopTime, shopWeekday } from "@/lib/booking";
 import { CUSTOMER_FACING_BARBER } from "@/lib/barbers";
 
 /**
@@ -69,11 +69,18 @@ export async function GET() {
 
             // Away for any part of this day counts as away for it: a customer
             // deciding which day to come does not need the half-hours.
-            const dayStart = new Date(`${date}T00:00:00.000Z`).getTime();
+            //
+            // The window is the shop's own midnight to midnight, not UTC's.
+            // Building it from the date string as if it were UTC shifted every
+            // day by the Cairo offset, so a day off could be read against the
+            // wrong twenty-four hours — invisible from a machine west of UTC,
+            // and caught by CI, which runs on it.
+            const dayStart = shopTime(date, 0, settings.timezone);
+            const dayEnd = shopTime(date, 24 * 60, settings.timezone);
             const away = timeOff.some(
               (t) =>
                 t.barberId === barber.id &&
-                new Date(t.startAt).getTime() < dayStart + 86_400_000 &&
+                new Date(t.startAt).getTime() < dayEnd &&
                 new Date(t.endAt).getTime() > dayStart
             );
             if (away) return false;

@@ -3,6 +3,19 @@ import { resetDatabase, startTestDatabase, testPrisma } from "./db";
 import { customerSession, seedCustomerLogin, seedShop, type Shop } from "./fixtures";
 import { GET as roster } from "@/app/api/customer/roster/route";
 import { GET as depositAddress } from "@/app/api/customer/deposit-address/route";
+import { shopTime } from "@/lib/booking";
+
+/**
+ * Time off pinned to the SHOP's day, not the machine's.
+ *
+ * Anchoring to local midnight passed west of UTC and failed on CI, which runs
+ * on it — the shop's day in Cairo starts three hours before UTC midnight, so
+ * "today" from the runner's point of view was a different twenty-four hours.
+ */
+const shopDay = (dateISO: string) => ({
+  startAt: new Date(shopTime(dateISO, 0, "Africa/Cairo")),
+  endAt: new Date(shopTime(dateISO, 24 * 60, "Africa/Cairo")),
+});
 
 /**
  * Who is in, and where to send a deposit.
@@ -61,30 +74,18 @@ describe("who is in", () => {
   });
 
   it("takes a barber off the day they are away", async () => {
-    const start = new Date();
-    start.setHours(0, 0, 0, 0);
+    const day = await today();
     await testPrisma().barberTimeOff.create({
-      data: {
-        barberId: shop.barbers.abdullah,
-        startAt: start,
-        endAt: new Date(start.getTime() + 86_400_000),
-        status: "APPROVED",
-      },
+      data: { barberId: shop.barbers.abdullah, ...shopDay(day.date), status: "APPROVED" },
     });
 
     expect((await today()).barbers.map((b: { name: string }) => b.name)).toEqual(["Khaled"]);
   });
 
   it("changes nothing for time off nobody has approved yet", async () => {
-    const start = new Date();
-    start.setHours(0, 0, 0, 0);
+    const day = await today();
     await testPrisma().barberTimeOff.create({
-      data: {
-        barberId: shop.barbers.abdullah,
-        startAt: start,
-        endAt: new Date(start.getTime() + 86_400_000),
-        status: "REQUESTED",
-      },
+      data: { barberId: shop.barbers.abdullah, ...shopDay(day.date), status: "REQUESTED" },
     });
 
     // Asking blocks nothing here, exactly as it blocks nothing in the diary.
@@ -122,13 +123,11 @@ describe("who is in", () => {
   });
 
   it("never says why anybody is off", async () => {
-    const start = new Date();
-    start.setHours(0, 0, 0, 0);
+    const day = await today();
     await testPrisma().barberTimeOff.create({
       data: {
         barberId: shop.barbers.abdullah,
-        startAt: start,
-        endAt: new Date(start.getTime() + 86_400_000),
+        ...shopDay(day.date),
         status: "APPROVED",
         reason: "Hospital appointment",
       },
