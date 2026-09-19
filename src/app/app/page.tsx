@@ -8,7 +8,7 @@ import { Icon, type IconName } from "@/components/ui/Icon";
 import { AppointmentCard, type CustomerAppointment } from "@/components/customer/AppointmentCard";
 import { Avatar, EmptyState, ScreenTitle, SectionTitle, Skeleton } from "@/components/customer/kit";
 import { ReviewPrompt, type Reviewable } from "@/components/customer/ReviewPrompt";
-import { RatingLine } from "@/components/customer/Stars";
+import { RatingBadge } from "@/components/customer/Stars";
 import { LoyaltyCard, type Loyalty } from "@/components/customer/LoyaltyCard";
 import { UsualCard, type Usual } from "@/components/customer/UsualCard";
 import { BusyCard } from "@/components/customer/BusyCard";
@@ -33,6 +33,8 @@ interface Barber {
   bio: string | null;
   photo: string | null;
   rating: { average: number | null; count: number };
+  /** A few of their own cuts, shipped with the catalogue. */
+  work?: string[];
 }
 
 interface Service {
@@ -240,13 +242,42 @@ export default function CustomerHomePage() {
           >
             {t("app.ourBarbers")}
           </SectionTitle>
+          {/*
+            Cards led by the barber's own work, not a row of thumbnails jammed
+            together. A customer picks a barber by the cuts long before the
+            name, and the photos are already on the wire with the catalogue.
+          */}
           <div className="scroll-clean -mx-5 flex gap-3 overflow-x-auto px-5 pb-1">
             {barbers.map((b) => (
-              <Link key={b.id} href={`/app/barbers/${b.id}`} className="w-[84px] shrink-0 text-center">
-                <Avatar name={b.name} photo={b.photo} size={64} />
-                <div className="mt-2 truncate text-xs text-mid">{b.name}</div>
-                <div className="mt-1 flex justify-center">
-                  <RatingLine rating={b.rating ?? { average: null, count: 0 }} size={11} />
+              <Link
+                key={b.id}
+                href={`/app/barbers/${b.id}`}
+                className="c-card w-[152px] shrink-0 overflow-hidden transition-colors hover:border-hair"
+              >
+                {/*
+                  Leads with their work where there is any. Where there is none
+                  — which is every barber here today — a short monogram band
+                  instead of a photo-shaped hole, so the card reads as designed
+                  rather than broken, and upgrades by itself the day somebody
+                  uploads a cut.
+                */}
+                {b.work?.[0] ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={b.work[0]} alt="" className="aspect-[4/3] w-full object-cover" />
+                ) : (
+                  <div className="flex h-[88px] w-full items-center justify-center bg-accent-soft">
+                    <Avatar name={b.name} photo={b.photo} size={48} />
+                  </div>
+                )}
+
+                <div className="p-3">
+                  <div className="flex items-center gap-2">
+                    {b.work?.[0] && <Avatar name={b.name} photo={b.photo} size={22} />}
+                    <span className="min-w-0 flex-1 truncate text-sm font-medium text-ink">{b.name}</span>
+                  </div>
+                  <div className="mt-1.5 empty:mt-0">
+                    <RatingBadge rating={b.rating ?? { average: null, count: 0 }} />
+                  </div>
                 </div>
               </Link>
             ))}

@@ -41,7 +41,7 @@ interface Review {
 /** One barber: who they are, what they do, and a way to book them. */
 export default function BarberProfilePage() {
   const { id } = useParams<{ id: string }>();
-  const { t, fmtCurrency, lang } = useTranslation();
+  const { t, fmtCurrency, fmtDate, lang } = useTranslation();
   const [data, setData] = useState<{ barber: Barber | null; services: Service[] } | null>(null);
   const [reviews, setReviews] = useState<{
     summary: { average: number | null; count: number };
@@ -131,14 +131,21 @@ export default function BarberProfilePage() {
         <section>
           <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-soft">{t("app.reviews")}</h2>
           <div className="space-y-2">
+            {/*
+              What they said leads; who said it and when sits under it, quietly.
+              The other way round reads like a table of contacts rather than an
+              opinion somebody took the trouble to write.
+            */}
             {reviews.reviews.map((r) => (
-              <div key={r.id} className="c-card p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="truncate text-sm font-medium text-ink">{r.name}</span>
-                  <Stars rating={r.rating} size={13} />
-                </div>
-                <p className="mt-2 text-sm leading-relaxed text-mid">{r.comment}</p>
-              </div>
+              <figure key={r.id} className="c-card p-4">
+                <Stars rating={r.rating} size={13} />
+                <blockquote className="mt-2.5 text-sm leading-relaxed text-ink">{r.comment}</blockquote>
+                <figcaption className="mt-2.5 text-xs text-faint">
+                  {r.name}
+                  <span className="mx-1.5">·</span>
+                  {fmtDate(r.createdAt)}
+                </figcaption>
+              </figure>
             ))}
           </div>
         </section>

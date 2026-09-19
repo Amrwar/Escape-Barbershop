@@ -72,6 +72,25 @@ export function RatingLine({
   );
 }
 
+/**
+ * The same rating where there is no room for five of anything.
+ *
+ * One star and the number. Five glyphs plus a count inside an eighty-pixel
+ * card is not a rating, it is a smudge — and the number is the part anybody
+ * actually reads.
+ */
+export function RatingBadge({ rating }: { rating: { average: number | null; count: number } }) {
+  if (rating.count === 0 || rating.average === null) return null;
+
+  return (
+    <span className="inline-flex items-baseline gap-1 text-xs">
+      <span className="text-accent">★</span>
+      <span className="font-semibold tabular-nums text-ink">{rating.average.toFixed(1)}</span>
+      <span className="tabular-nums text-faint">({rating.count})</span>
+    </span>
+  );
+}
+
 /** Five stars to tap. Nothing is chosen until they touch one. */
 export function StarPicker({
   value,
