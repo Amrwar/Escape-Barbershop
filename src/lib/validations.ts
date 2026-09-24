@@ -46,6 +46,35 @@ export const barberSchema = z.object({
     .nullable(),
 });
 
+/**
+ * A barber's own week. Seven rows or none — a partial rota is a gap nobody sees
+ * until a customer books into it.
+ *
+ * These only ever narrow the shop's day; `workingWindow` takes the later start
+ * and the earlier finish, so a row claiming to open before the shop does simply
+ * has no effect rather than quietly extending opening hours.
+ */
+export const barberHoursSchema = z.object({
+  hours: z
+    .array(
+      z
+        .object({
+          weekday: z.number().int().min(0).max(6),
+          startMinute: z.number().int().min(0).max(24 * 60),
+          endMinute: z.number().int().min(0).max(24 * 60),
+          isWorking: z.boolean().optional(),
+        })
+        .refine((d) => d.isWorking === false || d.endMinute > d.startMinute, {
+          message: "A day they work has to finish after it starts",
+          path: ["endMinute"],
+        })
+    )
+    .length(7, "Give all seven days")
+    .refine((days) => new Set(days.map((d) => d.weekday)).size === 7, {
+      message: "Each weekday once",
+    }),
+});
+
 export const visitItemSchema = z.object({
   serviceId: z.string().min(1, "Service is required"),
   quantity: z.number().int().min(1, "Quantity must be at least 1"),

@@ -101,6 +101,14 @@ Decisions worth keeping:
   has to be set up before booking works.
 - **A barber with no `BarberService` rows does every service.** Same reason.
 
+> `BarberWorkingHours` was read by the slot maths and the roster from the start
+> and could not be written by anything, so every barber silently worked the
+> shop's whole day. With online booking on, that offered a customer any barber
+> at any open hour. There is an editor now, on the barbers screen. A rota only
+> ever narrows the shop's day, so the worst a mistake can do is offer less time,
+> never more — and clearing it puts them back on the shop's hours for good,
+> rather than freezing today's hours into seven rows.
+
 ## Time
 
 The shop thinks in local time — "Saturday, 09:00 to midnight" — and Egypt changes its clocks

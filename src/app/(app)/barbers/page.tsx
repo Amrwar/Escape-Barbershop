@@ -8,6 +8,7 @@ import { Modal } from "@/components/ui/Modal";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useTranslation } from "@/lib/i18n";
 import { BarberPhotoPicker } from "@/components/ui/BarberPhotoPicker";
+import { BarberHoursModal } from "@/components/ui/BarberHoursModal";
 
 interface SalarySettings {
   baseSalary: number;
@@ -42,6 +43,8 @@ export default function BarbersPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [salaryModalOpen, setSalaryModalOpen] = useState(false);
   const [editing, setEditing] = useState<Barber | null>(null);
+  const [hoursFor, setHoursFor] = useState<{ id: string; name: string } | null>(null);
+  const [shopHours, setShopHours] = useState<{ weekday: number; startMinute: number; endMinute: number; isOpen?: boolean }[]>([]);
   const [form, setForm] = useState(defaultForm);
   const [salaryForm, setSalaryForm] = useState(defaultSalary);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -105,6 +108,14 @@ export default function BarbersPage() {
   };
 
   useEffect(load, []);
+
+  // The shop's own week, so the editor can show what a barber's hours narrow.
+  useEffect(() => {
+    fetch("/api/booking/settings")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => setShopHours(Array.isArray(d?.hours) ? d.hours : []))
+      .catch(() => setShopHours([]));
+  }, []);
 
   const openCreate = () => { setEditing(null); setForm(defaultForm); setErrors({}); setModalOpen(true); };
   const openEdit = (b: Barber) => {
@@ -248,6 +259,7 @@ export default function BarbersPage() {
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-2" ref={openMenu === b.id ? menuRef : null}>
                       <Link href={`/barbers/${b.id}/stats`} className="btn-ghost text-xs px-2 py-1">{t("action.stats")}</Link>
+                      <button onClick={() => setHoursFor({ id: b.id, name: b.name })} className="btn-ghost text-xs px-2 py-1">{t("barbers.hours")}</button>
                       <button onClick={() => openEdit(b)} className="btn-secondary text-xs px-2 py-1">{t("action.edit")}</button>
                       <div className="relative">
                         <button
@@ -407,6 +419,8 @@ export default function BarbersPage() {
           </div>
         </form>
       </Modal>
+      <BarberHoursModal barber={hoursFor} shopHours={shopHours} onClose={() => setHoursFor(null)} />
+
     </div>
   );
 }
