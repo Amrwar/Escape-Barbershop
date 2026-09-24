@@ -1,9 +1,12 @@
 # Escape Barbershop — documentation
 
-Five documents, each answering a different question.
+**New here? Read the [overview](overview.md)** — the whole system in one document: what it
+does, how it is built, how it is worked on, and where it stands. The rest go deeper on a
+single question each.
 
 | Document | Answers |
 | --- | --- |
+| [Overview](overview.md) | Everything, in one place. The one to hand somebody who has not seen this before |
 | [Proposal](proposal.md) | What we are building, for whom, and why it is one system rather than three |
 | [Design](design.md) | How it is put together: the data model, the rules, the decisions and their reasons |
 | [MVP](mvp.md) | What "finished enough to use" means, and what is deliberately left out |
@@ -17,21 +20,24 @@ Five documents, each answering a different question.
 Everything on the roadmap is built, tested and deployed except the phone apps.
 
 The management system runs the shop as it always did — visits, the drawer, expenses,
-advances, payroll, the warehouse, the reports. On top of it now: customers book from
-their phone and are rung up as one visit; the queue and the diary; barbers with their own
-day, earnings and reviews; reminders, confirmations and review requests as phone
-notifications; a loyalty card, referrals and birthdays; reviews; insight screens; and
-customer groups the owner can message.
+advances, payroll, the warehouse, the reports. On top of it: customers book from their
+phone and are rung up as one visit; the queue and the diary; barbers with their own day,
+earnings and reviews; reminders and confirmations as phone notifications; a loyalty card,
+referrals and birthdays; reviews; insight screens; customer groups the owner can message;
+products sold at the till; a waiting list; deposits on the expensive work; a screen for
+the wall; time off; portfolios; and a no-show policy that asks for a deposit rather than
+barring anybody.
 
-Since then: products sold at the till, a waiting list that turns a cancellation back into
-a booking, deposits on the expensive work, a screen for the shop wall, barbers asking for
-their own time off, their own portfolios, and a no-show policy that asks for a deposit
-rather than barring anybody. Most recently, the conversation around the chair: a customer
-keeps photos of the cut they want where the barber sees them, and the barber reports what
-happened during a cut where only the owner reads it.
+Most recently, the parts aimed at a shop that books nothing and walks everyone in: floor
+reports and the cut a customer wants; barber logins by phone and PIN; reviews, "the usual"
+and the busyness forecast all reading walk-in visits rather than appointments; a QR on
+every receipt; the price list, the roster, a customer's own haircuts and a receipt they
+can keep; barber photos; and each barber's own working hours.
 
 What is left is **phase 4** — the same app published to Google Play and the App Store —
 which waits on the shop's own developer accounts. The roadmap says what those cost.
+
+A demo with invented data lives at <https://escape-barbershop-demo.vercel.app>.
 
 ## For whoever works on this next
 

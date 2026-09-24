@@ -183,6 +183,29 @@ new ones.
 
 ## How to try it
 
+### The hosted demo
+
+<https://escape-barbershop-demo.vercel.app> — a separate deployment with its own database,
+holding sixteen invented customers and six weeks of plausible trade. Nothing real is in
+it, which is the point: the live shop's database has thousands of actual customers and
+their phone numbers, and is never what gets shown to anybody.
+
+| Role | Sign in at | Username | Password |
+| --- | --- | --- | --- |
+| Owner | `/login` | `demo@escape.com` | `demo-owner-2026` |
+| Cashier | `/login` | `cashier@escape.com` | `demo-till-2026` |
+| Barber | `/login` | `01000000002` | `482913` |
+| Customer | `/app/login` | `01032824493` | `demo-customer-2026` |
+
+The discount and edit PIN is `1234`. `/app/prices` and `/app/roster` need no account at
+all. The customer and barber accounts are attached to the busiest people in the demo, so
+their history, loyalty and earnings have something in them rather than opening empty.
+
+The demo data is dated, so its "today" goes stale; re-running `db:seed:demo` against that
+database refreshes it.
+
+### On your own machine
+
 `docker compose up --build`, then <http://localhost:3100>. Sign in with the accounts printed
 in the log; the customer app is at `/app`, and you can create a customer account from there
 with any Egyptian mobile number.
