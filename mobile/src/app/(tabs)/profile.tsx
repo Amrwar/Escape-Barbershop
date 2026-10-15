@@ -1,4 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { router } from "expo-router";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { formatPhone } from "../../../../src/lib/customers";
 import { useAuth } from "@/lib/auth";
 import { useTranslation, type Language } from "@/lib/i18n";
@@ -6,14 +8,17 @@ import { RADIUS, useTheme, type ThemeChoice } from "@/lib/theme";
 import { useApi } from "@/lib/use-api";
 import type { Me } from "@/lib/types";
 import { Avatar, Button, Card, Screen, ScreenTitle, SectionTitle, Skeleton } from "@/components/kit";
+import { LoyaltyCard } from "@/components/LoyaltyCard";
 
 /**
- * Who they are to the shop, and how the app looks to them. Editing their
- * details comes with the next pass; for now the web app's profile does that.
+ * Who they are to the shop, their card and their history, and how the app
+ * looks to them. Editing their details is still done on the web for now.
  */
 export default function ProfileScreen() {
   const { colors } = useTheme();
-  const { t, lang, setLang } = useTranslation();
+  const { t, lang, setLang, rtl } = useTranslation();
+  // A chevron points the way the screen opens, which flips in Arabic.
+  const rtlFlip = rtl ? { transform: [{ scaleX: -1 }] } : undefined;
   const { choice, setChoice } = useTheme();
   const { signOut } = useAuth();
   const { data: me, refreshing, refresh } = useApi<Me>("/api/customer/me");
@@ -41,6 +46,22 @@ export default function ProfileScreen() {
           </View>
         </Card>
       )}
+
+      <Card onPress={() => router.push("/history")} style={[styles.row, { padding: 16 }]}>
+        <Ionicons name="time-outline" size={20} color={colors.accent} />
+        <View style={{ flex: 1 }}>
+          <Text style={{ color: colors.ink, fontSize: 14, fontWeight: "500" }}>{t("history.title")}</Text>
+          <Text style={{ color: colors.soft, fontSize: 12 }}>{t("history.hint")}</Text>
+        </View>
+        <Ionicons name="chevron-forward" size={18} color={colors.faint} style={rtlFlip} />
+      </Card>
+
+      {me?.loyalty ? (
+        <View>
+          <SectionTitle>{t("app.loyaltyTitle")}</SectionTitle>
+          <LoyaltyCard loyalty={me.loyalty} />
+        </View>
+      ) : null}
 
       <View>
         <SectionTitle>{t("app.language")}</SectionTitle>

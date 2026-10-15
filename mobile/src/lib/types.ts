@@ -37,4 +37,35 @@ export interface Me {
   birthday: string | null;
   visitCount: number;
   upcomingCount: number;
+  loyalty: Loyalty | null;
+}
+
+/** The punch card, from /api/customer/me, while the shop runs one. */
+export interface Loyalty {
+  stamps: number;
+  toNext: number;
+  available: number;
+  visitsRequired: number;
+  rewardText: string;
+  rewardTextAr: string | null;
+}
+
+/** Their habit, from /api/customer/usual, with free times near their hour. */
+export interface Usual {
+  barber: { id: string; name: string; photo: string | null } | null;
+  services: Service[];
+  durationMinutes: number;
+  price: number;
+  times: string[];
+}
+
+/** One past haircut, from /api/customer/visits. */
+export interface Visit {
+  id: string;
+  visitAt: string;
+  total: number;
+  barber: { id: string; name: string; photo: string | null } | null;
+  rating: number | null;
+  services: { name: string | null; arabicName: string | null; quantity: number; price: number }[];
+  products: { name: string; quantity: number }[];
 }

@@ -64,9 +64,10 @@ never install the app — worth revisiting once we see how many turn notificatio
 ## Phase 4 — the phone apps
 
 - [ ] React Native (Expo) app over the same API — **started** in `mobile/`:
-      sign-in and sign-up, home, booking (with the waitlist for a full day), bookings
+      sign-in and sign-up, home with the usual and the loyalty card, booking (with the
+      waitlist for a full day), visit history, bookings
       with cancelling and deposits, profile, the price list, in English and Arabic, dark
-      and light. Next: the usual, loyalty, reviews, history. See `mobile/README.md`
+      and light. Next: reviews, receipts, the busy card. See `mobile/README.md`
 - [x] A way in for the app: a customer signs in for a token the phone keeps in
       secure storage, and every customer route accepts it as it accepts the cookie
 - [x] Push notifications in the web app

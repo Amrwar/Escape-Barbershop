@@ -60,6 +60,9 @@ function Navigator() {
           <Stack.Screen name="login" options={{ headerShown: false }} />
         </Stack.Protected>
         <Stack.Screen name="prices" options={{ title: t("prices.title") }} />
+        <Stack.Protected guard={signedIn}>
+          <Stack.Screen name="history" options={{ title: t("history.title") }} />
+        </Stack.Protected>
       </Stack>
     </View>
   );

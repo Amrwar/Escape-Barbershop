@@ -8,7 +8,9 @@ import { RADIUS, useTheme } from "@/lib/theme";
 import { useApi } from "@/lib/use-api";
 import { AppointmentCard, type CustomerAppointment } from "@/components/AppointmentCard";
 import { Avatar, Button, Card, EmptyState, Screen, ScreenTitle, SectionLink, SectionTitle, Skeleton, type IconName } from "@/components/kit";
-import type { Catalog } from "@/lib/types";
+import type { Catalog, Me, Usual } from "@/lib/types";
+import { LoyaltyCard } from "@/components/LoyaltyCard";
+import { UsualCard } from "@/components/UsualCard";
 
 /**
  * Home answers one question — "when is my next haircut?" — and everything else
@@ -28,10 +30,14 @@ export default function HomeScreen() {
   const { user } = useAuth();
   const upcoming = useApi<CustomerAppointment[]>("/api/customer/appointments?scope=upcoming");
   const catalog = useApi<Catalog>("/api/customer/catalog");
+  const usual = useApi<{ usual: Usual | null }>("/api/customer/usual");
+  const me = useApi<Me>("/api/customer/me");
 
   const refresh = () => {
     void upcoming.refresh();
     void catalog.refresh();
+    void usual.refresh();
+    void me.refresh();
   };
 
   const list = upcoming.data ?? null;
@@ -39,6 +45,8 @@ export default function HomeScreen() {
   const firstName = user?.name?.trim().split(" ")[0];
   const barbers = catalog.data?.barbers.slice(0, 6) ?? [];
   const offers = catalog.data?.offers.slice(0, 2) ?? [];
+  const habit = usual.data?.usual?.times.length ? usual.data.usual : null;
+  const loyalty = me.data?.loyalty ?? null;
 
   return (
     <Screen refreshing={upcoming.refreshing} onRefresh={refresh}>
@@ -76,6 +84,21 @@ export default function HomeScreen() {
           />
         )}
       </View>
+
+      {habit && (
+        <View>
+          <SectionTitle>{t("app.usualTitle")}</SectionTitle>
+          <UsualCard usual={habit} />
+        </View>
+      )}
+
+      {/* Only when there is something to collect; the card itself lives on the profile. */}
+      {loyalty && loyalty.available > 0 && (
+        <View>
+          <SectionTitle>{t("app.loyaltyTitle")}</SectionTitle>
+          <LoyaltyCard loyalty={loyalty} />
+        </View>
+      )}
 
       {list && list.length > 1 && (
         <View>
