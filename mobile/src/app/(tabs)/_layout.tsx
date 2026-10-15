@@ -2,13 +2,16 @@ import { StyleSheet, type ColorValue } from "react-native";
 import { Tabs } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useTranslation } from "@/lib/i18n";
-import { useTheme } from "@/lib/theme";
+import { fontFamily, useTheme } from "@/lib/theme";
 import type { IconName } from "@/components/kit";
 
-/** The four places a signed-in customer moves between, as on the web. */
+/**
+ * The four places a signed-in customer moves between, as on the web — on a
+ * navy bar, like the board, with the place you are in amber.
+ */
 export default function TabsLayout() {
   const { colors } = useTheme();
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
 
   const icon = (name: IconName) =>
     function TabIcon({ color }: { color: ColorValue }) {
@@ -19,10 +22,10 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.accent,
-        tabBarInactiveTintColor: colors.soft,
-        tabBarStyle: { backgroundColor: colors.bg, borderTopColor: colors.line, borderTopWidth: StyleSheet.hairlineWidth },
-        tabBarLabelStyle: { fontSize: 11, fontWeight: "500" },
+        tabBarActiveTintColor: colors.amber,
+        tabBarInactiveTintColor: colors.onNavySoft,
+        tabBarStyle: { backgroundColor: colors.navy, borderTopColor: colors.navyLine, borderTopWidth: StyleSheet.hairlineWidth },
+        tabBarLabelStyle: { fontSize: 11, fontFamily: fontFamily(500, lang) },
         sceneStyle: { backgroundColor: colors.bg },
       }}
     >

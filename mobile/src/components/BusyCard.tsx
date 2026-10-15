@@ -1,17 +1,17 @@
 import { useEffect } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { useTranslation, type TranslationKey } from "@/lib/i18n";
 import { useTheme } from "@/lib/theme";
 import { useApi } from "@/lib/use-api";
-import { Card } from "./kit";
+import { T } from "./kit";
 
 /**
- * "Is it worth walking down now?"
+ * "Is it worth walking down now?" — as a strip under the next appointment.
  *
- * The one thing this card must never do is sound more certain than it is. When
- * the shop is running its queue, it says what is actually happening. When it is
- * not, it says what usually happens at this hour and calls it that. When there
- * is not enough history to say either, it does not appear at all.
+ * The one thing it must never do is sound more certain than it is. When the
+ * shop is running its queue it says what is happening, in teal, the colour of
+ * now. When it is not, it says what usually happens at this hour, on paper,
+ * and calls it a guide. With too little history it does not appear at all.
  */
 
 interface Busy {
@@ -34,60 +34,47 @@ export function BusyCard() {
 
   if (!busy || (!busy.live && !busy.typical)) return null;
 
-  const kicker = (key: TranslationKey) => <Text style={[styles.kicker, { color: colors.faint }]}>{t(key).toUpperCase()}</Text>;
-
   // Live beats the forecast whenever the shop is running its queue.
   if (busy.live) {
     const { waiting, waitMinutes } = busy.live;
     return (
-      <Card style={{ padding: 20 }}>
-        {kicker("busy.nowTitle")}
-        <Text style={[styles.big, { color: colors.ink }]}>
+      <View style={[styles.strip, { backgroundColor: colors.teal }]}>
+        <View style={[styles.pulse, { backgroundColor: colors.amber }]} />
+        <T style={{ flex: 1, color: colors.onTeal, fontSize: 13 }}>
+          <T style={{ color: colors.onTeal, fontWeight: "600" }}>{t("app.liveNow")}: </T>
+          {waiting === 0 ? t("busy.nobodyWaiting") : t("busy.peopleWaiting", { n: waiting })} ·{" "}
           {waitMinutes === 0 ? t("busy.walkIn") : t("busy.aboutMinutes", { n: waitMinutes })}
-        </Text>
-        <Text style={{ color: colors.soft, fontSize: 14, marginTop: 8 }}>
-          {waiting === 0 ? t("busy.nobodyWaiting") : t("busy.peopleWaiting", { n: waiting })}
-        </Text>
-      </Card>
+        </T>
+      </View>
     );
   }
 
   const typical = busy.typical!;
-  const tone = {
-    quiet: [colors.goodSoft, colors.good],
-    steady: [colors.warnSoft, colors.warn],
-    busy: [colors.badSoft, colors.bad],
-  }[typical.level];
+  const tone = { quiet: colors.teal, steady: colors.amber, busy: colors.accent }[typical.level];
   // The hours come as the shop's own clock hours, so they are named as such.
   const hour = (h: number) =>
-    new Intl.DateTimeFormat(lang === "ar" ? "ar-EG" : "en-GB", { hour: "numeric", hour12: true, timeZone: "UTC" }).format(
+    new Intl.DateTimeFormat(lang === "ar" ? "ar-EG-u-nu-latn" : "en-GB", { hour: "numeric", hour12: true, timeZone: "UTC" }).format(
       new Date(Date.UTC(2026, 0, 1, h))
     );
 
   return (
-    <Card style={{ padding: 20 }}>
-      {kicker("busy.usuallyTitle")}
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginTop: 8 }}>
-        <View style={[styles.level, { backgroundColor: tone[0] }]}>
-          <Text style={{ color: tone[1], fontSize: 14, fontWeight: "600" }}>{t(`busy.${typical.level}` as TranslationKey)}</Text>
-        </View>
-        <Text style={{ color: colors.soft, fontSize: 14 }}>{t("busy.atThisHour")}</Text>
+    <View style={[styles.strip, { backgroundColor: colors.surface, borderColor: colors.line, borderWidth: StyleSheet.hairlineWidth }]}>
+      <View style={[styles.pulse, { backgroundColor: tone }]} />
+      <View style={{ flex: 1, gap: 2 }}>
+        <T style={{ color: colors.ink, fontSize: 13 }}>
+          <T style={{ fontWeight: "600" }}>{t(`busy.${typical.level}` as TranslationKey)}</T> {t("busy.atThisHour")}
+          {busy.quieterAt.length > 0
+            ? ` · ${t("busy.quieterAround", { time: busy.quieterAt.slice(0, 2).map(hour).join(" / ") })}`
+            : ""}
+        </T>
+        {/* Said plainly, so nobody reads a forecast as a live queue. */}
+        <T style={{ color: colors.soft, fontSize: 11 }}>{t("busy.basedOn", { n: typical.fromWeeks })}</T>
       </View>
-
-      {busy.quieterAt.length > 0 ? (
-        <Text style={{ color: colors.mid, fontSize: 14, marginTop: 12 }}>
-          {t("busy.quieterAround", { time: busy.quieterAt.slice(0, 2).map(hour).join(" / ") })}
-        </Text>
-      ) : null}
-
-      {/* Said plainly, so nobody reads a forecast as a live queue. */}
-      <Text style={{ color: colors.faint, fontSize: 12, marginTop: 12 }}>{t("busy.basedOn", { n: typical.fromWeeks })}</Text>
-    </Card>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  kicker: { fontSize: 10, fontWeight: "700", letterSpacing: 1.8 },
-  big: { fontSize: 30, fontWeight: "300", marginTop: 8 },
-  level: { borderRadius: 999, paddingHorizontal: 12, paddingVertical: 4 },
+  strip: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 14, paddingVertical: 12 },
+  pulse: { width: 8, height: 8, borderRadius: 4 },
 });

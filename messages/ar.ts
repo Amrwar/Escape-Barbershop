@@ -1335,6 +1335,15 @@ const ar: Record<TranslationKey, string> = {
   "app.themeSystem": "مثل الهاتف",
   "app.themeDark": "داكن",
   "app.themeLight": "فاتح",
+  "app.barberNoPhotos": "لا صور لأعماله بعد",
+  "app.bookAt": "احجز {day} {time} مع {barber}",
+  "app.liveNow": "الآن",
+  "app.openDoor": "افتح الباب",
+  "app.noAccount": "ليس لديك حساب؟ أنشئ واحدًا",
+  "app.haveAccount": "لدي حساب",
+  "app.createTitle": "أنشئ حسابك",
+  "app.signInSmall": "رقم موبايلك هو اسم الدخول. نسيت كلمة السر؟ نعيد ضبطها لك في المحل.",
+  "app.signUpSmall": "رقم موبايلك هو اسم الدخول. جئت من قبل؟ استخدم الرقم المسجل في المحل وسيأتي تاريخك معك.",
 };
 
 export default ar;

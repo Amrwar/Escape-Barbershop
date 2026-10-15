@@ -1,13 +1,18 @@
 import { View } from "react-native";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { useFonts } from "expo-font";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { LanguageProvider, useTranslation } from "@/lib/i18n";
 import { ShopProvider } from "@/lib/shop";
-import { ThemeProvider, useTheme } from "@/lib/theme";
+import { FONT_FILES, fontFamily, ThemeProvider, useTheme } from "@/lib/theme";
 
 export default function RootLayout() {
+  // The type is part of the look; a frame in the system font would flash first.
+  const [fontsLoaded, fontError] = useFonts(FONT_FILES);
+  if (!fontsLoaded && !fontError) return null;
+
   return (
     <SafeAreaProvider>
       <ThemeProvider>
@@ -31,7 +36,7 @@ export default function RootLayout() {
 function Navigator() {
   const { status } = useAuth();
   const { colors, scheme } = useTheme();
-  const { rtl, t } = useTranslation();
+  const { rtl, t, lang } = useTranslation();
 
   // Arabic lays the whole app out right to left without a restart.
   const root = { flex: 1, backgroundColor: colors.bg, direction: rtl ? "rtl" : "ltr" } as const;
@@ -48,7 +53,7 @@ function Navigator() {
         screenOptions={{
           headerStyle: { backgroundColor: colors.bg },
           headerTintColor: colors.accent,
-          headerTitleStyle: { color: colors.ink },
+          headerTitleStyle: { color: colors.ink, fontFamily: fontFamily(600, lang) },
           headerShadowVisible: false,
           contentStyle: { backgroundColor: colors.bg },
         }}

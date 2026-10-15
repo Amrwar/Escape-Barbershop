@@ -1333,6 +1333,15 @@ const en = {
   "app.themeSystem": "Like the phone",
   "app.themeDark": "Dark",
   "app.themeLight": "Light",
+  "app.barberNoPhotos": "No photos of their work yet",
+  "app.bookAt": "Book {day} {time} with {barber}",
+  "app.liveNow": "Right now",
+  "app.openDoor": "Open the door",
+  "app.noAccount": "No account? Create one",
+  "app.haveAccount": "I have an account",
+  "app.createTitle": "Create your account",
+  "app.signInSmall": "Your mobile number is your login. Forgot your password? We reset it for you at the shop.",
+  "app.signUpSmall": "Your mobile number is your login. Been in before? Use the number the shop has and your history comes with you.",
 } as const;
 
 export type TranslationKey = keyof typeof en;

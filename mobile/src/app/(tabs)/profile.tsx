@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import { router } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { formatPhone } from "../../../../src/lib/customers";
@@ -7,7 +7,7 @@ import { useTranslation, type Language } from "@/lib/i18n";
 import { RADIUS, useTheme, type ThemeChoice } from "@/lib/theme";
 import { useApi } from "@/lib/use-api";
 import type { Me } from "@/lib/types";
-import { Avatar, Button, Card, Screen, ScreenTitle, SectionTitle, Skeleton } from "@/components/kit";
+import { T, Avatar, Button, Card, Screen, ScreenTitle, SectionTitle, Skeleton } from "@/components/kit";
 import { LoyaltyCard } from "@/components/LoyaltyCard";
 import { ReferralCard, type Referral } from "@/components/ReferralCard";
 
@@ -37,10 +37,10 @@ export default function ProfileScreen() {
           <View style={styles.row}>
             <Avatar name={me.name} photo={me.photo} size={56} />
             <View style={{ flex: 1 }}>
-              <Text style={{ color: colors.ink, fontSize: 18, fontWeight: "600" }}>{me.name}</Text>
-              <Text style={{ color: colors.soft, fontSize: 14, marginTop: 2, fontVariant: ["tabular-nums"] }}>
+              <T style={{ color: colors.ink, fontSize: 18, fontWeight: "600" }}>{me.name}</T>
+              <T style={{ color: colors.soft, fontSize: 14, marginTop: 2, fontVariant: ["tabular-nums"] }}>
                 {formatPhone(me.phone)}
-              </Text>
+              </T>
             </View>
           </View>
           <View style={[styles.row, { borderTopColor: colors.line, borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 16 }]}>
@@ -53,8 +53,8 @@ export default function ProfileScreen() {
       <Card onPress={() => router.push("/history")} style={[styles.row, { padding: 16 }]}>
         <Ionicons name="time-outline" size={20} color={colors.accent} />
         <View style={{ flex: 1 }}>
-          <Text style={{ color: colors.ink, fontSize: 14, fontWeight: "500" }}>{t("history.title")}</Text>
-          <Text style={{ color: colors.soft, fontSize: 12 }}>{t("history.hint")}</Text>
+          <T style={{ color: colors.ink, fontSize: 14, fontWeight: "500" }}>{t("history.title")}</T>
+          <T style={{ color: colors.soft, fontSize: 12 }}>{t("history.hint")}</T>
         </View>
         <Ionicons name="chevron-forward" size={18} color={colors.faint} style={rtlFlip} />
       </Card>
@@ -62,7 +62,7 @@ export default function ProfileScreen() {
       {me?.loyalty ? (
         <View>
           <SectionTitle>{t("app.loyaltyTitle")}</SectionTitle>
-          <LoyaltyCard loyalty={me.loyalty} />
+          <LoyaltyCard loyalty={me.loyalty} arch />
         </View>
       ) : null}
 
@@ -107,8 +107,8 @@ function Stat({ value, label }: { value: number; label: string }) {
   const { colors } = useTheme();
   return (
     <View style={{ flex: 1 }}>
-      <Text style={{ color: colors.ink, fontSize: 24, fontWeight: "300", fontVariant: ["tabular-nums"] }}>{value}</Text>
-      <Text style={{ color: colors.faint, fontSize: 10, letterSpacing: 1.6, marginTop: 2 }}>{label.toUpperCase()}</Text>
+      <T style={{ color: colors.ink, fontSize: 24, fontWeight: "300", fontVariant: ["tabular-nums"] }}>{value}</T>
+      <T style={{ color: colors.faint, fontSize: 10, letterSpacing: 1.6, marginTop: 2 }}>{label.toUpperCase()}</T>
     </View>
   );
 }
@@ -136,7 +136,7 @@ function Choice<T extends string>({
             onPress={() => onChange(o.value)}
             style={[styles.segmentItem, active && { backgroundColor: colors.accentSoft }]}
           >
-            <Text style={{ color: active ? colors.accent : colors.soft, fontSize: 13, fontWeight: "600" }}>{o.label}</Text>
+            <T style={{ color: active ? colors.accent : colors.soft, fontSize: 13, fontWeight: "600" }}>{o.label}</T>
           </Pressable>
         );
       })}

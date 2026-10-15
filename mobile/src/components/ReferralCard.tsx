@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { Linking, Share, StyleSheet, Text, View } from "react-native";
+import { Linking, Share, StyleSheet, View } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import { API_URL } from "@/lib/api";
 import { useTranslation } from "@/lib/i18n";
 import { RADIUS, useTheme } from "@/lib/theme";
-import { Button, Card } from "./kit";
+import { T, Button, Card } from "./kit";
 
 /**
  * "Tell a friend": their code, big enough to read out, and the two ways this
@@ -64,12 +64,12 @@ export function ReferralCard({ referral }: { referral: Referral }) {
   return (
     <Card style={{ padding: 20, gap: 12 }}>
       {/* The section above already says "Tell a friend"; the card starts with why. */}
-      <Text style={{ color: colors.mid, fontSize: 14 }}>{t("app.referralHint", { reward })}</Text>
+      <T style={{ color: colors.mid, fontSize: 14 }}>{t("app.referralHint", { reward })}</T>
 
       <View style={[styles.code, { borderColor: colors.accent, backgroundColor: colors.accentSoft }]}>
-        <Text selectable style={{ color: colors.accent, fontSize: 24, fontWeight: "700", letterSpacing: 7 }}>
+        <T selectable style={{ color: colors.accent, fontSize: 24, fontWeight: "700", letterSpacing: 7 }}>
           {code}
-        </Text>
+        </T>
       </View>
 
       <View style={{ flexDirection: "row", gap: 8 }}>
@@ -83,12 +83,12 @@ export function ReferralCard({ referral }: { referral: Referral }) {
       </View>
 
       {referral.standing.invited > 0 ? (
-        <Text style={{ color: colors.soft, fontSize: 12, textAlign: "center" }}>
+        <T style={{ color: colors.soft, fontSize: 12, textAlign: "center" }}>
           {t("app.referralCount", { invited: referral.standing.invited, earned: referral.standing.earned })}
-        </Text>
+        </T>
       ) : null}
       {referral.standing.waiting > 0 ? (
-        <Text style={{ color: colors.accent, fontSize: 12, textAlign: "center" }}>{t("app.referralWaiting")}</Text>
+        <T style={{ color: colors.accent, fontSize: 12, textAlign: "center" }}>{t("app.referralWaiting")}</T>
       ) : null}
     </Card>
   );

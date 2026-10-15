@@ -1,24 +1,29 @@
 import { useState } from "react";
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { Image } from "expo-image";
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { isValidPhone } from "../../../src/lib/customers";
 import { ApiError, api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { useTranslation } from "@/lib/i18n";
-import { RADIUS, useTheme } from "@/lib/theme";
-import { Button, Card, Field, Notice } from "@/components/kit";
+import { useTheme } from "@/lib/theme";
+import { T, Button, Field, Notice } from "@/components/kit";
 import { LanguageSwitch } from "@/components/LanguageSwitch";
+import { Lattice } from "@/components/ornament";
 
 /**
- * The way in. The phone number is the username, because everyone knows theirs
- * and nobody remembers which email they used at a barbershop. Signing up with
- * the number the shop already has attaches their history.
+ * The way in, as a door ("Bab"): a tall latticed arch with the shop's name in
+ * it, and the form beneath. Signing up shortens the arch to make room for the
+ * extra fields; a wrong password leaves the door shut and says so.
+ *
+ * The phone number is the username, because everyone knows theirs and nobody
+ * remembers which email they used at a barbershop. Signing up with the number
+ * the shop already has attaches their history. There is no "forgot password":
+ * the shop resets it at the counter, and the small print says so.
  */
 export default function LoginScreen() {
   const { colors } = useTheme();
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const { signIn } = useAuth();
   const insets = useSafeAreaInsets();
 
@@ -30,14 +35,16 @@ export default function LoginScreen() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const signup = mode === "signup";
+
   const submit = async () => {
     setError("");
     if (!isValidPhone(phone)) return setError(t("app.badPhone"));
-    if (mode === "signup" && !name.trim()) return setError(t("field.name"));
+    if (signup && !name.trim()) return setError(t("field.name"));
 
     setLoading(true);
     try {
-      if (mode === "signup") {
+      if (signup) {
         await api("/api/customer/register", {
           method: "POST",
           body: { name: name.trim(), phone, password, referralCode: referralCode.trim() || undefined },
@@ -57,45 +64,41 @@ export default function LoginScreen() {
     }
   };
 
+  const switchMode = () => {
+    setMode(signup ? "signin" : "signup");
+    setError("");
+  };
+
   return (
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.bg }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <ScrollView
         keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{ flexGrow: 1, justifyContent: "center", padding: 20, paddingTop: insets.top + 56 }}
+        contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 24, paddingTop: insets.top + 12, paddingBottom: 32 }}
       >
-        <View style={[styles.corner, { top: insets.top + 12 }]}>
+        <View style={{ alignItems: "flex-end" }}>
           <LanguageSwitch />
         </View>
 
-        <View style={{ alignItems: "center", marginBottom: 32 }}>
-          <Image
-            source={require("../../assets/logo.jpg")}
-            style={[styles.logo, { borderColor: colors.line }]}
-            alt="Escape Barbershop"
-          />
-          <Text style={[styles.brand, { color: colors.ink }]}>ESCAPE</Text>
-          <Text style={{ color: colors.accent, fontSize: 14, marginTop: 6 }}>{t("app.loginSubtitle")}</Text>
+        {/* The door. Its centre seam is the line between the two leaves. */}
+        <View style={[styles.door, { backgroundColor: colors.navy, height: signup ? 200 : 300 }]}>
+          <Lattice color={colors.amber} opacity={0.22} size={34} />
+          <View style={[styles.seam, { backgroundColor: colors.amber }]} />
+          <View style={[styles.plate, { backgroundColor: colors.navy }]}>
+            <T display style={{ color: colors.onNavy, fontSize: lang === "ar" ? 34 : 30, fontWeight: "700", letterSpacing: lang === "ar" ? 0 : 4 }}>
+              {lang === "ar" ? "إسكيب" : "ESCAPE"}
+            </T>
+            <T style={{ color: colors.amber, fontSize: 14, marginTop: 2 }}>{t("app.loginSubtitle")}</T>
+          </View>
         </View>
 
-        <Card raised style={{ padding: 24, gap: 16 }}>
-          <View style={[styles.segment, { borderColor: colors.line, backgroundColor: colors.surface }]}>
-            {(["signin", "signup"] as const).map((m) => (
-              <Pressable
-                key={m}
-                onPress={() => {
-                  setMode(m);
-                  setError("");
-                }}
-                style={[styles.segmentItem, mode === m && { backgroundColor: colors.accentSoft }]}
-              >
-                <Text style={[styles.segmentText, { color: mode === m ? colors.accent : colors.soft }]}>
-                  {t(m === "signin" ? "app.signIn" : "app.createAccount").toUpperCase()}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
+        <View style={{ gap: 14, marginTop: 22 }}>
+          {signup ? (
+            <T display style={{ color: colors.ink, fontSize: 26, fontWeight: "700" }}>
+              {t("app.createTitle")}
+            </T>
+          ) : null}
 
-          {mode === "signup" && (
+          {signup && (
             <Field label={t("field.name")} value={name} onChangeText={setName} autoComplete="name" textContentType="name" />
           )}
           <Field
@@ -106,51 +109,75 @@ export default function LoginScreen() {
             keyboardType="phone-pad"
             autoComplete="tel"
             textContentType="telephoneNumber"
+            // A phone number reads left to right in Arabic too.
+            style={{ writingDirection: "ltr", textAlign: lang === "ar" ? "right" : "left" }}
           />
           <Field
             label={t("auth.password")}
             value={password}
             onChangeText={setPassword}
-            placeholder="••••••••"
             secureTextEntry
-            autoComplete={mode === "signup" ? "new-password" : "current-password"}
-            textContentType={mode === "signup" ? "newPassword" : "password"}
+            autoComplete={signup ? "new-password" : "current-password"}
+            textContentType={signup ? "newPassword" : "password"}
           />
-          {mode === "signup" && (
+          {signup && (
             <Field
               label={t("app.referralCodeField")}
               value={referralCode}
               onChangeText={(v) => setReferralCode(v.toUpperCase().slice(0, 12))}
               autoCapitalize="characters"
               maxLength={12}
+              style={{ borderStyle: "dashed", borderColor: colors.accent, letterSpacing: 4 }}
             />
           )}
 
           {error ? <Notice text={error} /> : null}
 
-          <Button
-            label={t(mode === "signin" ? "app.signIn" : "app.createAccount")}
-            onPress={submit}
-            busy={loading}
-          />
-        </Card>
+          <Button label={t("app.openDoor")} onPress={submit} busy={loading} />
 
-        <Text style={{ color: colors.faint, fontSize: 12, textAlign: "center", marginTop: 24 }}>{t("app.loginHint")}</Text>
+          <View style={styles.links}>
+            <Pressable accessibilityRole="button" onPress={switchMode} hitSlop={8} style={styles.link}>
+              <T style={{ color: colors.accent, fontSize: 14, fontWeight: "600" }}>
+                {signup ? t("app.haveAccount") : t("app.noAccount")}
+              </T>
+            </Pressable>
+            {/* A visitor's one useful thing before they have an account. */}
+            <Pressable accessibilityRole="link" onPress={() => router.push("/prices")} hitSlop={8} style={styles.link}>
+              <T style={{ color: colors.accent, fontSize: 14 }}>{t("prices.title")}</T>
+            </Pressable>
+          </View>
 
-        {/* A visitor's one useful thing before they have an account. */}
-        <Pressable onPress={() => router.push("/prices")} hitSlop={10} style={{ alignSelf: "center", marginTop: 16 }}>
-          <Text style={{ color: colors.accent, fontSize: 14, fontWeight: "500" }}>{t("prices.title")}</Text>
-        </Pressable>
+          <T style={{ color: colors.soft, fontSize: 12, lineHeight: 19, textAlign: "center" }}>
+            {signup ? t("app.signUpSmall") : t("app.signInSmall")}
+          </T>
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  corner: { position: "absolute", end: 20, zIndex: 1 },
-  logo: { width: 96, height: 96, borderRadius: 4, borderWidth: StyleSheet.hairlineWidth },
-  brand: { marginTop: 20, fontSize: 24, fontWeight: "700", letterSpacing: 7 },
-  segment: { flexDirection: "row", gap: 4, padding: 4, borderWidth: 1, borderRadius: RADIUS },
-  segmentItem: { flex: 1, paddingVertical: 9, borderRadius: 2, alignItems: "center" },
-  segmentText: { fontSize: 12, fontWeight: "700", letterSpacing: 1.6 },
+  door: {
+    marginTop: 12,
+    overflow: "hidden",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    paddingBottom: 26,
+    borderTopLeftRadius: 999,
+    borderTopRightRadius: 999,
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
+  },
+  seam: { position: "absolute", top: 0, bottom: 0, width: 2, opacity: 0.5, alignSelf: "center" },
+  plate: {
+    alignItems: "center",
+    paddingHorizontal: 22,
+    paddingVertical: 12,
+    borderTopLeftRadius: 999,
+    borderTopRightRadius: 999,
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8,
+  },
+  links: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  link: { minHeight: 44, justifyContent: "center" },
 });

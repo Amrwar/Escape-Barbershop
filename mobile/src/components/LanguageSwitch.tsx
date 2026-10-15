@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, Text } from "react-native";
+import { Pressable, StyleSheet } from "react-native";
+import { T } from "./kit";
 import { useTranslation } from "@/lib/i18n";
 import { RADIUS, useTheme } from "@/lib/theme";
 
@@ -13,7 +14,7 @@ export function LanguageSwitch() {
       hitSlop={8}
       style={[styles.box, { borderColor: colors.lineStrong }]}
     >
-      <Text style={{ color: colors.mid, fontSize: 13, fontWeight: "600" }}>{lang === "ar" ? "English" : "العربية"}</Text>
+      <T style={{ color: colors.mid, fontSize: 13, fontWeight: "600" }}>{lang === "ar" ? "English" : "العربية"}</T>
     </Pressable>
   );
 }

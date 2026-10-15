@@ -1,9 +1,9 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { useTranslation } from "@/lib/i18n";
 import { useTheme } from "@/lib/theme";
 import { useApi } from "@/lib/use-api";
 import type { Catalog, Service } from "@/lib/types";
-import { Button, Card, EmptyState, Screen, Skeleton } from "@/components/kit";
+import { T, Button, Card, EmptyState, Screen, Skeleton } from "@/components/kit";
 
 /**
  * The price list, open to anybody. "What does a beard trim cost" is the most
@@ -18,7 +18,7 @@ export default function PricesScreen() {
 
   return (
     <Screen padTop={false} refreshing={refreshing} onRefresh={refresh}>
-      <Text style={{ color: colors.soft, fontSize: 14 }}>{t("prices.hint")}</Text>
+      <T style={{ color: colors.soft, fontSize: 14 }}>{t("prices.hint")}</T>
 
       {services === null ? (
         error ? (
@@ -48,21 +48,21 @@ export default function PricesScreen() {
                 ]}
               >
                 <View style={{ flex: 1 }}>
-                  <Text numberOfLines={1} style={{ color: colors.ink, fontSize: 14, fontWeight: "500" }}>
+                  <T numberOfLines={1} style={{ color: colors.ink, fontSize: 14, fontWeight: "500" }}>
                     {name(s)}
-                  </Text>
-                  <Text style={{ color: colors.soft, fontSize: 12 }}>
+                  </T>
+                  <T style={{ color: colors.soft, fontSize: 12 }}>
                     {s.durationMinutes} {t("appointments.minutesShort")}
-                  </Text>
+                  </T>
                 </View>
-                <Text style={{ color: colors.accent, fontSize: 18, fontVariant: ["tabular-nums"] }}>
+                <T style={{ color: colors.accent, fontSize: 18, fontVariant: ["tabular-nums"] }}>
                   {fmtCurrency(s.defaultPrice)}
-                </Text>
+                </T>
               </View>
             ))}
           </Card>
           {/* The price list is a guide; the till charges what the shop decides. */}
-          <Text style={{ color: colors.faint, fontSize: 12, textAlign: "center" }}>{t("prices.guide")}</Text>
+          <T style={{ color: colors.faint, fontSize: 12, textAlign: "center" }}>{t("prices.guide")}</T>
         </View>
       )}
     </Screen>

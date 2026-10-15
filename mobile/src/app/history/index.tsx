@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { router } from "expo-router";
 import { api } from "@/lib/api";
 import { useTranslation } from "@/lib/i18n";
 import { useTheme } from "@/lib/theme";
 import type { Visit } from "@/lib/types";
-import { Avatar, Button, Card, EmptyState, Screen, Skeleton } from "@/components/kit";
+import { T, Avatar, Button, Card, EmptyState, Screen, Skeleton } from "@/components/kit";
 import { Stars } from "@/components/Stars";
 
 /**
@@ -51,7 +51,7 @@ export default function HistoryScreen() {
 
   return (
     <Screen padTop={false}>
-      <Text style={{ color: colors.soft, fontSize: 14 }}>{t("history.hint")}</Text>
+      <T style={{ color: colors.soft, fontSize: 14 }}>{t("history.hint")}</T>
 
       {visits === null ? (
         failed ? (
@@ -74,14 +74,14 @@ export default function HistoryScreen() {
               style={[styles.row, { padding: 16 }]}
             >
               <View style={{ flex: 1 }}>
-                <Text style={{ color: colors.ink, fontSize: 17 }}>{fmtDate(visit.visitAt)}</Text>
-                <Text style={{ color: colors.mid, fontSize: 14, marginTop: 8 }}>
+                <T style={{ color: colors.ink, fontSize: 17 }}>{fmtDate(visit.visitAt)}</T>
+                <T style={{ color: colors.mid, fontSize: 14, marginTop: 8 }}>
                   {visit.services.map((s) => `${serviceName(s)}${s.quantity > 1 ? ` ×${s.quantity}` : ""}`).join(" + ")}
-                </Text>
+                </T>
                 {visit.products.length > 0 ? (
-                  <Text style={{ color: colors.soft, fontSize: 12, marginTop: 4 }}>
+                  <T style={{ color: colors.soft, fontSize: 12, marginTop: 4 }}>
                     {visit.products.map((p) => `${p.name}${p.quantity > 1 ? ` ×${p.quantity}` : ""}`).join(", ")}
-                  </Text>
+                  </T>
                 ) : null}
                 {visit.rating !== null ? (
                   <View style={{ marginTop: 8 }}>
@@ -90,10 +90,10 @@ export default function HistoryScreen() {
                 ) : null}
               </View>
               <View style={{ alignItems: "flex-end", gap: 8 }}>
-                <Text style={{ color: colors.accent, fontSize: 17, fontVariant: ["tabular-nums"] }}>{fmtCurrency(visit.total)}</Text>
+                <T style={{ color: colors.accent, fontSize: 17, fontVariant: ["tabular-nums"] }}>{fmtCurrency(visit.total)}</T>
                 {visit.barber ? (
                   <View style={[styles.row, { gap: 8, alignItems: "center" }]}>
-                    <Text style={{ color: colors.soft, fontSize: 12 }}>{visit.barber.name}</Text>
+                    <T style={{ color: colors.soft, fontSize: 12 }}>{visit.barber.name}</T>
                     <Avatar name={visit.barber.name} photo={visit.barber.photo} size={24} />
                   </View>
                 ) : null}

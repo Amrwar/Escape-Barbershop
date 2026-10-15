@@ -25,6 +25,24 @@ face on the same server.
 
 Not yet: profile editing, and push notifications.
 
+## The look: Mashrabiya
+
+Designed right to left first and mirrored for English, from the design directions at
+<https://claude.ai/artifact/GL7bTUEgGcLAkvtCc32nrb> (05) and the sign-in concepts at
+<https://claude.ai/artifact/1XnNSpi6TGQMXGJwiWtiE7> ("Bab", the door).
+
+- **Colour** (`src/lib/theme.tsx`): plaster cream ground, indigo woodwork for the header
+  band, tab bar and the card of stamps, teal for what is chosen or next, rust on the one
+  action that books, lantern amber for the lattice. Dark mode turns the ground indigo and
+  the action amber.
+- **Type**: IBM Plex Sans Arabic for reading in both languages; headings and big numbers
+  use `<T display>`, which is Reem Kufi in Arabic and Marcellus in English. Every font is
+  bundled, one file per weight, because Android ignores `fontWeight` on a custom font.
+- **Shape**: square cards with fine borders. The arch is kept for windows onto something:
+  the next appointment's day, a barber, a free time, the sign-in door.
+- **Ornament** (`src/components/ornament.tsx`): the Cairene eight-point star (two squares,
+  one turned) as the lattice behind indigo surfaces and as the loyalty stamps.
+
 ## How it signs in
 
 A browser keeps its login in a cookie; the app has no cookie jar it can rely on, so it

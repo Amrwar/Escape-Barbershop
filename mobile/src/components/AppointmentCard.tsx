@@ -1,9 +1,9 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { appointmentStatusKey } from "../../../src/lib/appointments";
 import { useTranslation, type TranslationKey } from "@/lib/i18n";
 import { shopDateOf, useShop } from "@/lib/shop";
-import { useTheme } from "@/lib/theme";
-import { Avatar, Card, Pill, type PillTone } from "./kit";
+import { arch, useTheme } from "@/lib/theme";
+import { T, Avatar, Card, Pill, type PillTone } from "./kit";
 
 export interface CustomerAppointment {
   id: string;
@@ -42,8 +42,9 @@ function whenText(startAt: string, timeZone: string, t: ReturnType<typeof useTra
 }
 
 /**
- * One appointment. The next one gets the full treatment — big time, how soon it
- * is — and the rest are quieter, so a list still reads as a list.
+ * One appointment. The next one gets an arched window holding its day, the time
+ * set large, and who and what beneath; the rest are quieter, so a list still
+ * reads as a list.
  */
 export function AppointmentCard({
   appointment,
@@ -55,7 +56,7 @@ export function AppointmentCard({
   actions?: React.ReactNode;
 }) {
   const { colors } = useTheme();
-  const { t, fmtCurrency, fmtDate, fmtTime } = useTranslation();
+  const { t, lang, fmtCurrency, fmtDate, fmtTime } = useTranslation();
   const { timeZone } = useShop();
   const services = appointment.services.map((s) => s.serviceName).join(" + ");
   const barberName = appointment.barber?.name ?? t("appointments.anyBarber");
@@ -63,31 +64,36 @@ export function AppointmentCard({
   const minutes = `${appointment.durationMinutes} ${t("appointments.minutesShort")}`;
 
   if (highlight) {
+    const start = new Date(appointment.startAt);
+    const weekday = new Intl.DateTimeFormat(lang === "ar" ? "ar-EG-u-nu-latn" : "en-GB", { weekday: "long", timeZone }).format(start);
+    const dayOfMonth = new Intl.DateTimeFormat("en-GB", { day: "numeric", timeZone }).format(start);
     return (
-      <Card raised style={{ padding: 20, borderTopColor: colors.accent, borderTopWidth: 1 }}>
+      <Card raised style={{ padding: 16, gap: 16 }}>
         <View style={styles.row}>
-          <View style={{ flex: 1 }}>
+          {/* The day, in an arched window: teal, the colour of what is next. */}
+          <View style={[styles.window, arch(64), { backgroundColor: colors.teal }]}>
+            <T style={{ color: colors.onTeal, fontSize: 11 }}>{weekday}</T>
+            <T display style={{ color: colors.onTeal, fontSize: 26, fontWeight: "700", lineHeight: 30 }}>
+              {dayOfMonth}
+            </T>
+          </View>
+          <View style={{ flex: 1, gap: 2 }}>
+            {/* The section above already says "next"; the card says how soon. */}
             <Pill tone="brass" label={whenText(appointment.startAt, timeZone, t)} />
-            <Text style={[styles.bigTime, { color: colors.ink }]}>{fmtTime(appointment.startAt)}</Text>
-            <Text style={{ color: colors.soft, fontSize: 14, marginTop: 6 }}>{fmtDate(appointment.startAt)}</Text>
+            <T display style={{ color: colors.ink, fontSize: 28, fontWeight: "700" }}>
+              {fmtTime(appointment.startAt)}
+            </T>
+            <T numberOfLines={2} style={{ color: colors.soft, fontSize: 12 }}>
+              {services} · {barberName} · {fmtCurrency(appointment.totalPrice)}
+            </T>
           </View>
-          <View style={{ alignItems: "flex-end" }}>
-            <Text style={[styles.money, { color: colors.ink, fontSize: 18 }]}>{fmtCurrency(appointment.totalPrice)}</Text>
-            <Text style={{ color: colors.soft, fontSize: 12, marginTop: 2 }}>{minutes}</Text>
-          </View>
+          <Avatar name={appointment.barber?.name ?? "?"} photo={appointment.barber?.photo} size={36} />
         </View>
-
-        <View style={[styles.row, styles.divider, { borderTopColor: colors.line, marginTop: 20, paddingTop: 16 }]}>
-          <Avatar name={appointment.barber?.name ?? "?"} photo={appointment.barber?.photo} size={40} />
-          <View style={{ flex: 1 }}>
-            <Text numberOfLines={1} style={{ color: colors.ink, fontWeight: "500", fontSize: 15 }}>
-              {services}
-            </Text>
-            <Text style={{ color: colors.soft, fontSize: 12 }}>{barberName}</Text>
-          </View>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+          <Pill tone={TONES[appointment.status] ?? "muted"} label={t(appointmentStatusKey(appointment.status) as TranslationKey)} />
+          <T style={{ color: colors.faint, fontSize: 12 }}>{minutes}</T>
         </View>
-
-        {actions ? <View style={[styles.actions, { marginTop: 16 }]}>{actions}</View> : null}
+        {actions ? <View style={styles.actions}>{actions}</View> : null}
       </Card>
     );
   }
@@ -96,24 +102,24 @@ export function AppointmentCard({
     <Card style={{ padding: 16, opacity: faded ? 0.6 : 1 }}>
       <View style={styles.row}>
         <View style={{ width: 64, alignItems: "center" }}>
-          <Text style={[styles.money, { color: colors.ink, fontSize: 17, fontWeight: "700" }]}>
+          <T display style={{ color: colors.ink, fontSize: 16, fontWeight: "600" }}>
             {fmtTime(appointment.startAt)}
-          </Text>
-          <Text style={{ color: colors.soft, fontSize: 11, marginTop: 4, textAlign: "center" }}>
+          </T>
+          <T style={{ color: colors.soft, fontSize: 11, marginTop: 4, textAlign: "center" }}>
             {fmtDate(appointment.startAt)}
-          </Text>
+          </T>
         </View>
         <View style={{ width: StyleSheet.hairlineWidth, height: 40, backgroundColor: colors.line }} />
         <View style={{ flex: 1 }}>
-          <Text numberOfLines={1} style={{ color: colors.ink, fontWeight: "500", fontSize: 15 }}>
+          <T numberOfLines={1} style={{ color: colors.ink, fontWeight: "500", fontSize: 15 }}>
             {services}
-          </Text>
-          <Text numberOfLines={1} style={{ color: colors.soft, fontSize: 12, marginTop: 2 }}>
+          </T>
+          <T numberOfLines={1} style={{ color: colors.soft, fontSize: 12, marginTop: 2 }}>
             {barberName} · {minutes}
-          </Text>
+          </T>
         </View>
         <View style={{ alignItems: "flex-end", gap: 4 }}>
-          <Text style={[styles.money, { color: colors.ink, fontSize: 14 }]}>{fmtCurrency(appointment.totalPrice)}</Text>
+          <T style={[styles.money, { color: colors.ink, fontSize: 14 }]}>{fmtCurrency(appointment.totalPrice)}</T>
           <Pill
             tone={TONES[appointment.status] ?? "muted"}
             label={t(appointmentStatusKey(appointment.status) as TranslationKey)}
@@ -121,7 +127,7 @@ export function AppointmentCard({
         </View>
       </View>
       {appointment.notes ? (
-        <Text style={[styles.note, { backgroundColor: colors.accentSoft, color: colors.accent }]}>{appointment.notes}</Text>
+        <T style={[styles.note, { backgroundColor: colors.accentSoft, color: colors.accent }]}>{appointment.notes}</T>
       ) : null}
       {actions ? (
         <View style={[styles.actions, styles.divider, { borderTopColor: colors.line, marginTop: 12, paddingTop: 12 }]}>
@@ -134,9 +140,9 @@ export function AppointmentCard({
 
 const styles = StyleSheet.create({
   row: { flexDirection: "row", alignItems: "center", gap: 12 },
+  window: { width: 64, height: 84, alignItems: "center", justifyContent: "flex-end", paddingBottom: 10 },
   divider: { borderTopWidth: StyleSheet.hairlineWidth },
   actions: { flexDirection: "row", gap: 8 },
-  bigTime: { fontSize: 40, lineHeight: 44, marginTop: 12, fontVariant: ["tabular-nums"], fontWeight: "300" },
   money: { fontWeight: "600", fontVariant: ["tabular-nums"] },
-  note: { marginTop: 12, paddingHorizontal: 16, paddingVertical: 10, fontSize: 14, borderRadius: 3, overflow: "hidden" },
+  note: { marginTop: 12, paddingHorizontal: 16, paddingVertical: 10, fontSize: 14, borderRadius: 10, overflow: "hidden" },
 });

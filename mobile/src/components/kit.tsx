@@ -1,9 +1,10 @@
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
-import type { StyleProp, TextInputProps, ViewStyle } from "react-native";
+import type { StyleProp, TextInputProps, TextProps, ViewStyle } from "react-native";
 import { Image } from "expo-image";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { RADIUS, useTheme } from "@/lib/theme";
+import { useTranslation } from "@/lib/i18n";
+import { CARD_RADIUS, RADIUS, fontFamily, useTheme } from "@/lib/theme";
 
 /**
  * The pieces every screen is built from — the phone's version of the web app's
@@ -12,6 +13,30 @@ import { RADIUS, useTheme } from "@/lib/theme";
  */
 
 export type IconName = keyof typeof Ionicons.glyphMap;
+
+/**
+ * Text, in the app's type: IBM Plex Sans Arabic for reading, and with
+ * `display` the headings and big numbers — Reem Kufi in Arabic, Marcellus in
+ * English. The weight in the style chooses the font file, which is the only way
+ * a custom font gets its weights on Android.
+ */
+export function T({ display, style, ...rest }: TextProps & { display?: boolean }) {
+  const { colors } = useTheme();
+  const { lang } = useTranslation();
+  const flat = StyleSheet.flatten(style) ?? {};
+  return (
+    <Text
+      {...rest}
+      // Text starts on the reading side: a name or a number in an Arabic
+      // screen lines up with the Arabic around it instead of drifting left.
+      style={[
+        { color: colors.ink, textAlign: lang === "ar" ? "right" : "left" },
+        style,
+        { fontFamily: fontFamily(flat.fontWeight, lang, display), fontWeight: "normal" },
+      ]}
+    />
+  );
+}
 
 /** A scrolling screen with pull-to-refresh, padded clear of the notch. */
 export function Screen({
@@ -46,8 +71,8 @@ export function ScreenTitle({ title, hint }: { title: string; hint?: string }) {
   const { colors } = useTheme();
   return (
     <View>
-      <Text style={[styles.screenTitle, { color: colors.ink }]}>{title}</Text>
-      {hint ? <Text style={[styles.body, { color: colors.soft, marginTop: 4 }]}>{hint}</Text> : null}
+      <T display style={[styles.screenTitle, { color: colors.ink }]}>{title}</T>
+      {hint ? <T style={[styles.body, { color: colors.soft, marginTop: 4 }]}>{hint}</T> : null}
     </View>
   );
 }
@@ -56,7 +81,7 @@ export function SectionTitle({ children, action }: { children: string; action?: 
   const { colors } = useTheme();
   return (
     <View style={styles.sectionRow}>
-      <Text style={[styles.sectionTitle, { color: colors.soft }]}>{children.toUpperCase()}</Text>
+      <T style={[styles.sectionTitle, { color: colors.soft }]}>{children.toUpperCase()}</T>
       {action}
     </View>
   );
@@ -67,7 +92,7 @@ export function SectionLink({ label, onPress }: { label: string; onPress: () => 
   const { colors } = useTheme();
   return (
     <Pressable onPress={onPress} hitSlop={10}>
-      <Text style={{ color: colors.accent, fontSize: 12, fontWeight: "500" }}>{label}</Text>
+      <T style={{ color: colors.accent, fontSize: 12, fontWeight: "500" }}>{label}</T>
     </Pressable>
   );
 }
@@ -88,7 +113,7 @@ export function Card({
     backgroundColor: raised ? colors.raised : colors.surface,
     borderColor: raised ? colors.lineStrong : colors.line,
     borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: RADIUS,
+    borderRadius: CARD_RADIUS,
   };
   if (!onPress) return <View style={[box, style]}>{children}</View>;
   return (
@@ -134,7 +159,7 @@ export function Button({
         style,
       ]}
     >
-      {busy ? <ActivityIndicator color={fg} /> : <Text style={[styles.buttonText, { color: fg }]}>{label}</Text>}
+      {busy ? <ActivityIndicator color={fg} /> : <T style={[styles.buttonText, { color: fg }]}>{label}</T>}
     </Pressable>
   );
 }
@@ -155,7 +180,7 @@ export function Pill({ label, tone = "muted" }: { label: string; tone?: PillTone
   const t = tones[tone];
   return (
     <View style={[styles.pill, { backgroundColor: t.bg, borderColor: t.ring }]}>
-      <Text style={{ color: t.fg, fontSize: 11, fontWeight: "500" }}>{label}</Text>
+      <T style={{ color: t.fg, fontSize: 11, fontWeight: "500" }}>{label}</T>
     </View>
   );
 }
@@ -181,7 +206,7 @@ export function Avatar({ name, photo, size = 44 }: { name: string; photo?: strin
       {photo ? (
         <Image source={{ uri: photo }} style={{ width: size, height: size }} contentFit="cover" alt={name} />
       ) : (
-        <Text style={{ color: colors.mid, fontWeight: "600", fontSize: size * 0.4 }}>{initial}</Text>
+        <T style={{ color: colors.mid, fontWeight: "600", fontSize: size * 0.4 }}>{initial}</T>
       )}
     </View>
   );
@@ -204,8 +229,8 @@ export function EmptyState({
       <View style={[styles.emptyIcon, { backgroundColor: colors.bg }]}>
         <Ionicons name={icon} size={24} color={colors.soft} />
       </View>
-      <Text style={{ color: colors.ink, fontWeight: "500", fontSize: 15, textAlign: "center" }}>{title}</Text>
-      {hint ? <Text style={[styles.body, { color: colors.soft, marginTop: 4, textAlign: "center" }]}>{hint}</Text> : null}
+      <T style={{ color: colors.ink, fontWeight: "500", fontSize: 15, textAlign: "center" }}>{title}</T>
+      {hint ? <T style={[styles.body, { color: colors.soft, marginTop: 4, textAlign: "center" }]}>{hint}</T> : null}
       {action ? <View style={{ marginTop: 20, alignSelf: "stretch" }}>{action}</View> : null}
     </Card>
   );
@@ -213,7 +238,7 @@ export function EmptyState({
 
 export function Skeleton({ height = 96 }: { height?: number }) {
   const { colors } = useTheme();
-  return <View style={{ height, borderRadius: RADIUS, backgroundColor: colors.surface }} />;
+  return <View style={{ height, borderRadius: CARD_RADIUS, backgroundColor: colors.surface, opacity: 0.7 }} />;
 }
 
 /** A line of news in a box: something went wrong, or something to know. */
@@ -227,22 +252,23 @@ export function Notice({ text, tone = "bad" }: { text: string; tone?: "bad" | "w
   }[tone];
   return (
     <View style={[styles.notice, { backgroundColor: look[0], borderColor: look[1] }]}>
-      <Text style={{ color: look[2], fontSize: 14 }}>{text}</Text>
+      <T style={{ color: look[2], fontSize: 14 }}>{text}</T>
     </View>
   );
 }
 
 export function Field({ label, ...input }: { label?: string } & TextInputProps) {
   const { colors } = useTheme();
+  const { lang } = useTranslation();
   return (
     <View style={{ gap: 6 }}>
-      {label ? <Text style={[styles.label, { color: colors.soft }]}>{label}</Text> : null}
+      {label ? <T style={[styles.label, { color: colors.ink }]}>{label}</T> : null}
       <TextInput
         placeholderTextColor={colors.faint}
         {...input}
         style={[
           styles.input,
-          { color: colors.ink, backgroundColor: colors.bg, borderColor: colors.lineStrong },
+          { color: colors.ink, backgroundColor: colors.surface, borderColor: colors.lineStrong, fontFamily: fontFamily(400, lang) },
           input.style,
         ]}
       />
@@ -251,19 +277,19 @@ export function Field({ label, ...input }: { label?: string } & TextInputProps) 
 }
 
 const styles = StyleSheet.create({
-  screenTitle: { fontSize: 26, fontWeight: "700", letterSpacing: -0.3 },
+  screenTitle: { fontSize: 26, fontWeight: "700" },
   body: { fontSize: 14, lineHeight: 20 },
   sectionRow: { flexDirection: "row", alignItems: "baseline", justifyContent: "space-between", marginBottom: 12 },
-  sectionTitle: { fontSize: 11, fontWeight: "600", letterSpacing: 2 },
+  sectionTitle: { fontSize: 10, fontWeight: "600", letterSpacing: 2 },
   button: {
-    minHeight: 46,
+    minHeight: 48,
     paddingHorizontal: 18,
     borderRadius: RADIUS,
     borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
   },
-  buttonText: { fontSize: 14, fontWeight: "700", letterSpacing: 0.4 },
+  buttonText: { fontSize: 15, fontWeight: "600" },
   pill: {
     alignSelf: "flex-start",
     paddingHorizontal: 10,
@@ -273,6 +299,6 @@ const styles = StyleSheet.create({
   },
   emptyIcon: { width: 48, height: 48, borderRadius: 24, alignItems: "center", justifyContent: "center", marginBottom: 16 },
   notice: { borderWidth: 1, borderRadius: RADIUS, paddingHorizontal: 16, paddingVertical: 12 },
-  label: { fontSize: 11, fontWeight: "600", letterSpacing: 1.5, textTransform: "uppercase" },
+  label: { fontSize: 13, fontWeight: "600" },
   input: { borderWidth: 1, borderRadius: RADIUS, paddingHorizontal: 14, paddingVertical: 12, fontSize: 16 },
 });

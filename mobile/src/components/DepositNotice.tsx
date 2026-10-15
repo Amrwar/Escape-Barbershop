@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import { api } from "@/lib/api";
 import { useTranslation } from "@/lib/i18n";
 import { RADIUS, useTheme } from "@/lib/theme";
-import { Card } from "./kit";
+import { T, Card } from "./kit";
 
 /**
  * What to send, where, and what to write on it.
@@ -41,18 +41,18 @@ export function DepositNotice({ amount, reference }: { amount: number; reference
 
   return (
     <Card raised style={{ padding: 20, gap: 8 }}>
-      <Text style={[styles.kicker, { color: colors.accent }]}>
+      <T style={[styles.kicker, { color: colors.accent }]}>
         {t("app.depositNeeded", { amount: fmtCurrency(amount) }).toUpperCase()}
-      </Text>
+      </T>
 
       {instapay ? (
         <Pressable
           onPress={() => copy("number", instapay)}
           style={[styles.box, { borderColor: colors.line, backgroundColor: colors.surface, marginTop: 8 }]}
         >
-          <Text style={[styles.label, { color: colors.faint }]}>{t("app.depositTo").toUpperCase()}</Text>
-          <Text style={{ color: colors.ink, fontSize: 20, marginTop: 4, fontVariant: ["tabular-nums"] }}>{instapay}</Text>
-          {copied === "number" ? <Text style={{ color: colors.accent, fontSize: 11, marginTop: 4 }}>{t("app.referralCopied")}</Text> : null}
+          <T style={[styles.label, { color: colors.faint }]}>{t("app.depositTo").toUpperCase()}</T>
+          <T style={{ color: colors.ink, fontSize: 20, marginTop: 4, fontVariant: ["tabular-nums"] }}>{instapay}</T>
+          {copied === "number" ? <T style={{ color: colors.accent, fontSize: 11, marginTop: 4 }}>{t("app.referralCopied")}</T> : null}
         </Pressable>
       ) : null}
 
@@ -61,14 +61,14 @@ export function DepositNotice({ amount, reference }: { amount: number; reference
           onPress={() => copy("ref", reference)}
           style={[styles.box, { borderColor: colors.accent, borderStyle: "dashed", backgroundColor: colors.accentSoft }]}
         >
-          <Text style={[styles.label, { color: colors.faint }]}>{t("app.depositRef").toUpperCase()}</Text>
-          <Text style={{ color: colors.accent, fontSize: 18, fontWeight: "700", letterSpacing: 3, marginTop: 4 }}>{reference}</Text>
-          {copied === "ref" ? <Text style={{ color: colors.accent, fontSize: 11, marginTop: 4 }}>{t("app.referralCopied")}</Text> : null}
+          <T style={[styles.label, { color: colors.faint }]}>{t("app.depositRef").toUpperCase()}</T>
+          <T style={{ color: colors.accent, fontSize: 18, fontWeight: "700", letterSpacing: 3, marginTop: 4 }}>{reference}</T>
+          {copied === "ref" ? <T style={{ color: colors.accent, fontSize: 11, marginTop: 4 }}>{t("app.referralCopied")}</T> : null}
         </Pressable>
       ) : null}
 
       <View style={{ marginTop: 4 }}>
-        <Text style={{ color: colors.mid, fontSize: 14, lineHeight: 20 }}>{t("app.depositHold")}</Text>
+        <T style={{ color: colors.mid, fontSize: 14, lineHeight: 20 }}>{t("app.depositHold")}</T>
       </View>
     </Card>
   );

@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { api } from "@/lib/api";
 import { useTranslation } from "@/lib/i18n";
 import { useTheme } from "@/lib/theme";
 import type { Reviewable } from "@/lib/types";
-import { Avatar, Button, Card, Field } from "./kit";
+import { T, Avatar, Button, Card, Field } from "./kit";
 import { StarPicker, Stars } from "./Stars";
 
 /**
@@ -48,12 +48,12 @@ export function ReviewPrompt({ item }: { item: Reviewable }) {
       <View style={styles.row}>
         <Avatar name={item.barber?.name ?? "?"} photo={item.barber?.photo} size={40} />
         <View style={{ flex: 1 }}>
-          <Text numberOfLines={1} style={{ color: colors.ink, fontSize: 14, fontWeight: "500" }}>
+          <T numberOfLines={1} style={{ color: colors.ink, fontSize: 14, fontWeight: "500" }}>
             {item.barber ? t("app.rateWith", { name: item.barber.name }) : t("app.rate")}
-          </Text>
-          <Text numberOfLines={1} style={{ color: colors.soft, fontSize: 12 }}>
+          </T>
+          <T numberOfLines={1} style={{ color: colors.soft, fontSize: 12 }}>
             {fmtDate(item.startAt)} · {item.services.join(" + ")}
-          </Text>
+          </T>
         </View>
       </View>
 
@@ -62,8 +62,8 @@ export function ReviewPrompt({ item }: { item: Reviewable }) {
           <View style={[styles.row, { justifyContent: "space-between" }]}>
             <View style={{ flex: 1, gap: 6 }}>
               <Stars rating={rating} size={18} />
-              {comment ? <Text style={{ color: colors.mid, fontSize: 14 }}>{comment}</Text> : null}
-              <Text style={{ color: colors.good, fontSize: 12 }}>{t("app.rateThanks")}</Text>
+              {comment ? <T style={{ color: colors.mid, fontSize: 14 }}>{comment}</T> : null}
+              <T style={{ color: colors.good, fontSize: 12 }}>{t("app.rateThanks")}</T>
             </View>
             {item.canReview ? <Button tone="ghost" label={t("app.rateChange")} onPress={() => setEditing(true)} /> : null}
           </View>
@@ -85,7 +85,7 @@ export function ReviewPrompt({ item }: { item: Reviewable }) {
                 <Button label={t("app.rateSend")} onPress={save} busy={saving} />
               </>
             ) : null}
-            {error ? <Text style={{ color: colors.bad, fontSize: 12, textAlign: "center" }}>{error}</Text> : null}
+            {error ? <T style={{ color: colors.bad, fontSize: 12, textAlign: "center" }}>{error}</T> : null}
           </View>
         )}
       </View>

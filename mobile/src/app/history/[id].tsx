@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { Linking, Share, StyleSheet, Text, View } from "react-native";
+import { Linking, Share, StyleSheet, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { api } from "@/lib/api";
 import { useTranslation } from "@/lib/i18n";
 import { useTheme } from "@/lib/theme";
 import type { Receipt } from "@/lib/types";
-import { Button, Card, EmptyState, Screen, Skeleton } from "@/components/kit";
+import { T, Button, Card, EmptyState, Screen, Skeleton } from "@/components/kit";
 import { Stars } from "@/components/Stars";
 
 /**
@@ -90,27 +90,27 @@ export default function ReceiptScreen() {
     receipt.services.reduce((sum, s) => sum + s.price * s.quantity, 0) + receipt.products.reduce((sum, p) => sum + p.total, 0);
   const line = (key: string, label: string, quantity: number, amount: number) => (
     <View key={key} style={[styles.line, { borderTopColor: colors.line }]}>
-      <Text style={{ flex: 1, color: colors.mid, fontSize: 14 }}>
+      <T style={{ flex: 1, color: colors.mid, fontSize: 14 }}>
         {label}
-        {quantity > 1 ? <Text style={{ color: colors.soft }}> ×{quantity}</Text> : null}
-      </Text>
-      <Text style={{ color: colors.ink, fontSize: 14, fontVariant: ["tabular-nums"] }}>{fmtCurrency(amount)}</Text>
+        {quantity > 1 ? <T style={{ color: colors.soft }}> ×{quantity}</T> : null}
+      </T>
+      <T style={{ color: colors.ink, fontSize: 14, fontVariant: ["tabular-nums"] }}>{fmtCurrency(amount)}</T>
     </View>
   );
 
   return (
     <Screen padTop={false}>
-      <Text style={{ color: colors.soft, fontSize: 14 }}>
+      <T style={{ color: colors.soft, fontSize: 14 }}>
         {t("history.receiptNo")} {receipt.receiptNo}
-      </Text>
+      </T>
 
       <Card raised style={{ padding: 20 }}>
         <View style={styles.head}>
-          <Text style={{ color: colors.ink, fontSize: 14, fontWeight: "700", letterSpacing: 3.4 }}>
+          <T style={{ color: colors.ink, fontSize: 14, fontWeight: "700", letterSpacing: 3.4 }}>
             {receipt.shop.name.toUpperCase()}
-          </Text>
-          <Text style={{ color: colors.soft, fontSize: 12, marginTop: 4 }}>{fmtDateTime(receipt.visitAt)}</Text>
-          {receipt.barber ? <Text style={{ color: colors.accent, fontSize: 12, marginTop: 4 }}>{receipt.barber.name}</Text> : null}
+          </T>
+          <T style={{ color: colors.soft, fontSize: 12, marginTop: 4 }}>{fmtDateTime(receipt.visitAt)}</T>
+          {receipt.barber ? <T style={{ color: colors.accent, fontSize: 12, marginTop: 4 }}>{receipt.barber.name}</T> : null}
         </View>
 
         <View>
@@ -123,29 +123,29 @@ export default function ReceiptScreen() {
               the shop's business rather than a line on their copy. */}
           {Math.round(subtotal) !== Math.round(receipt.total) ? (
             <View style={styles.between}>
-              <Text style={{ color: colors.soft, fontSize: 12 }}>{t("field.subtotal")}</Text>
-              <Text style={{ color: colors.soft, fontSize: 12, fontVariant: ["tabular-nums"] }}>{fmtCurrency(subtotal)}</Text>
+              <T style={{ color: colors.soft, fontSize: 12 }}>{t("field.subtotal")}</T>
+              <T style={{ color: colors.soft, fontSize: 12, fontVariant: ["tabular-nums"] }}>{fmtCurrency(subtotal)}</T>
             </View>
           ) : null}
           <View style={styles.between}>
-            <Text style={{ color: colors.faint, fontSize: 10, fontWeight: "700", letterSpacing: 1.8 }}>
+            <T style={{ color: colors.faint, fontSize: 10, fontWeight: "700", letterSpacing: 1.8 }}>
               {t("field.total").toUpperCase()}
-            </Text>
-            <Text style={{ color: colors.accent, fontSize: 24, fontVariant: ["tabular-nums"] }}>{fmtCurrency(receipt.total)}</Text>
+            </T>
+            <T style={{ color: colors.accent, fontSize: 24, fontVariant: ["tabular-nums"] }}>{fmtCurrency(receipt.total)}</T>
           </View>
         </View>
 
         {receipt.rating !== null ? (
           <View style={[styles.rated, { borderTopColor: colors.line }]}>
-            <Text style={{ color: colors.soft, fontSize: 12 }}>{t("history.youRated")}</Text>
+            <T style={{ color: colors.soft, fontSize: 12 }}>{t("history.youRated")}</T>
             <Stars rating={receipt.rating} />
           </View>
         ) : null}
 
         {receipt.shop.phone ? (
-          <Text style={{ color: colors.faint, fontSize: 12, textAlign: "center", marginTop: 16, writingDirection: "ltr" }}>
+          <T style={{ color: colors.faint, fontSize: 12, textAlign: "center", marginTop: 16, writingDirection: "ltr" }}>
             {receipt.shop.phone}
-          </Text>
+          </T>
         ) : null}
       </Card>
 

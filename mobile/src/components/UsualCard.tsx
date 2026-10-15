@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import { router } from "expo-router";
 import { api, ApiError } from "@/lib/api";
 import { useTranslation } from "@/lib/i18n";
 import { RADIUS, useTheme } from "@/lib/theme";
 import type { Usual } from "@/lib/types";
-import { Avatar, Card } from "./kit";
+import { T, Avatar, Card } from "./kit";
 
 /**
  * "The usual" — their own habit, offered back to them.
@@ -45,15 +45,15 @@ export function UsualCard({ usual }: { usual: Usual }) {
       <View style={styles.row}>
         <Avatar name={usual.barber?.name ?? "?"} photo={usual.barber?.photo} size={40} />
         <View style={{ flex: 1 }}>
-          <Text numberOfLines={1} style={{ color: colors.ink, fontSize: 14, fontWeight: "500" }}>
+          <T numberOfLines={1} style={{ color: colors.ink, fontSize: 14, fontWeight: "500" }}>
             {serviceNames}
-          </Text>
-          <Text numberOfLines={1} style={{ color: colors.soft, fontSize: 12 }}>
+          </T>
+          <T numberOfLines={1} style={{ color: colors.soft, fontSize: 12 }}>
             {usual.barber ? usual.barber.name : t("appointments.anyBarber")} · {usual.durationMinutes}{" "}
             {t("appointments.minutesShort")}
-          </Text>
+          </T>
         </View>
-        <Text style={{ color: colors.accent, fontSize: 18, fontVariant: ["tabular-nums"] }}>{fmtCurrency(usual.price)}</Text>
+        <T style={{ color: colors.accent, fontSize: 18, fontVariant: ["tabular-nums"] }}>{fmtCurrency(usual.price)}</T>
       </View>
 
       <View style={[styles.times, { borderTopColor: colors.line }]}>
@@ -67,15 +67,15 @@ export function UsualCard({ usual }: { usual: Usual }) {
               { borderColor: colors.line, backgroundColor: colors.bg, opacity: booking && booking !== time ? 0.5 : pressed ? 0.8 : 1 },
             ]}
           >
-            <Text style={{ color: colors.ink, fontSize: 16, fontVariant: ["tabular-nums"] }}>{fmtTime(time)}</Text>
-            <Text style={{ color: colors.faint, fontSize: 10, letterSpacing: 1, marginTop: 2 }}>
+            <T style={{ color: colors.ink, fontSize: 16, fontVariant: ["tabular-nums"] }}>{fmtTime(time)}</T>
+            <T style={{ color: colors.faint, fontSize: 10, letterSpacing: 1, marginTop: 2 }}>
               {booking === time ? "…" : fmtDate(time).toUpperCase()}
-            </Text>
+            </T>
           </Pressable>
         ))}
       </View>
 
-      {error ? <Text style={{ color: colors.bad, fontSize: 12, textAlign: "center", marginTop: 12 }}>{error}</Text> : null}
+      {error ? <T style={{ color: colors.bad, fontSize: 12, textAlign: "center", marginTop: 12 }}>{error}</T> : null}
     </Card>
   );
 }

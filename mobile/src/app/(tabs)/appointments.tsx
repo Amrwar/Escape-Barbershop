@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, StyleSheet, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { api, ApiError } from "@/lib/api";
@@ -8,7 +8,7 @@ import { RADIUS, useTheme } from "@/lib/theme";
 import { useApi } from "@/lib/use-api";
 import { AppointmentCard, type CustomerAppointment } from "@/components/AppointmentCard";
 import { DepositNotice } from "@/components/DepositNotice";
-import { Button, EmptyState, Notice, Screen, ScreenTitle, Skeleton } from "@/components/kit";
+import { T, Button, EmptyState, Notice, Screen, ScreenTitle, Skeleton } from "@/components/kit";
 
 /** Everything the customer has booked: what is coming, and what has been. */
 export default function AppointmentsScreen() {
@@ -59,7 +59,7 @@ export default function AppointmentsScreen() {
           <View style={[styles.tick, { backgroundColor: colors.accent }]}>
             <Ionicons name="checkmark" size={16} color={colors.accentInk} />
           </View>
-          <Text style={{ flex: 1, color: colors.accent, fontSize: 14 }}>{t("app.bookedConfirmation")}</Text>
+          <T style={{ flex: 1, color: colors.accent, fontSize: 14 }}>{t("app.bookedConfirmation")}</T>
         </View>
       ) : null}
 
@@ -71,9 +71,9 @@ export default function AppointmentsScreen() {
               onPress={() => setTab(key)}
               style={[styles.segmentItem, tab === key && { backgroundColor: colors.raised }]}
             >
-              <Text style={{ color: tab === key ? colors.ink : colors.soft, fontSize: 14, fontWeight: "500" }}>
+              <T style={{ color: tab === key ? colors.ink : colors.soft, fontSize: 14, fontWeight: "500" }}>
                 {t(key === "upcoming" ? "app.upcoming" : "app.past")}
-              </Text>
+              </T>
             </Pressable>
           ))}
         </View>
