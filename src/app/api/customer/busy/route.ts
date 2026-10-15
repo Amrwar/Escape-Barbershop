@@ -25,17 +25,24 @@ export const dynamic = "force-dynamic";
 /** How far back to read the shop's own rhythm. Long enough to be a pattern. */
 const HISTORY_DAYS = 120;
 
+/** Longer than the longest service, so a cut that started before midnight is still live after it. */
+const LIVE_LOOKBACK_MS = 4 * 60 * 60 * 1000;
+
 export async function GET() {
   try {
     const settings = await getBookingSettings();
     const now = Date.now();
     const today = shopDateISO(now, settings.timezone);
     const dayStart = new Date(shopTime(today, 0, settings.timezone));
+    // The shop is open until midnight, so somebody still in the chair at five
+    // past is still in the chair. The earlier of the day's start and a few hours
+    // ago keeps them, while a cut nobody closed yesterday still does not count.
+    const liveSince = new Date(Math.min(dayStart.getTime(), now - LIVE_LOOKBACK_MS));
 
     const [live, history] = await Promise.all([
       prisma.appointment.findMany({
         where: {
-          startAt: { gte: dayStart },
+          startAt: { gte: liveSince },
           status: { in: ["CHECKED_IN", "IN_PROGRESS"] },
         },
         orderBy: { startAt: "asc" },

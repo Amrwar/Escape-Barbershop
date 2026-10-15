@@ -189,6 +189,23 @@ describe("how busy it is", () => {
     expect(answer.live.inChair).toBe(1);
   });
 
+  it("does not count a cut somebody forgot to close yesterday", async () => {
+    const start = new Date(Date.now() - 26 * 60 * 60_000);
+    await testPrisma().appointment.create({
+      data: {
+        customerId: shop.customer.id,
+        barberId: shop.barbers.abdullah,
+        startAt: start,
+        endAt: new Date(start.getTime() + 30 * 60_000),
+        durationMinutes: 30,
+        totalPrice: 150,
+        status: "IN_PROGRESS",
+      },
+    });
+
+    expect((await (await busy()).json()).live).toBeNull();
+  });
+
   it("is open to anybody, because it is what the wall already says to the room", async () => {
     session = null;
     expect((await busy()).status).toBe(200);
