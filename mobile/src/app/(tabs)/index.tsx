@@ -7,7 +7,7 @@ import { useTranslation, type TranslationKey } from "@/lib/i18n";
 import { RADIUS, useTheme } from "@/lib/theme";
 import { useApi } from "@/lib/use-api";
 import { AppointmentCard, type CustomerAppointment } from "@/components/AppointmentCard";
-import { Avatar, Card, EmptyState, Screen, ScreenTitle, SectionLink, SectionTitle, Skeleton, type IconName } from "@/components/kit";
+import { Avatar, Button, Card, EmptyState, Screen, ScreenTitle, SectionLink, SectionTitle, Skeleton, type IconName } from "@/components/kit";
 import type { Catalog } from "@/lib/types";
 
 /**
@@ -56,10 +56,24 @@ export default function HomeScreen() {
             <SectionTitle action={<SectionLink label={t("app.seeAll")} onPress={() => router.push("/appointments")} />}>
               {t("app.nextAppointment")}
             </SectionTitle>
-            <AppointmentCard appointment={next} highlight />
+            <AppointmentCard
+              appointment={next}
+              highlight
+              actions={
+                <>
+                  <Button tone="secondary" label={t("app.manage")} onPress={() => router.push("/appointments")} style={{ flex: 1 }} />
+                  <Button label={t("app.bookAnother")} onPress={() => router.push("/book")} style={{ flex: 1 }} />
+                </>
+              }
+            />
           </>
         ) : (
-          <EmptyState icon="cut-outline" title={t("app.nothingBooked")} hint={t("app.bookingComing")} />
+          <EmptyState
+            icon="cut-outline"
+            title={t("app.nothingBooked")}
+            hint={t("app.nothingBookedHint")}
+            action={<Button label={t("app.bookNow")} onPress={() => router.push("/book")} />}
+          />
         )}
       </View>
 
@@ -137,13 +151,13 @@ export default function HomeScreen() {
       )}
 
       <View style={styles.grid}>
-        <QuickLink icon="receipt-outline" label={t("prices.title")} hint={t("prices.hint")} onPress={() => router.push("/prices")} />
         <QuickLink
-          icon="calendar-outline"
-          label={t("app.myAppointments")}
-          hint={t("app.historyHint")}
-          onPress={() => router.push("/appointments")}
+          icon="add-circle-outline"
+          label={t("app.bookAppointment")}
+          hint={t("app.bookAppointmentHint")}
+          onPress={() => router.push("/book")}
         />
+        <QuickLink icon="receipt-outline" label={t("prices.title")} hint={t("prices.hint")} onPress={() => router.push("/prices")} />
       </View>
     </Screen>
   );

@@ -39,7 +39,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setApiToken(session.token);
     setUser(session.user);
     setStatus("signedIn");
-    await SecureStore.setItemAsync(KEY, session.token);
+    // Somewhere it cannot be kept (the browser preview has no secure store),
+    // the login simply lasts until the app closes.
+    await SecureStore.setItemAsync(KEY, session.token).catch(() => undefined);
   }, []);
 
   const signOut = useCallback(async () => {

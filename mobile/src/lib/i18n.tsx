@@ -3,11 +3,13 @@ import { getLocales } from "expo-localization";
 import * as SecureStore from "expo-secure-store";
 import en, { type TranslationKey } from "../../../messages/en";
 import ar from "../../../messages/ar";
+import { useShop } from "./shop";
 
 /**
  * English and Arabic, from the very same dictionaries the web app uses, so a
  * word changed for the website changes here too. Formatting matches the web
- * app's: Western digits in Arabic, two decimals on money.
+ * app's: Western digits in Arabic, two decimals on money. Dates and times are on
+ * the shop's clock, never the phone's (see ./shop).
  */
 
 export type Language = "en" | "ar";
@@ -37,6 +39,7 @@ function phoneLanguage(): Language {
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [lang, setLangState] = useState<Language>(phoneLanguage);
+  const { timeZone } = useShop();
 
   useEffect(() => {
     SecureStore.getItemAsync(KEY)
@@ -54,8 +57,8 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo<I18nValue>(() => {
     const locale = lang === "ar" ? AR_LOCALE : "en-US";
     const money = new Intl.NumberFormat(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    const date = new Intl.DateTimeFormat(locale, { day: "numeric", month: "short", year: "numeric" });
-    const time = new Intl.DateTimeFormat(locale, { hour: "numeric", minute: "2-digit", hour12: lang === "en" });
+    const date = new Intl.DateTimeFormat(locale, { day: "numeric", month: "short", year: "numeric", timeZone });
+    const time = new Intl.DateTimeFormat(locale, { hour: "numeric", minute: "2-digit", hour12: lang === "en", timeZone });
     const asDate = (d: Date | string) => (typeof d === "string" ? new Date(d) : d);
 
     return {
@@ -71,7 +74,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       fmtDate: (d) => date.format(asDate(d)),
       fmtTime: (d) => time.format(asDate(d)),
     };
-  }, [lang, setLang]);
+  }, [lang, setLang, timeZone]);
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }

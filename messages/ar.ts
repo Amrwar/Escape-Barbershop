@@ -1335,7 +1335,6 @@ const ar: Record<TranslationKey, string> = {
   "app.themeSystem": "مثل الهاتف",
   "app.themeDark": "داكن",
   "app.themeLight": "فاتح",
-  "app.bookingComing": "الحجز من التطبيق قادم قريبًا — احجز الآن من الموقع أو في المحل",
 };
 
 export default ar;

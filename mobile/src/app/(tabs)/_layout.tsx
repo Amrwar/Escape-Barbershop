@@ -5,11 +5,7 @@ import { useTranslation } from "@/lib/i18n";
 import { useTheme } from "@/lib/theme";
 import type { IconName } from "@/components/kit";
 
-/**
- * The places a signed-in customer moves between. Booking is not a tab yet: it
- * is the next screen to be built, and a tab that leads nowhere is worse than
- * none.
- */
+/** The four places a signed-in customer moves between, as on the web. */
 export default function TabsLayout() {
   const { colors } = useTheme();
   const { t } = useTranslation();
@@ -31,6 +27,7 @@ export default function TabsLayout() {
       }}
     >
       <Tabs.Screen name="index" options={{ title: t("app.navHome"), tabBarIcon: icon("cut-outline") }} />
+      <Tabs.Screen name="book" options={{ title: t("app.navBook"), tabBarIcon: icon("add-circle-outline") }} />
       <Tabs.Screen name="appointments" options={{ title: t("app.navAppointments"), tabBarIcon: icon("calendar-outline") }} />
       <Tabs.Screen name="profile" options={{ title: t("app.navProfile"), tabBarIcon: icon("person-outline") }} />
     </Tabs>

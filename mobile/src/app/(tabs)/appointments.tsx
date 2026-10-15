@@ -1,22 +1,33 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import { router, useLocalSearchParams } from "expo-router";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { api, ApiError } from "@/lib/api";
 import { useTranslation } from "@/lib/i18n";
 import { RADIUS, useTheme } from "@/lib/theme";
 import { useApi } from "@/lib/use-api";
 import { AppointmentCard, type CustomerAppointment } from "@/components/AppointmentCard";
+import { DepositNotice } from "@/components/DepositNotice";
 import { Button, EmptyState, Notice, Screen, ScreenTitle, Skeleton } from "@/components/kit";
 
 /** Everything the customer has booked: what is coming, and what has been. */
 export default function AppointmentsScreen() {
   const { colors } = useTheme();
-  const { t, fmtCurrency } = useTranslation();
+  const { t } = useTranslation();
   const [tab, setTab] = useState<"upcoming" | "past">("upcoming");
   const { data: items, error: loadError, refreshing, refresh, reload } = useApi<CustomerAppointment[]>(
     `/api/customer/appointments?scope=${tab}`
   );
   const [error, setError] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
+
+  // Arriving straight from a booking: say so, briefly, then let it go.
+  const { booked } = useLocalSearchParams<{ booked?: string }>();
+  useEffect(() => {
+    if (!booked) return;
+    const timer = setTimeout(() => router.setParams({ booked: undefined }), 7000);
+    return () => clearTimeout(timer);
+  }, [booked]);
 
   const cancel = (a: CustomerAppointment) =>
     Alert.alert(t("app.cancelConfirm"), undefined, [
@@ -42,6 +53,15 @@ export default function AppointmentsScreen() {
   return (
     <Screen refreshing={refreshing} onRefresh={refresh}>
       <ScreenTitle title={t("app.myAppointments")} />
+
+      {booked ? (
+        <View style={[styles.booked, { borderColor: colors.accent, backgroundColor: colors.accentSoft }]}>
+          <View style={[styles.tick, { backgroundColor: colors.accent }]}>
+            <Ionicons name="checkmark" size={16} color={colors.accentInk} />
+          </View>
+          <Text style={{ flex: 1, color: colors.accent, fontSize: 14 }}>{t("app.bookedConfirmation")}</Text>
+        </View>
+      ) : null}
 
       <View style={{ gap: 20 }}>
         <View style={[styles.segment, { borderColor: colors.line, backgroundColor: colors.surface }]}>
@@ -78,7 +98,8 @@ export default function AppointmentsScreen() {
           <EmptyState
             icon={tab === "upcoming" ? "calendar-outline" : "list-outline"}
             title={t(tab === "upcoming" ? "app.nothingBooked" : "app.noHistory")}
-            hint={tab === "upcoming" ? t("app.bookingComing") : undefined}
+            hint={tab === "upcoming" ? t("app.nothingBookedHint") : undefined}
+            action={tab === "upcoming" ? <Button label={t("app.bookNow")} onPress={() => router.push("/book")} /> : undefined}
           />
         ) : (
           <View style={{ gap: 8 }}>
@@ -86,12 +107,7 @@ export default function AppointmentsScreen() {
               <View key={a.id} style={{ gap: 8 }}>
                 {/* Money still owed to hold the chair, shown above the chair it holds. */}
                 {a.depositStatus === "EXPECTED" && (a.depositAmount ?? 0) > 0 && (
-                  <Notice
-                    tone="warn"
-                    text={`${t("app.depositNeeded", { amount: fmtCurrency(a.depositAmount!) })}${
-                      a.depositRef ? ` · ${t("app.depositRef")}: ${a.depositRef}` : ""
-                    }`}
-                  />
+                  <DepositNotice amount={a.depositAmount!} reference={a.depositRef ?? null} />
                 )}
                 <AppointmentCard
                   appointment={a}
@@ -105,7 +121,9 @@ export default function AppointmentsScreen() {
                         onPress={() => cancel(a)}
                         style={{ flex: 1 }}
                       />
-                    ) : undefined
+                    ) : (
+                      <Button tone="ghost" label={t("app.bookAgain")} onPress={() => router.push("/book")} style={{ flex: 1 }} />
+                    )
                   }
                 />
               </View>
@@ -120,4 +138,6 @@ export default function AppointmentsScreen() {
 const styles = StyleSheet.create({
   segment: { flexDirection: "row", gap: 4, padding: 4, borderWidth: 1, borderRadius: RADIUS },
   segmentItem: { flex: 1, paddingVertical: 9, borderRadius: RADIUS, alignItems: "center" },
+  booked: { flexDirection: "row", alignItems: "center", gap: 12, borderWidth: 1, borderRadius: 4, paddingHorizontal: 16, paddingVertical: 12 },
+  tick: { width: 32, height: 32, borderRadius: 16, alignItems: "center", justifyContent: "center" },
 });

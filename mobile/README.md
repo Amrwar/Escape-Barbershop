@@ -8,13 +8,15 @@ face on the same server.
 
 - **Sign in and sign up** with a phone number and password, exactly as on the web
 - **Home** — the next appointment, anything else booked, running offers, the barbers
-- **Bookings** — upcoming and past, with cancelling and any deposit still owed
+- **Book** — service, barber, time, confirm. Only times the server says are free, shown
+  in the shop's time zone; a full day offers the waitlist instead of a dead end
+- **Bookings** — upcoming and past, with cancelling, and any deposit still owed with the
+  InstaPay number and reference one tap to copy
 - **Profile** — who they are to the shop, English or Arabic, dark or light, sign out
 - **The price list** — open before signing in, as on the web
 
-Not yet: **booking itself**, then the usual, the busy card, loyalty, reviews, history,
-receipts, profile editing and push notifications. Until booking is in, the app says so
-rather than showing a button that leads nowhere.
+Not yet: the usual, the busy card, loyalty, reviews, history, receipts, profile editing,
+and push notifications.
 
 ## How it signs in
 
@@ -56,6 +58,19 @@ EXPO_PUBLIC_API_URL=http://192.168.1.20:3100
 
 The demo needs this branch deployed before sign-in works there: the token route is new.
 
+### In a browser
+
+For a quick look without a phone, against the local shop from `docker compose up`
+(its own database and demo data, never the real shop):
+
+```sh
+DEV_API_PROXY=http://localhost:3100 EXPO_PUBLIC_API_URL=http://localhost:8081 npx expo start --web
+```
+
+The dev server passes `/api/*` through to the shop, so the page calls its own origin and
+the API needs no CORS rules. The browser has no secure storage, so a login there lasts
+until the tab closes. It is a preview; the phone is what ships.
+
 ## Checks
 
 ```sh
@@ -67,8 +82,10 @@ npx expo-doctor       # dependencies match the SDK
 CI runs all three and bundles for Android on every push.
 
 `package.json` pins `react-native-reanimated`, `react-native-worklets` and `react-dom`
-through `overrides` to the versions SDK 57 lists. Without them `expo-router` pulls newer
-releases than the SDK allows, and every later `npm install` fails on the conflict.
+through `overrides` to the versions SDK 57 lists — `react-dom` by reference to its own
+entry, which npm requires once a package is both a dependency and an override. Without
+them `expo-router` pulls newer releases than the SDK allows, and every later
+`npm install` fails on the conflict.
 Remove them when moving to the next SDK, then run `npx expo install --fix`.
 
 ## Shipping it

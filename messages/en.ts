@@ -1333,7 +1333,6 @@ const en = {
   "app.themeSystem": "Like the phone",
   "app.themeDark": "Dark",
   "app.themeLight": "Light",
-  "app.bookingComing": "Booking from the app is on its way — for now, book on the website or at the counter",
 } as const;
 
 export type TranslationKey = keyof typeof en;

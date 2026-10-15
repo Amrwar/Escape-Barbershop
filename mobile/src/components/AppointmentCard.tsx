@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from "react-native";
 import { appointmentStatusKey } from "../../../src/lib/appointments";
 import { useTranslation, type TranslationKey } from "@/lib/i18n";
+import { shopDateOf, useShop } from "@/lib/shop";
 import { useTheme } from "@/lib/theme";
 import { Avatar, Card, Pill, type PillTone } from "./kit";
 
@@ -30,11 +31,10 @@ const TONES: Record<string, PillTone> = {
   NO_SHOW: "bad",
 };
 
-/** How far off it is, in words: "today", "tomorrow", "in 3 days". */
-function whenText(startAt: string, t: ReturnType<typeof useTranslation>["t"]): string {
-  const start = new Date(startAt);
-  const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
-  const days = Math.round((startOfDay(start) - startOfDay(new Date())) / 86_400_000);
+/** How far off it is, in words: "today", "tomorrow", "in 3 days" — by the shop's calendar. */
+function whenText(startAt: string, timeZone: string, t: ReturnType<typeof useTranslation>["t"]): string {
+  const day = (moment: Date | number) => Date.parse(`${shopDateOf(moment, timeZone)}T00:00:00Z`);
+  const days = Math.round((day(new Date(startAt)) - day(Date.now())) / 86_400_000);
   if (days < 0) return t("app.past");
   if (days === 0) return t("app.today");
   if (days === 1) return t("app.tomorrow");
@@ -56,6 +56,7 @@ export function AppointmentCard({
 }) {
   const { colors } = useTheme();
   const { t, fmtCurrency, fmtDate, fmtTime } = useTranslation();
+  const { timeZone } = useShop();
   const services = appointment.services.map((s) => s.serviceName).join(" + ");
   const barberName = appointment.barber?.name ?? t("appointments.anyBarber");
   const faded = appointment.status === "CANCELLED" || appointment.status === "NO_SHOW";
@@ -66,7 +67,7 @@ export function AppointmentCard({
       <Card raised style={{ padding: 20, borderTopColor: colors.accent, borderTopWidth: 1 }}>
         <View style={styles.row}>
           <View style={{ flex: 1 }}>
-            <Pill tone="brass" label={whenText(appointment.startAt, t)} />
+            <Pill tone="brass" label={whenText(appointment.startAt, timeZone, t)} />
             <Text style={[styles.bigTime, { color: colors.ink }]}>{fmtTime(appointment.startAt)}</Text>
             <Text style={{ color: colors.soft, fontSize: 14, marginTop: 6 }}>{fmtDate(appointment.startAt)}</Text>
           </View>

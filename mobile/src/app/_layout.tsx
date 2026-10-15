@@ -4,17 +4,20 @@ import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { LanguageProvider, useTranslation } from "@/lib/i18n";
+import { ShopProvider } from "@/lib/shop";
 import { ThemeProvider, useTheme } from "@/lib/theme";
 
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <ThemeProvider>
-        <LanguageProvider>
-          <AuthProvider>
-            <Navigator />
-          </AuthProvider>
-        </LanguageProvider>
+        <ShopProvider>
+          <LanguageProvider>
+            <AuthProvider>
+              <Navigator />
+            </AuthProvider>
+          </LanguageProvider>
+        </ShopProvider>
       </ThemeProvider>
     </SafeAreaProvider>
   );
