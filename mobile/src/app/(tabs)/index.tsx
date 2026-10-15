@@ -10,6 +10,7 @@ import { AppointmentCard, type CustomerAppointment } from "@/components/Appointm
 import { Avatar, Button, Card, EmptyState, Screen, ScreenTitle, SectionLink, SectionTitle, Skeleton, type IconName } from "@/components/kit";
 import type { Catalog, Me, Reviewable, Usual } from "@/lib/types";
 import { ReviewPrompt } from "@/components/ReviewPrompt";
+import { BusyCard } from "@/components/BusyCard";
 import { LoyaltyCard } from "@/components/LoyaltyCard";
 import { UsualCard } from "@/components/UsualCard";
 
@@ -95,6 +96,10 @@ export default function HomeScreen() {
           <UsualCard usual={habit} />
         </View>
       )}
+
+      {/* Under the usual on purpose: first what they came for, then whether now
+          is the moment to act on it. It hides itself when it has nothing honest to say. */}
+      <BusyCard />
 
       {/* Only when there is something to collect; the card itself lives on the profile. */}
       {loyalty && loyalty.available > 0 && (

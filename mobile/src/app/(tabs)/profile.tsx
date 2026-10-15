@@ -9,6 +9,7 @@ import { useApi } from "@/lib/use-api";
 import type { Me } from "@/lib/types";
 import { Avatar, Button, Card, Screen, ScreenTitle, SectionTitle, Skeleton } from "@/components/kit";
 import { LoyaltyCard } from "@/components/LoyaltyCard";
+import { ReferralCard, type Referral } from "@/components/ReferralCard";
 
 /**
  * Who they are to the shop, their card and their history, and how the app
@@ -22,6 +23,8 @@ export default function ProfileScreen() {
   const { choice, setChoice } = useTheme();
   const { signOut } = useAuth();
   const { data: me, refreshing, refresh } = useApi<Me>("/api/customer/me");
+  // Only while the shop runs referrals; the code is made the first time it is asked for.
+  const { data: referral } = useApi<({ enabled: true } & Referral) | { enabled: false }>("/api/customer/referral");
 
   return (
     <Screen refreshing={refreshing} onRefresh={refresh}>
@@ -60,6 +63,13 @@ export default function ProfileScreen() {
         <View>
           <SectionTitle>{t("app.loyaltyTitle")}</SectionTitle>
           <LoyaltyCard loyalty={me.loyalty} />
+        </View>
+      ) : null}
+
+      {referral?.enabled ? (
+        <View>
+          <SectionTitle>{t("app.referralTitle")}</SectionTitle>
+          <ReferralCard referral={referral} />
         </View>
       ) : null}
 
