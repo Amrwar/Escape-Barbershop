@@ -232,11 +232,11 @@ export function Notice({ text, tone = "bad" }: { text: string; tone?: "bad" | "w
   );
 }
 
-export function Field({ label, ...input }: { label: string } & TextInputProps) {
+export function Field({ label, ...input }: { label?: string } & TextInputProps) {
   const { colors } = useTheme();
   return (
     <View style={{ gap: 6 }}>
-      <Text style={[styles.label, { color: colors.soft }]}>{label}</Text>
+      {label ? <Text style={[styles.label, { color: colors.soft }]}>{label}</Text> : null}
       <TextInput
         placeholderTextColor={colors.faint}
         {...input}

@@ -61,7 +61,8 @@ function Navigator() {
         </Stack.Protected>
         <Stack.Screen name="prices" options={{ title: t("prices.title") }} />
         <Stack.Protected guard={signedIn}>
-          <Stack.Screen name="history" options={{ title: t("history.title") }} />
+          <Stack.Screen name="history/index" options={{ title: t("history.title") }} />
+          <Stack.Screen name="history/[id]" options={{ title: t("history.receipt") }} />
         </Stack.Protected>
       </Stack>
     </View>

@@ -8,19 +8,19 @@ face on the same server.
 
 - **Sign in and sign up** with a phone number and password, exactly as on the web
 - **Home** — the next appointment, "the usual" (their own habit with the free times nearest
-  their hour, one tap to book), the loyalty card when a reward is waiting, anything else
-  booked, running offers, the barbers
+  their hour, one tap to book), the loyalty card when a reward is waiting, "how was it?"
+  for the last cut they have not rated, anything else booked, running offers, the barbers
 - **Book** — service, barber, time, confirm. Only times the server says are free, shown
   in the shop's time zone; a full day offers the waitlist instead of a dead end
 - **Bookings** — upcoming and past, with cancelling, and any deposit still owed with the
   InstaPay number and reference one tap to copy
 - **Profile** — who they are to the shop, the loyalty card, English or Arabic, dark or
   light, sign out
-- **Your haircuts** — every visit the shop has on record, newest first, twenty at a time
+- **Your haircuts** — every visit the shop has on record, newest first, twenty at a time;
+  each opens as a receipt they can send on WhatsApp or through the phone's share sheet
 - **The price list** — open before signing in, as on the web
 
-Not yet: the busy card, reviews, a receipt for each visit, referrals, profile editing, and
-push notifications.
+Not yet: the busy card, referrals, profile editing, and push notifications.
 
 ## How it signs in
 

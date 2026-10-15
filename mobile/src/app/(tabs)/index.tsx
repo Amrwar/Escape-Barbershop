@@ -8,7 +8,8 @@ import { RADIUS, useTheme } from "@/lib/theme";
 import { useApi } from "@/lib/use-api";
 import { AppointmentCard, type CustomerAppointment } from "@/components/AppointmentCard";
 import { Avatar, Button, Card, EmptyState, Screen, ScreenTitle, SectionLink, SectionTitle, Skeleton, type IconName } from "@/components/kit";
-import type { Catalog, Me, Usual } from "@/lib/types";
+import type { Catalog, Me, Reviewable, Usual } from "@/lib/types";
+import { ReviewPrompt } from "@/components/ReviewPrompt";
 import { LoyaltyCard } from "@/components/LoyaltyCard";
 import { UsualCard } from "@/components/UsualCard";
 
@@ -32,6 +33,7 @@ export default function HomeScreen() {
   const catalog = useApi<Catalog>("/api/customer/catalog");
   const usual = useApi<{ usual: Usual | null }>("/api/customer/usual");
   const me = useApi<Me>("/api/customer/me");
+  const reviews = useApi<Reviewable[]>("/api/customer/reviews");
 
   const refresh = () => {
     void upcoming.refresh();
@@ -47,6 +49,8 @@ export default function HomeScreen() {
   const offers = catalog.data?.offers.slice(0, 2) ?? [];
   const habit = usual.data?.usual?.times.length ? usual.data.usual : null;
   const loyalty = me.data?.loyalty ?? null;
+  // The last cut they have not said anything about — asked once, here.
+  const toRate = reviews.data?.find((r) => r.canReview && !r.review) ?? null;
 
   return (
     <Screen refreshing={upcoming.refreshing} onRefresh={refresh}>
@@ -97,6 +101,14 @@ export default function HomeScreen() {
         <View>
           <SectionTitle>{t("app.loyaltyTitle")}</SectionTitle>
           <LoyaltyCard loyalty={loyalty} />
+        </View>
+      )}
+
+      {toRate && (
+        <View>
+          <SectionTitle>{t("app.rate")}</SectionTitle>
+          {/* Keyed by the cut, so answering one never carries its stars to the next. */}
+          <ReviewPrompt key={toRate.appointmentId ?? toRate.visitId} item={toRate} />
         </View>
       )}
 

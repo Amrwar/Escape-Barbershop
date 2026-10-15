@@ -29,6 +29,7 @@ interface I18nValue {
   fmtCurrency: (n: number) => string;
   fmtDate: (date: Date | string) => string;
   fmtTime: (date: Date | string) => string;
+  fmtDateTime: (date: Date | string) => string;
 }
 
 const I18nContext = createContext<I18nValue | null>(null);
@@ -59,6 +60,15 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     const money = new Intl.NumberFormat(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const date = new Intl.DateTimeFormat(locale, { day: "numeric", month: "short", year: "numeric", timeZone });
     const time = new Intl.DateTimeFormat(locale, { hour: "numeric", minute: "2-digit", hour12: lang === "en", timeZone });
+    const dateTime = new Intl.DateTimeFormat(locale, {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: lang === "en",
+      timeZone,
+    });
     const asDate = (d: Date | string) => (typeof d === "string" ? new Date(d) : d);
 
     return {
@@ -73,6 +83,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       fmtCurrency: (n) => money.format(n),
       fmtDate: (d) => date.format(asDate(d)),
       fmtTime: (d) => time.format(asDate(d)),
+      fmtDateTime: (d) => dateTime.format(asDate(d)),
     };
   }, [lang, setLang, timeZone]);
 

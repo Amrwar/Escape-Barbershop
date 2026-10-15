@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
-import Ionicons from "@expo/vector-icons/Ionicons";
+import { router } from "expo-router";
 import { api } from "@/lib/api";
 import { useTranslation } from "@/lib/i18n";
 import { useTheme } from "@/lib/theme";
 import type { Visit } from "@/lib/types";
 import { Avatar, Button, Card, EmptyState, Screen, Skeleton } from "@/components/kit";
+import { Stars } from "@/components/Stars";
 
 /**
  * Every haircut the shop has a record of, which for a regular here is years of
@@ -67,7 +68,11 @@ export default function HistoryScreen() {
       ) : (
         <View style={{ gap: 8 }}>
           {visits.map((visit) => (
-            <Card key={visit.id} style={[styles.row, { padding: 16 }]}>
+            <Card
+              key={visit.id}
+              onPress={() => router.push({ pathname: "/history/[id]", params: { id: visit.id } })}
+              style={[styles.row, { padding: 16 }]}
+            >
               <View style={{ flex: 1 }}>
                 <Text style={{ color: colors.ink, fontSize: 17 }}>{fmtDate(visit.visitAt)}</Text>
                 <Text style={{ color: colors.mid, fontSize: 14, marginTop: 8 }}>
@@ -79,10 +84,8 @@ export default function HistoryScreen() {
                   </Text>
                 ) : null}
                 {visit.rating !== null ? (
-                  <View style={{ flexDirection: "row", gap: 2, marginTop: 8 }}>
-                    {[1, 2, 3, 4, 5].map((n) => (
-                      <Ionicons key={n} name={n <= visit.rating! ? "star" : "star-outline"} size={12} color={colors.accent} />
-                    ))}
+                  <View style={{ marginTop: 8 }}>
+                    <Stars rating={visit.rating} />
                   </View>
                 ) : null}
               </View>
