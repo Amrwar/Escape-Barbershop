@@ -5,6 +5,8 @@ import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
 import { CUSTOMER_IDLE_TIMEOUT_MS, isPastMaxSession, tokenLifetimeSeconds } from "./session-policy";
 import { normalizePhone } from "./customers";
+import { headers } from "next/headers";
+import { bearerFrom, sessionFromToken } from "./mobile-token";
 
 export const authOptions: NextAuthOptions = {
   session: {
@@ -33,22 +35,8 @@ export const authOptions: NextAuthOptions = {
         if (!credentials?.email || !credentials?.password) {
           return null;
         }
-
-        // Staff sign in with an email, customers with their phone number.
-        const identifier = credentials.email.trim();
-        const phone = normalizePhone(identifier);
-        const user = await prisma.user.findFirst({
-          where: identifier.includes("@") ? { email: identifier } : phone ? { phone } : { email: identifier },
-          include: { barber: true },
-        });
-
+        const user = await verifyCredentials(credentials.email, credentials.password);
         if (!user) return null;
-
-        const passwordValid = await bcrypt.compare(
-          credentials.password,
-          user.password
-        );
-        if (!passwordValid) return null;
 
         return {
           id: user.id,
@@ -89,7 +77,41 @@ export const authOptions: NextAuthOptions = {
   },
 };
 
-export const getSession = () => getServerSession(authOptions);
+/**
+ * The login behind an email or phone number and a password, or null. Shared by
+ * the browser's sign-in and the phone app's, so both refuse the same things.
+ */
+export async function verifyCredentials(identifier: string, password: string) {
+  if (!identifier || !password) return null;
+
+  // Staff sign in with an email, customers with their phone number.
+  const typed = identifier.trim();
+  const phone = normalizePhone(typed);
+  const user = await prisma.user.findFirst({
+    where: typed.includes("@") ? { email: typed } : phone ? { phone } : { email: typed },
+  });
+  if (!user) return null;
+
+  return (await bcrypt.compare(password, user.password)) ? user : null;
+}
+
+/** The phone app's bearer token, when there is a request to read it from. */
+async function bearerSession() {
+  let header: string | null = null;
+  try {
+    header = headers().get("authorization");
+  } catch {
+    // Called outside a request — a script, a test — so there is no header.
+    return null;
+  }
+  return sessionFromToken(bearerFrom(header));
+}
+
+/**
+ * The browser's cookie first, then the phone app's bearer token. Either way the
+ * result has the same shape, so no route needs to know which door was used.
+ */
+export const getSession = async () => (await getServerSession(authOptions)) ?? (await bearerSession());
 
 /**
  * Staff only. Every till and office route hangs off this, so a customer's own

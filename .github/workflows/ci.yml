@@ -106,3 +106,31 @@ jobs:
       - run: npm ci
       - name: Build the way the host builds it
         run: npm run build
+
+  mobile:
+    name: The phone app
+    runs-on: ubuntu-latest
+
+    # The app shares the web app's translations and a few of its rules, so a
+    # change on either side can break it. Bundling for Android is the check
+    # that every one of those shared imports still resolves.
+    defaults:
+      run:
+        working-directory: mobile
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - run: npm ci
+      - name: Types
+        run: npx tsc --noEmit
+      - name: Lint
+        run: npx expo lint
+      - name: Dependencies match the Expo SDK
+        run: npx expo-doctor
+      - name: It bundles
+        run: npx expo export --platform android --output-dir /tmp/escape-export

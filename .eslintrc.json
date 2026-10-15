@@ -1,6 +1,6 @@
 {
   "extends": "next/core-web-vitals",
-  "ignorePatterns": ["worker/**", "public/**", ".next/**", "docs/**"],
+  "ignorePatterns": ["worker/**", "public/**", ".next/**", "docs/**", "mobile/**"],
   "rules": {
     "@next/next/no-img-element": "off"
   }

@@ -1326,6 +1326,16 @@ const ar: Record<TranslationKey, string> = {
   "discounts.recordedBy": "سجّلها",
   "discounts.notRecorded": "غير مسجّل لهذه الزيارة",
   "discounts.none": "لا يوجد خصم في هذه الفترة",
+
+  // The phone app
+  "action.retry": "حاول مرة أخرى",
+  "app.keepBooking": "أبقِه",
+  "app.language": "اللغة",
+  "app.theme": "المظهر",
+  "app.themeSystem": "مثل الهاتف",
+  "app.themeDark": "داكن",
+  "app.themeLight": "فاتح",
+  "app.bookingComing": "الحجز من التطبيق قادم قريبًا — احجز الآن من الموقع أو في المحل",
 };
 
 export default ar;

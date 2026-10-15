@@ -1324,6 +1324,16 @@ const en = {
   "discounts.recordedBy": "Rung up by",
   "discounts.notRecorded": "not recorded for this visit",
   "discounts.none": "No discount was given in this period",
+
+  // The phone app
+  "action.retry": "Try again",
+  "app.keepBooking": "Keep it",
+  "app.language": "Language",
+  "app.theme": "Appearance",
+  "app.themeSystem": "Like the phone",
+  "app.themeDark": "Dark",
+  "app.themeLight": "Light",
+  "app.bookingComing": "Booking from the app is on its way — for now, book on the website or at the counter",
 } as const;
 
 export type TranslationKey = keyof typeof en;
