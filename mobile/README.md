@@ -17,13 +17,36 @@ face on the same server.
 - **Bookings** — upcoming and past, with cancelling, and any deposit still owed with the
   InstaPay number and reference one tap to copy
 - **Profile** — who they are to the shop, the loyalty card, "tell a friend" with their
-  code and an invite link that opens sign-up with it filled in, English or Arabic, dark or
-  light, sign out
+  code and an invite link that opens sign-up with it filled in, notifications, English or
+  Arabic, dark or light, their own details — picture, name, the number they sign in
+  with, birthday, password — and sign out
 - **Your haircuts** — every visit the shop has on record, newest first, twenty at a time;
   each opens as a receipt they can send on WhatsApp or through the phone's share sheet
 - **The price list** — open before signing in, as on the web
+- **Notifications** — the same messages the shop already sends (booked, the reminder the
+  day before, a chair opening up), on the phone; a tap opens the screen it is about
 
-Not yet: profile editing, and push notifications.
+Everything the web app's customer screens do is now in the app.
+
+## Notifications: what they need before they work
+
+The server side is done: the app registers its Expo push token at `POST /api/mobile/push`,
+and `sendPush` in `src/lib/push.ts` now writes to app phones as well as browsers, so every
+existing notification reaches them without any change where it is sent. A phone that has
+removed the app is forgotten the first time Expo says so.
+
+On the phone, three things are still needed, all outside the code:
+
+- **An EAS project in the shop's name** (`npx eas-cli@latest init`), whose id lands in
+  `app.json` under `extra.eas.projectId`. Without it the app has no way to ask for a
+  token, and the switch says "this version of the app cannot receive notifications yet".
+- **A development or store build on Android.** Expo Go on Android cannot receive push
+  since SDK 53; on iPhone, Expo Go can.
+- **Apple and Google credentials** for the build, which EAS sets up on the first
+  `eas build` once the shop's developer accounts exist.
+
+`EXPO_ACCESS_TOKEN` on the server is optional; set it only if push security is turned on
+for the EAS project.
 
 ## The look: Mashrabiya
 

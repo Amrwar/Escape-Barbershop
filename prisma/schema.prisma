@@ -362,6 +362,22 @@ model PushSubscription {
   @@index([userId])
 }
 
+/// A phone with the app on it, as Expo's push service knows it. The browser's
+/// push subscriptions above are a different thing with different keys, so they
+/// keep their own table; `sendPush` writes to both.
+model AppPushToken {
+  id         String    @id @default(cuid())
+  /// "ExponentPushToken[...]" — one per install, so it is the key.
+  token      String    @unique
+  platform   String?
+  customerId String
+  createdAt  DateTime  @default(now())
+  lastSentAt DateTime?
+  customer   Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId])
+}
+
 /// Somebody who wants a day that is already full.
 ///
 /// A cancellation is the shop's most wasteful event: a chair that was spoken for
@@ -557,6 +573,7 @@ model Customer {
   /// customer over a bad week.
   noShowsForgivenAt DateTime?
   pushDevices       PushSubscription[]
+  appDevices        AppPushToken[]
   reviews           Review[]
   rewards           LoyaltyRedemption[]
   referralsMade     Referral[]          @relation("ReferralsMade")

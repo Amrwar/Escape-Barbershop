@@ -1,6 +1,7 @@
 import webpush from "web-push";
 import { prisma } from "./prisma";
 import type { PushMessage } from "./reminders";
+import { sendAppPush } from "./app-push";
 
 /**
  * Sending a notification to a phone.
@@ -58,7 +59,20 @@ export async function getVapidKeys(): Promise<VapidKeys | null> {
 /** Who is being written to: a customer's phones, or a member of staff's. */
 export type PushAudience = { customerId: string } | { userId: string };
 
+/**
+ * Every device that should hear it: browsers by web push, and — for a
+ * customer — phones with the app, by Expo's push service. Returns how many
+ * devices took it, across both.
+ */
 export async function sendPush(audience: PushAudience, message: PushMessage): Promise<number> {
+  const [toBrowsers, toApps] = await Promise.all([
+    sendWebPush(audience, message),
+    "customerId" in audience ? sendAppPush(audience.customerId, message) : Promise.resolve(0),
+  ]);
+  return toBrowsers + toApps;
+}
+
+async function sendWebPush(audience: PushAudience, message: PushMessage): Promise<number> {
   const keys = await getVapidKeys();
   if (!keys) return 0;
 

@@ -69,12 +69,13 @@ never install the app — worth revisiting once we see how many turn notificatio
       referrals, bookings
       with cancelling and deposits, profile, the price list, in English and Arabic, dark
       and light. In the Mashrabiya look — Arabic first, arched windows, Cairene lattice.
-      Next: profile editing, push. See `mobile/README.md`
+      Everything the web app's customer screens do. See `mobile/README.md`
 - [x] A way in for the app: a customer signs in for a token the phone keeps in
       secure storage, and every customer route accepts it as it accepts the cookie
 - [x] Push notifications in the web app
-- [ ] Push notifications in the phone app — these are not inherited after all: the web
-      app's are browser push, and a native app needs its own (Expo's push service)
+- [x] Push notifications in the phone app — not inherited after all: the web app's are
+      browser push, so the app registers an Expo push token and `sendPush` writes to both.
+      Waits on the shop's EAS project and a real build before a phone receives one
 - [ ] Android build, then submission to Google Play
 - [ ] iPhone build, then submission to the App Store
 

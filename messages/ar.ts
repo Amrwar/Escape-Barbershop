@@ -1338,6 +1338,8 @@ const ar: Record<TranslationKey, string> = {
   "app.barberNoPhotos": "لا صور لأعماله بعد",
   "app.bookAt": "احجز {day} {time} مع {barber}",
   "app.liveNow": "الآن",
+  "app.pushBlocked": "الإشعارات متوقفة لتطبيق إسكيب في إعدادات هاتفك",
+  "app.pushUnavailable": "هذه النسخة من التطبيق لا تستقبل الإشعارات بعد",
   "app.openDoor": "افتح الباب",
   "app.noAccount": "ليس لديك حساب؟ أنشئ واحدًا",
   "app.haveAccount": "لدي حساب",

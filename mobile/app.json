@@ -27,7 +27,16 @@
       "expo-secure-store",
       "expo-localization",
       "expo-image",
-      "expo-font"
+      "expo-font",
+      ["expo-notifications", { "color": "#14213d" }],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Escape uses your photos only when you choose a picture for your profile.",
+          "cameraPermission": false,
+          "microphonePermission": false
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

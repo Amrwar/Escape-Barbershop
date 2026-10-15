@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import * as SecureStore from "expo-secure-store";
 import { ApiError, api, setApiToken, setUnauthorizedHandler } from "./api";
+import { forgetPushLocally, turnPushOff } from "./push";
 
 /**
  * Who is signed in. The token lives in the phone's secure storage (Keychain on
@@ -44,18 +45,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await SecureStore.setItemAsync(KEY, session.token).catch(() => undefined);
   }, []);
 
-  const signOut = useCallback(async () => {
+  /**
+   * Leaving. When they choose to, the phone is first taken off their record so
+   * it stops hearing about their bookings. When the server has already refused
+   * the login (`forced`), telling it anything would only be refused again — so
+   * the phone just forgets its own copy.
+   */
+  const end = useCallback(async (forced: boolean) => {
+    if (forced) await forgetPushLocally();
+    else await turnPushOff();
     setApiToken(null);
     setUser(null);
     setStatus("signedOut");
     await SecureStore.deleteItemAsync(KEY).catch(() => undefined);
   }, []);
+  const signOut = useCallback(() => end(false), [end]);
 
   // A login the server has stopped accepting ends here, wherever it was used.
   useEffect(() => {
-    setUnauthorizedHandler(() => void signOut());
+    setUnauthorizedHandler(() => void end(true));
     return () => setUnauthorizedHandler(null);
-  }, [signOut]);
+  }, [end]);
 
   useEffect(() => {
     (async () => {
@@ -67,11 +77,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } catch (err) {
         // Refused means the login is over. Anything else — no signal in the
         // shop's basement — keeps them signed in on the token they have.
-        if (err instanceof ApiError && err.status === 401) return signOut();
+        if (err instanceof ApiError && err.status === 401) return end(true);
         setStatus("signedIn");
       }
     })();
-  }, [adopt, signOut]);
+  }, [adopt, end]);
 
   const signIn = useCallback(
     async (phone: string, password: string) => {

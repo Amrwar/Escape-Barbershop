@@ -1336,6 +1336,8 @@ const en = {
   "app.barberNoPhotos": "No photos of their work yet",
   "app.bookAt": "Book {day} {time} with {barber}",
   "app.liveNow": "Right now",
+  "app.pushBlocked": "Notifications are off for Escape in your phone's settings",
+  "app.pushUnavailable": "This version of the app cannot receive notifications yet",
   "app.openDoor": "Open the door",
   "app.noAccount": "No account? Create one",
   "app.haveAccount": "I have an account",

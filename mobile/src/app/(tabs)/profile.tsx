@@ -10,10 +10,12 @@ import type { Me } from "@/lib/types";
 import { T, Avatar, Button, Card, Screen, ScreenTitle, SectionTitle, Skeleton } from "@/components/kit";
 import { LoyaltyCard } from "@/components/LoyaltyCard";
 import { ReferralCard, type Referral } from "@/components/ReferralCard";
+import { ProfileEditor } from "@/components/ProfileEditor";
+import { PushToggle } from "@/components/PushToggle";
 
 /**
- * Who they are to the shop, their card and their history, and how the app
- * looks to them. Editing their details is still done on the web for now.
+ * Who they are to the shop, their card and their history, their own details to
+ * change, and how the app looks to them.
  */
 export default function ProfileScreen() {
   const { colors } = useTheme();
@@ -22,7 +24,7 @@ export default function ProfileScreen() {
   const rtlFlip = rtl ? { transform: [{ scaleX: -1 }] } : undefined;
   const { choice, setChoice } = useTheme();
   const { signOut } = useAuth();
-  const { data: me, refreshing, refresh } = useApi<Me>("/api/customer/me");
+  const { data: me, refreshing, refresh, reload } = useApi<Me>("/api/customer/me");
   // Only while the shop runs referrals; the code is made the first time it is asked for.
   const { data: referral } = useApi<({ enabled: true } & Referral) | { enabled: false }>("/api/customer/referral");
 
@@ -74,6 +76,11 @@ export default function ProfileScreen() {
       ) : null}
 
       <View>
+        <SectionTitle>{t("app.notifications")}</SectionTitle>
+        <PushToggle />
+      </View>
+
+      <View>
         <SectionTitle>{t("app.language")}</SectionTitle>
         <Choice<Language>
           value={lang}
@@ -97,6 +104,13 @@ export default function ProfileScreen() {
           ]}
         />
       </View>
+
+      {me ? (
+        <View>
+          <SectionTitle>{t("app.yourDetails")}</SectionTitle>
+          <ProfileEditor me={me} onSaved={reload} />
+        </View>
+      ) : null}
 
       <Button tone="secondary" label={t("auth.signOut")} onPress={() => void signOut()} />
     </Screen>
