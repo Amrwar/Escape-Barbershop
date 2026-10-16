@@ -141,5 +141,9 @@ Remove them when moving to the next SDK, then run `npx expo install --fix`.
 Built and submitted with EAS (`npx eas-cli@latest build`, `submit`). This waits on the
 shop's own developer accounts — Google Play ($25 once) and Apple ($99 a year), both in
 the shop's name. The bundle id `com.escapebarbershop.app` in `app.json` is a placeholder
-until then, and cannot be changed once a store has seen it. The icon and splash screen
-are still Expo's defaults.
+until then, and cannot be changed once a store has seen it.
+
+The icon, Android's adaptive and themed layers, the splash and the favicon are made from
+the shop's logo by `node scripts/app-icons.mjs` (run from the repository root): the logo
+in cream inside an amber-edged arch on the indigo lattice. Run it again if the logo
+changes; it writes straight into `mobile/assets`.

@@ -7,7 +7,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
-    "backgroundColor": "#0b0a09",
+    "backgroundColor": "#14213d",
     "ios": {
       "bundleIdentifier": "com.escapebarbershop.app",
       "supportsTablet": false
@@ -15,7 +15,7 @@
     "android": {
       "package": "com.escapebarbershop.app",
       "adaptiveIcon": {
-        "backgroundColor": "#0b0a09",
+        "backgroundColor": "#14213d",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -28,7 +28,12 @@
       "expo-localization",
       "expo-image",
       "expo-font",
-      ["expo-notifications", { "color": "#14213d" }],
+      [
+        "expo-notifications",
+        {
+          "color": "#14213d"
+        }
+      ],
       [
         "expo-image-picker",
         {
@@ -36,10 +41,26 @@
           "cameraPermission": false,
           "microphonePermission": false
         }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 240,
+          "resizeMode": "contain",
+          "backgroundColor": "#14213d",
+          "dark": {
+            "image": "./assets/splash-icon.png",
+            "backgroundColor": "#0d162b"
+          }
+        }
       ]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
     }
   }
 }
